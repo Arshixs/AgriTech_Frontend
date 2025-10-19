@@ -12,6 +12,7 @@ export default function TabsLayout() {
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
+          marginBottom:30
         },
       }}
     >
