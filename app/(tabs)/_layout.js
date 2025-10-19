@@ -1,30 +1,56 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons'; // Icon library
+import React from "react";
+import { Tabs } from "expo-router";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#2A9D8F', // Our app's theme color
-        headerShown: false, // We'll add custom headers later
+        tabBarActiveTintColor: "#2A9D8F",
+        headerShown: false,
+        tabBarStyle: {
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
       }}
     >
       <Tabs.Screen
-        name="index" // This is app/(tabs)/index.js
+        name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <FontAwesome name="home" size={28} color={color} />,
+          title: "Home",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="home" size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="farm" // This is app/(tabs)/farm.js
+        name="farm"
         options={{
-          title: 'My Farm',
-          tabBarIcon: ({ color }) => <FontAwesome name="leaf" size={24} color={color} />,
+          title: "My Farm",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="leaf" size={24} color={color} />
+          ),
         }}
       />
-      {/* We can add more tabs for Devices, Market, etc. later */}
+      <Tabs.Screen
+        name="alerts"
+        options={{
+          title: "Alerts",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="bell" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="recommendations"
+        options={{
+          title: "Crops",
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="sprout" size={24} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
