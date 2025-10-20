@@ -1,15 +1,15 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import React from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Button from "../../src/components/common/Button";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 
 export default function HomeScreen() {
@@ -48,6 +48,14 @@ export default function HomeScreen() {
       icon: "sprout",
       color: "#606C38",
       route: "/(tabs)/recommendations",
+    },
+    {
+      id: 5,
+      title: "IoT Devices",
+      description: "Monitor sensors",
+      icon: "access-point",
+      color: "#457B9D",
+      route: "/iot-devices",
     },
   ];
 
