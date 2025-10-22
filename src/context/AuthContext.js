@@ -1,6 +1,8 @@
+// File: src/context/AuthContext.js
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter, useSegments } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { useRouter } from 'expo-router'; // <--- Make sure this is imported
 
 // Create the context
 const AuthContext = createContext(null);
@@ -14,21 +16,19 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-  const segments = useSegments();
+  const router = useRouter(); // <--- Initialize the router
 
   useEffect(() => {
-    // Check for a stored token when the app loads
+    // This logic is fine - it just loads the user on startup
     const loadUser = async () => {
+      let userString = null;
       try {
-        const token = await SecureStore.getItemAsync('userToken');
-        if (token) {
-          // In a real app, you'd verify the token with your backend.
-          // For now, we'll just set a dummy user if a token exists.
-          setUser({ id: 1, name: 'Farmer' }); // Mock user
+        userString = await SecureStore.getItemAsync('user'); 
+        if (userString) {
+          setUser(JSON.parse(userString)); 
         }
       } catch (e) {
-        console.error('Failed to load user token:', e);
+        console.error('Failed to load user data:', e);
       } finally {
         setIsLoading(false);
       }
@@ -36,39 +36,36 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  useEffect(() => {
-    // This effect handles redirection
-    if (isLoading) return; // Don't redirect while checking auth
-
-    const inAuthGroup = segments[0] === '(auth)';
-
-    if (!user && !inAuthGroup) {
-      // If user is not signed in and not in the (auth) group, redirect to login.
-      router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
-      // If user is signed in and in the (auth) group, redirect to the main app (home).
-      router.replace('/(tabs)');
-    }
-  }, [user, segments, isLoading, router]);
-
-  const signIn = async (userData) => {
-    // 1. Send data to your Node/Express backend to verify/create user
-    // 2. On success, your backend should return a token.
-    
-    // Mocking successful login:
-    await SecureStore.setItemAsync('userToken', 'mock-token-123');
-    setUser(userData);
-    router.replace('/(tabs)'); // Redirect to the main app
+  const signInFarmer = async (userData) => {
+    const farmerUser = { ...userData, role: 'farmer' }; 
+    await SecureStore.setItemAsync('user', JSON.stringify(farmerUser));
+    setUser(farmerUser);
+    router.replace('/(tabs)'); // <--- ADD THIS REDIRECT
+  };
+  
+  const signInVendor = async (vendorData) => {
+    const vendorUser = { ...vendorData, role: 'vendor' };
+    await SecureStore.setItemAsync('user', JSON.stringify(vendorUser));
+    setUser(vendorUser);
+    router.replace('/(vendor-tabs)'); // <--- ADD THIS REDIRECT
   };
 
   const signOut = async () => {
-    await SecureStore.deleteItemAsync('userToken');
+    await SecureStore.deleteItemAsync('user');
     setUser(null);
-    router.replace('/(auth)/login'); // Redirect to login
+    router.replace('/'); // <--- KEEP THIS REDIRECT
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut, isLoading }}>
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        isLoading, 
+        signInFarmer, 
+        signInVendor,
+        signOut 
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

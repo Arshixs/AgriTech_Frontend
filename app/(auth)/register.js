@@ -7,7 +7,7 @@ import { styles } from '../../src/styles/auth/RegistrationScreenStyles';
 import { useAuth } from '../../src/context/AuthContext';
 
 export default function RegistrationScreen() {
-  const { signIn } = useAuth(); // Get the signIn function from context
+  const { signInFarmer } = useAuth();
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,10 +18,10 @@ export default function RegistrationScreen() {
     // --- Mock API call to create user ---
     setTimeout(() => {
       // Mock user data. In real life, this comes from your API.
-      const userData = { id: 1, name: name, location: location };
+      const userData = { id: 1, name: name, location: location, role: 'farmer' };
       
       // Call signIn to save the session and redirect to the app
-      signIn(userData);
+      signInFarmer(userData);
       
       // setLoading(false) is not needed since we are navigating away
     }, 1000);
