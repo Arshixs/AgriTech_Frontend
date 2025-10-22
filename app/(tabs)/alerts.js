@@ -85,7 +85,7 @@ export default function AlertsScreen() {
   };
 
   const getAlertIcon = (type) => {
-    return type === "disease" ? "bug" : "cloud-rain";
+    return type === "disease" ? "bug" : "cloud";
   };
 
   return (
