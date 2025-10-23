@@ -16,7 +16,10 @@ const RootLayout = () => {
       return; 
     }
 
-    const inAuthGroup = segments[0] === '(auth)' || segments[0] === '(vendor-auth)' || segments[0] === '(buyer-auth)';
+    const inAuthGroup = segments[0] === '(auth)' || 
+                        segments[0] === '(vendor-auth)' || 
+                        segments[0] === '(buyer-auth)' ||
+                        segments[0] === '(govt-auth)';
     const atRootIndex = segments.length === 0;
 
     if (user) {
@@ -44,9 +47,13 @@ const RootLayout = () => {
       <Stack.Screen name="(vendor-tabs)" />
       <Stack.Screen name="(vendor-auth)" />
       
-      {/* --- ADD NEW BUYER LAYOUTS --- */}
+      {/* ---  BUYER LAYOUTS --- */}
       <Stack.Screen name="(buyer-tabs)" />
       <Stack.Screen name="(buyer-auth)" />
+
+      {/* ---  Govt LAYOUTS --- */}
+      <Stack.Screen name="(govt-tabs)" />
+      <Stack.Screen name="(govt-auth)" />
       
       {/* Root Index Screen */}
       <Stack.Screen name="index" />
@@ -61,10 +68,14 @@ const RootLayout = () => {
       <Stack.Screen name="expense-calculator" />
       <Stack.Screen name="transaction-history" />
       
-      {/* --- ADD NEW BUYER TOP-LEVEL SCREENS (from your new outline) --- */}
+      {/* --- BUYER TOP-LEVEL SCREENS --- */}
       <Stack.Screen name="post-requirement" />
       <Stack.Screen name="listing-details" />
       <Stack.Screen name="bidding-room" />
+
+      {/* --- GOVT TOP-LEVEL SCREENS --- */}
+      <Stack.Screen name="approval-details" />
+      <Stack.Screen name="listing-violation" />
     </Stack>
   );
 };

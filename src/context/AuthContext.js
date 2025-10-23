@@ -57,6 +57,13 @@ export const AuthProvider = ({ children }) => {
     router.replace('/(buyer-tabs)'); // Redirect to buyer dashboard
   };
 
+  const signInGovt = async (govtData) => {
+    const govtUser = { ...govtData, role: 'govt' };
+    await SecureStore.setItemAsync('user', JSON.stringify(govtUser));
+    setUser(govtUser);
+    router.replace('/(govt-tabs)'); // Redirect to govt dashboard
+  };
+
   const signOut = async () => {
     await SecureStore.deleteItemAsync('user');
     setUser(null);
@@ -70,7 +77,8 @@ export const AuthProvider = ({ children }) => {
         isLoading, 
         signInFarmer, 
         signInVendor,
-        signInBuyer,  
+        signInBuyer, 
+        signInGovt, 
         signOut 
       }}
     >

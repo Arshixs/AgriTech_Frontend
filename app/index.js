@@ -31,13 +31,22 @@ export default function RoleSelectionScreen() {
           <Text style={styles.buttonText}>I am a Vendor</Text>
         </TouchableOpacity>
         
-        {/* --- NEW BUYER BUTTON --- */}
+        {/* --- BUYER BUTTON --- */}
         <TouchableOpacity
           style={[styles.roleButton, { backgroundColor: "#E76F51" }]} // Orange/Red
           onPress={() => router.push("/(buyer-auth)/login")}
         >
           <MaterialCommunityIcons name="briefcase-account" size={40} color="#FFFFFF" />
           <Text style={styles.buttonText}>I am a Buyer</Text>
+        </TouchableOpacity>
+
+        {/* --- Govt BUTTON --- */}
+        <TouchableOpacity
+          style={[styles.roleButton, { backgroundColor: "#606C38" }]} // Dark Green/Brown
+          onPress={() => router.push("/(govt-auth)/login")}
+        >
+          <MaterialCommunityIcons name="bank" size={40} color="#FFFFFF" />
+          <Text style={styles.buttonText}>Government Login</Text>
         </TouchableOpacity>
         
       </View>
