@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { useRouter } from 'expo-router'; // <--- Make sure this is imported
+import { useRouter } from 'expo-router'; // Make sure this is imported
 
 // Create the context
 const AuthContext = createContext(null);
@@ -16,7 +16,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter(); // <--- Initialize the router
+  const router = useRouter(); // Initialize the router
 
   useEffect(() => {
     // This logic is fine - it just loads the user on startup
@@ -40,20 +40,27 @@ export const AuthProvider = ({ children }) => {
     const farmerUser = { ...userData, role: 'farmer' }; 
     await SecureStore.setItemAsync('user', JSON.stringify(farmerUser));
     setUser(farmerUser);
-    router.replace('/(tabs)'); // <--- ADD THIS REDIRECT
+    router.replace('/(tabs)'); // Redirect to farmer dashboard
   };
   
   const signInVendor = async (vendorData) => {
     const vendorUser = { ...vendorData, role: 'vendor' };
     await SecureStore.setItemAsync('user', JSON.stringify(vendorUser));
     setUser(vendorUser);
-    router.replace('/(vendor-tabs)'); // <--- ADD THIS REDIRECT
+    router.replace('/(vendor-tabs)'); // Redirect to vendor dashboard
+  };
+
+  const signInBuyer = async (buyerData) => {
+    const buyerUser = { ...buyerData, role: 'buyer' };
+    await SecureStore.setItemAsync('user', JSON.stringify(buyerUser));
+    setUser(buyerUser);
+    router.replace('/(buyer-tabs)'); // Redirect to buyer dashboard
   };
 
   const signOut = async () => {
     await SecureStore.deleteItemAsync('user');
     setUser(null);
-    router.replace('/'); // <--- KEEP THIS REDIRECT
+    router.replace('/'); // Redirect to root (Role Selection)
   };
 
   return (
@@ -63,6 +70,7 @@ export const AuthProvider = ({ children }) => {
         isLoading, 
         signInFarmer, 
         signInVendor,
+        signInBuyer,  
         signOut 
       }}
     >

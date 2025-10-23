@@ -1,5 +1,3 @@
-// File: app/index.js
-
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
@@ -17,8 +15,8 @@ export default function RoleSelectionScreen() {
 
         {/* Farmer Button */}
         <TouchableOpacity
-          style={[styles.roleButton, { backgroundColor: "#2A9D8F" }]}
-          onPress={() => router.push("/(auth)/login")} // Navigates to your FARMER login
+          style={[styles.roleButton, { backgroundColor: "#2A9D8F" }]} // Green
+          onPress={() => router.push("/(auth)/login")}
         >
           <MaterialCommunityIcons name="barley" size={40} color="#FFFFFF" />
           <Text style={styles.buttonText}>I am a Farmer</Text>
@@ -26,12 +24,22 @@ export default function RoleSelectionScreen() {
 
         {/* Vendor Button */}
         <TouchableOpacity
-          style={[styles.roleButton, { backgroundColor: "#457B9D" }]}
-          onPress={() => router.push("/(vendor-auth)/login")} // Navigates to the VENDOR login
+          style={[styles.roleButton, { backgroundColor: "#457B9D" }]} // Blue
+          onPress={() => router.push("/(vendor-auth)/login")}
         >
           <MaterialCommunityIcons name="store" size={40} color="#FFFFFF" />
           <Text style={styles.buttonText}>I am a Vendor</Text>
         </TouchableOpacity>
+        
+        {/* --- NEW BUYER BUTTON --- */}
+        <TouchableOpacity
+          style={[styles.roleButton, { backgroundColor: "#E76F51" }]} // Orange/Red
+          onPress={() => router.push("/(buyer-auth)/login")}
+        >
+          <MaterialCommunityIcons name="briefcase-account" size={40} color="#FFFFFF" />
+          <Text style={styles.buttonText}>I am a Buyer</Text>
+        </TouchableOpacity>
+        
       </View>
     </ScreenWrapper>
   );
