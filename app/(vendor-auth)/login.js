@@ -1,110 +1,101 @@
-
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import ScreenWrapper from '../../src/components/common/ScreenWrapper';
-import Input from '../../src/components/common/Input';
-import Button from '../../src/components/common/Button';
-import { useAuth } from '../../src/context/AuthContext';
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert, Text, View } from "react-native";
+import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import Input from "../../src/components/common/Input";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { styles } from "../../src/styles/auth/LoginScreenStyles";
 
 export default function VendorLoginScreen() {
   const router = useRouter();
-  const { signInVendor } = useAuth(); // Use the new vendor sign-in
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [mobileNumber, setMobileNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (!email || !password) return alert('Please fill in all fields.');
-    setLoading(true);
+  const handleContinue = async () => {
+    // 1. Validation
+    if (mobileNumber.length !== 10) {
+      return Alert.alert("Invalid Input", "Enter a valid 10-digit number.");
+    }
 
-    // --- Mock API call ---
-    // In a real app, you'd send this to your backend
-    setTimeout(() => {
+    setLoading(true);
+    const fullPhoneNumber = `+91${mobileNumber}`;
+
+    try {
+      // 2. Check if Vendor Exists
+      // Note: Using the specific /api/vendor endpoint
+      const checkRes = await fetch(`${API_BASE_URL}/api/vendor/auth/vendor-exist`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: fullPhoneNumber }),
+        });
+
+      const checkData = await checkRes.json();
+
+      console.log(checkData);
+
+      if (checkRes.status === 404 || checkData.exists === false) {
+        // CASE A: NEW VENDOR -> Redirect to Registration
+        // We pass the phone number so they don't have to type it again
+        router.push({
+          pathname: "/(vendor-auth)/register",
+          params: { phone: fullPhoneNumber },
+        });
+      } else if (checkRes.ok && checkData.exists === true) {
+        // CASE B: RETURNING VENDOR -> Send OTP and Login
+        await sendOtpAndNavigate(fullPhoneNumber);
+      } else {
+        Alert.alert("Error", checkData.message || "Something went wrong.");
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Network Error", "Check your connection and IP address.");
+    } finally {
       setLoading(false);
-      
-      // Mock data for an existing vendor
-      const mockVendorData = {
-        id: 'v123',
-        name: 'Suresh Kumar',
-        orgName: 'Agri Supplies Co.',
-        email: email,
-        gst: '22ABCDE1234F1Z5',
-      };
-      
-      // Call signInVendor to save session and trigger redirect
-      signInVendor(mockVendorData);
-      
-      // No router.replace() needed here, app/_layout.js handles it
-    }, 1000);
+    }
+  };
+
+  const sendOtpAndNavigate = async (phone) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/vendor/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Navigate to OTP screen
+        router.push({
+          pathname: "/(vendor-auth)/otp",
+          params: { mobileNumber: phone, role: "vendor" }, // Tell OTP screen this is a vendor
+        });
+      } else {
+        Alert.alert("Error", data.message || "Failed to send OTP");
+      }
+    } catch (err) {
+      Alert.alert("Error", "Failed to send OTP request.");
+    }
   };
 
   return (
     <ScreenWrapper>
       <View style={styles.container}>
         <Text style={styles.title}>Vendor Login</Text>
-        <Text style={styles.subtitle}>Welcome back to the marketplace</Text>
-        
+        <Text style={styles.subtitle}>
+          Enter your mobile number to manage your shop
+        </Text>
         <Input
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="e.g., vendor@agri.com"
-          keyboardType="email-address"
+          label="Mobile Number"
+          value={mobileNumber}
+          onChangeText={setMobileNumber}
+          placeholder="e.g., 9876543210"
+          keyboardType="phone-pad"
+          maxLength={10}
         />
-        <Input
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Enter your password"
-          secureTextEntry
-        />
-        
-        <Button title="Login" onPress={handleLogin} loading={loading} />
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account?</Text>
-          <TouchableOpacity onPress={() => router.push('/(vendor-auth)/register')}>
-            <Text style={styles.footerLink}>Register here</Text>
-          </TouchableOpacity>
-        </View>
+        <Button title="Continue" onPress={handleContinue} loading={loading} />
       </View>
     </ScreenWrapper>
   );
 }
-
-// You can reuse styles from your farmer login or create new ones
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#264653', // Your dark blue
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 32,
-  },
-  footer: {
-    marginTop: 24,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  footerLink: {
-    fontSize: 14,
-    color: '#2A9D8F', // Your primary green
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-});

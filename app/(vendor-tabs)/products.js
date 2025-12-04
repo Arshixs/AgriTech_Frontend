@@ -1,49 +1,90 @@
-// File: app/(vendor-tabs)/products.js
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
-import ScreenWrapper from '../../src/components/common/ScreenWrapper';
-import Button from '../../src/components/common/Button';
-import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-
-// Mock data (assuming MOCK_PRODUCTS is defined here as before)
-const MOCK_PRODUCTS = [
-  {
-    id: 'p1',
-    name: 'Basmati Seeds (10kg)',
-    price: '₹1,500',
-    stock: 120,
-    category: 'Seeds',
-    image: 'https://via.placeholder.com/100.png?text=Seeds',
-  },
-  {
-    id: 'p2',
-    name: 'Tractor Pump - Model X',
-    price: '₹25,000',
-    stock: 15,
-    category: 'Machines',
-    image: 'https://via.placeholder.com/100.png?text=Pump',
-  },
-  // ... other mock products
-];
+import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
 
 export default function ProductsScreen() {
   const router = useRouter();
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const { user } = useAuth(); // Get user token
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch Products function
+  const fetchProducts = async () => {
+    if (!user?.token) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/vendor/product`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setProducts(data.products || []);
+      } else {
+        // Silent fail or minimal alert to not annoy user on refresh
+        console.log("Failed to fetch products:", data.message);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      Alert.alert("Error", "Could not load products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reload data whenever this screen comes into focus (e.g., after adding a product)
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, [])
+  );
 
   const renderProductItem = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.productCard}
-      onPress={() => router.push({ pathname: '/add-edit-product', params: { id: item.id } })}
+      onPress={() =>
+        router.push({ pathname: "/add-edit-product", params: { id: item._id } })
+      } // Passed _id
     >
-      <Image source={{ uri: item.image }} style={styles.productImage} />
+      {/* Placeholder image logic since we simplified the model */}
+      <View style={styles.imagePlaceholder}>
+        <MaterialCommunityIcons name="leaf" size={24} color="#2A9D8F" />
+      </View>
+
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productCategory}>{item.category}</Text>
+        <Text style={styles.productCategory} numberOfLines={1}>
+          {item.category?.toUpperCase()} • {item.unit}
+        </Text>
         <View style={styles.productDetails}>
-          <Text style={styles.productPrice}>{item.price}</Text>
-          <Text style={styles.productStock}>Stock: {item.stock}</Text>
+          <Text style={styles.productPrice}>₹{item.price}</Text>
+          <Text
+            style={[
+              styles.productStock,
+              { color: item.stock < 10 ? "#E76F51" : "#2A9D8F" },
+            ]}
+          >
+            Stock: {item.stock}
+          </Text>
         </View>
       </View>
       <MaterialCommunityIcons name="chevron-right" size={24} color="#CCC" />
@@ -52,110 +93,117 @@ export default function ProductsScreen() {
 
   return (
     <ScreenWrapper>
-      {/* --- UPDATED HEADER --- */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Products</Text>
-        <Button 
-          title="Add New Product" // More descriptive title
-          onPress={() => router.push('/add-edit-product')}
+        <Button
+          title="Add New Product"
+          onPress={() => router.push("/add-edit-product")}
           style={styles.addButton}
-          // Assuming your Button component can take an icon prop
-          icon={() => <MaterialCommunityIcons name="plus" size={18} color="#FFF" />}
+          icon={() => (
+            <MaterialCommunityIcons name="plus" size={18} color="#FFF" />
+          )}
         />
       </View>
-      {/* --- END OF UPDATE --- */}
 
-      <FlatList
-        data={products}
-        renderItem={renderProductItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={<Text style={styles.emptyText}>No products found. Add one!</Text>}
-      />
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#2A9D8F"
+          style={{ marginTop: 50 }}
+        />
+      ) : (
+        <FlatList
+          data={products}
+          renderItem={renderProductItem}
+          keyExtractor={(item) => item._id} // MongoDB uses _id
+          contentContainerStyle={styles.listContainer}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No products found. Add one!</Text>
+          }
+          refreshing={loading}
+          onRefresh={fetchProducts} // Pull to refresh
+        />
+      )}
     </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  // --- UPDATED HEADER STYLE ---
   header: {
     paddingHorizontal: 20,
-    paddingTop: 40, // Space from status bar
-    paddingBottom: 20, // More space below button
-    backgroundColor: '#FFF',
+    paddingTop: 40,
+    paddingBottom: 20,
+    backgroundColor: "#FFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-    // Removed: flexDirection, justifyContent, alignItems
+    borderBottomColor: "#F0F0F0",
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#264653',
-    marginBottom: 16, // Space between title and button
+    fontWeight: "bold",
+    color: "#264653",
+    marginBottom: 16,
   },
   addButton: {
-    backgroundColor: '#2A9D8F',
-    // Assuming your custom button styles itself well
-    // We no longer need padding/text styles here
+    backgroundColor: "#2A9D8F",
   },
-  // --- END OF UPDATE ---
-
   listContainer: {
     padding: 20,
   },
   productCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
   },
-  productImage: {
-    width: 70,
-    height: 70,
+  imagePlaceholder: {
+    width: 60,
+    height: 60,
     borderRadius: 8,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: "#E8F5E9",
     marginRight: 16,
+    justifyContent: "center",
+    alignItems: "center",
   },
   productInfo: {
     flex: 1,
   },
   productName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#264653',
+    fontWeight: "600",
+    color: "#264653",
     marginBottom: 4,
   },
   productCategory: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
   },
   productDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingRight: 10,
   },
   productPrice: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#2A9D8F',
+    fontWeight: "bold",
+    color: "#264653",
   },
   productStock: {
     fontSize: 13,
-    color: '#E76F51',
-    fontWeight: '500',
+    fontWeight: "500",
   },
   emptyText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 50,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
 });

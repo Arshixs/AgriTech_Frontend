@@ -1,106 +1,132 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import ScreenWrapper from '../../src/components/common/ScreenWrapper';
-import Input from '../../src/components/common/Input';
-import Button from '../../src/components/common/Button';
-import { useAuth } from '../../src/context/AuthContext';
-import { FontAwesome } from '@expo/vector-icons'; // For back button
+import { FontAwesome } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import Input from "../../src/components/common/Input";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 
 export default function VendorRegistrationScreen() {
   const router = useRouter();
-  const { signInVendor } = useAuth(); // Use the new vendor sign-in
+  const { phone } = useLocalSearchParams(); // Get phone passed from Login Screen
   const [loading, setLoading] = useState(false);
 
-  // Form state
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [orgName, setOrgName] = useState('');
-  const [gstNumber, setGstNumber] = useState('');
-  const [address, setAddress] = useState('');
+  // Form state (Matched with your Mongoose Vendor Model)
+  // Removed Email/Password as they aren't in your updated schema
+  const [name, setName] = useState("");
+  const [organizationName, setorganizationName] = useState("");
+  const [gstNumber, setGstNumber] = useState("");
+  const [address, setAddress] = useState("");
 
-  const handleRegister = () => {
-    if (!name || !email || !password || !orgName || !gstNumber) {
-      return alert('Please fill in all required fields.');
+  const handleRegister = async () => {
+    if (!name || !organizationName || !gstNumber || !address) {
+      return Alert.alert("Missing Fields", "Please fill in all details.");
     }
+
     setLoading(true);
 
-    // --- Mock API call ---
-    setTimeout(() => {
+    try {
+      // 1. Send OTP to create the initial account in DB
+      const res = await fetch(`${API_BASE_URL}/api/vendor/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // 2. Prepare Profile Data to be saved AFTER verification
+        // We stringify it to pass it securely via params
+        const pendingProfileData = JSON.stringify({
+          name,
+          organizationName: organizationName,
+          gstNumber,
+          address,
+        });
+
+        // 3. Navigate to OTP Screen
+        router.push({
+          pathname: "/(vendor-auth)/otp",
+          params: {
+            mobileNumber: phone,
+            role: "vendor",
+            pendingProfile: pendingProfileData, // <--- Pass profile data here
+          },
+        });
+      } else {
+        Alert.alert("Error", data.message || "Registration failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Network Error", "Could not connect to server.");
+    } finally {
       setLoading(false);
-      
-      // Create the new vendor data object
-      const newVendorData = {
-        id: `v${Math.floor(Math.random() * 1000)}`, // Mock ID
-        name: name,
-        email: email,
-        orgName: orgName,
-        gst: gstNumber,
-        address: address,
-      };
-      
-      // Call signInVendor to save session and trigger redirect
-      signInVendor(newVendorData);
-      
-      // No router.replace() needed, app/_layout.js handles it
-    }, 1500);
+    }
   };
 
   return (
     <ScreenWrapper>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => router.back()}
           >
             <FontAwesome name="arrow-left" size={20} color="#264653" />
           </TouchableOpacity>
-          
-          <Text style={styles.title}>Create Vendor Profile</Text>
-          <Text style={styles.subtitle}>Fill in your business details to get started</Text>
 
-          {/* Step 1: Account Details */}
-          <Text style={styles.sectionTitle}>Account Details</Text>
-          <Input label="Full Name" value={name} onChangeText={setName} />
-          <Input 
-            label="Email" 
-            value={email} 
-            onChangeText={setEmail} 
-            keyboardType="email-address"
+          <Text style={styles.title}>New Vendor Profile</Text>
+          <Text style={styles.subtitle}>
+            Registering for: <Text style={{ fontWeight: "bold" }}>{phone}</Text>
+          </Text>
+
+          {/* Personal Details */}
+          <Text style={styles.sectionTitle}>Owner Details</Text>
+          <Input
+            label="Full Name"
+            value={name}
+            onChangeText={setName}
+            placeholder="e.g. Ramesh Kumar"
           />
-          <Input 
-            label="Password" 
-            value={password} 
-            onChangeText={setPassword} 
-            secureTextEntry 
+
+          {/* Organisation Details */}
+          <Text style={styles.sectionTitle}>Shop / Business Details</Text>
+          <Input
+            label="Shop/Organization Name"
+            value={organizationName}
+            onChangeText={setorganizationName}
+            placeholder="e.g. Kisan Bhandar"
           />
-          
-          {/* Step 2: Organisation Details (from image) */}
-          <Text style={styles.sectionTitle}>Organisation Details</Text>
-          <Input 
-            label="Organisation Name" 
-            value={orgName} 
-            onChangeText={setOrgName} 
-          />
-          <Input 
-            label="GST Number" 
-            value={gstNumber} 
-            onChangeText={setGstNumber} 
+          <Input
+            label="GST Number"
+            value={gstNumber}
+            onChangeText={setGstNumber}
             autoCapitalize="characters"
+            placeholder="e.g. 22AAAAA0000A1Z5"
           />
-          <Input 
-            label="Business Address (Optional)" 
-            value={address} 
-            onChangeText={setAddress} 
+          <Input
+            label="Business Address"
+            value={address}
+            onChangeText={setAddress}
+            placeholder="Shop No, Market, City"
+            multiline
           />
 
-          <Button 
-            title="Complete Registration" 
-            onPress={handleRegister} 
-            loading={loading} 
-            style={{marginTop: 16}} 
+          <Button
+            title="Send OTP & Verify"
+            onPress={handleRegister}
+            loading={loading}
+            style={{ marginTop: 24 }}
           />
         </View>
       </ScrollView>
@@ -112,33 +138,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    paddingTop: 60, // Add padding for back button
+    paddingTop: 40,
   },
   backButton: {
-    position: 'absolute',
-    top: 60,
-    left: 24,
-    zIndex: 1,
+    marginBottom: 20,
+    alignSelf: "flex-start",
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#264653',
-    marginBottom: 12,
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#264653",
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 32,
+    color: "#666",
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#264653',
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#2A9D8F",
     marginTop: 16,
-    marginBottom: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    paddingTop: 16,
+    marginBottom: 12,
   },
 });
