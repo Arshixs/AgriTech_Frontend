@@ -23,12 +23,12 @@ export default function VendorRegistrationScreen() {
   // Form state (Matched with your Mongoose Vendor Model)
   // Removed Email/Password as they aren't in your updated schema
   const [name, setName] = useState("");
-  const [orgName, setOrgName] = useState("");
+  const [organizationName, setorganizationName] = useState("");
   const [gstNumber, setGstNumber] = useState("");
   const [address, setAddress] = useState("");
 
   const handleRegister = async () => {
-    if (!name || !orgName || !gstNumber || !address) {
+    if (!name || !organizationName || !gstNumber || !address) {
       return Alert.alert("Missing Fields", "Please fill in all details.");
     }
 
@@ -49,7 +49,7 @@ export default function VendorRegistrationScreen() {
         // We stringify it to pass it securely via params
         const pendingProfileData = JSON.stringify({
           name,
-          organizationName: orgName,
+          organizationName: organizationName,
           gstNumber,
           address,
         });
@@ -103,8 +103,8 @@ export default function VendorRegistrationScreen() {
           <Text style={styles.sectionTitle}>Shop / Business Details</Text>
           <Input
             label="Shop/Organization Name"
-            value={orgName}
-            onChangeText={setOrgName}
+            value={organizationName}
+            onChangeText={setorganizationName}
             placeholder="e.g. Kisan Bhandar"
           />
           <Input

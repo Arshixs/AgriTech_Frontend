@@ -25,10 +25,10 @@ export default function VendorLoginScreen() {
       // 2. Check if Vendor Exists
       // Note: Using the specific /api/vendor endpoint
       const checkRes = await fetch(`${API_BASE_URL}/api/vendor/auth/vendor-exist`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: fullPhoneNumber }),
-      });
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: fullPhoneNumber }),
+        });
 
       const checkData = await checkRes.json();
 
@@ -68,7 +68,7 @@ export default function VendorLoginScreen() {
       if (res.ok) {
         // Navigate to OTP screen
         router.push({
-          pathname: "/(auth)/otp",
+          pathname: "/(vendor-auth)/otp",
           params: { mobileNumber: phone, role: "vendor" }, // Tell OTP screen this is a vendor
         });
       } else {

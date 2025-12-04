@@ -53,7 +53,7 @@ export default function VendorDashboard() {
             <View>
               <Text style={styles.greeting}>Welcome back,</Text>
               <Text style={styles.userName}>
-                {user ? user.orgName : 'Vendor'}!
+                {user ? user.name : 'Vendor'}!
               </Text>
             </View>
             <TouchableOpacity 
