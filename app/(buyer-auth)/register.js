@@ -1,41 +1,79 @@
-// File: app/(buyer-auth)/login.js
+// File: app/(buyer-auth)/register.js
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import Input from "../../src/components/common/Input";
 import Button from "../../src/components/common/Button";
+import { useAuth } from "../../src/context/AuthContext";
+import { FontAwesome } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../secret";
 
-export default function BuyerLoginScreen() {
+export default function BuyerRegistrationScreen() {
   const router = useRouter();
-  const [mobileNumber, setMobileNumber] = useState("");
+  const { mobileNumber, token, buyerId } = useLocalSearchParams();
+  const { signInBuyer } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const handleSendOTP = async () => {
-    if (mobileNumber.length !== 10)
-      return alert("Enter a valid 10-digit number.");
+  // Form state
+  const [companyName, setCompanyName] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
+  const [email, setEmail] = useState("");
+
+  const handleRegister = async () => {
+    if (!companyName || !contactPerson || !email) {
+      return alert("Please fill in all fields.");
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return alert("Please enter a valid email address.");
+    }
+
     setLoading(true);
+
     try {
-      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/send-otp`, {
+      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/update-profile`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          phone: `+91${mobileNumber}`,
+          companyName: companyName,
+          contactPerson: contactPerson,
+          email: email,
         }),
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Server error");
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Registration failed");
       }
 
       const data = await res.json();
-      // Navigate to OTP screen
-      router.push({ pathname: "/(buyer-auth)/otp", params: { mobileNumber } });
+
+      // Create buyer data object and sign in
+      const newBuyerData = {
+        id: buyerId,
+        name: contactPerson,
+        companyName: companyName,
+        email: email,
+        phone: `+91${mobileNumber}`,
+        token: token,
+      };
+
+      signInBuyer(newBuyerData);
     } catch (err) {
-      alert(err.message || "Failed to send OTP");
+      alert(err.message || "Failed to complete registration");
     } finally {
       setLoading(false);
     }
@@ -43,34 +81,49 @@ export default function BuyerLoginScreen() {
 
   return (
     <ScreenWrapper>
-      <View style={styles.container}>
-        <Text style={styles.title}>Buyer Login</Text>
-        <Text style={styles.subtitle}>Access the post-harvest marketplace</Text>
-
-        <Input
-          label="Mobile Number"
-          value={mobileNumber}
-          onChangeText={setMobileNumber}
-          placeholder="e.g., 9876543210"
-          keyboardType="phone-pad"
-        />
-
-        <Button
-          title="Send OTP"
-          onPress={handleSendOTP}
-          loading={loading}
-          style={{ backgroundColor: "#E76F51" }}
-        />
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>New to the marketplace?</Text>
+      <ScrollView>
+        <View style={styles.container}>
           <TouchableOpacity
-            onPress={() => router.push("/(buyer-auth)/register")}
+            style={styles.backButton}
+            onPress={() => router.back()}
           >
-            <Text style={styles.footerLink}>Register here</Text>
+            <FontAwesome name="arrow-left" size={20} color="#264653" />
           </TouchableOpacity>
+
+          <Text style={styles.title}>Register as a Buyer</Text>
+          <Text style={styles.subtitle}>
+            Complete your profile to access the marketplace
+          </Text>
+
+          <Input
+            label="Company Name"
+            value={companyName}
+            onChangeText={setCompanyName}
+            placeholder="e.g., Fresh Foods Inc."
+          />
+          <Input
+            label="Contact Person Name"
+            value={contactPerson}
+            onChangeText={setContactPerson}
+            placeholder="e.g., Rohan Gupta"
+          />
+          <Input
+            label="Business Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            placeholder="e.g., procurement@freshfoods.com"
+            autoCapitalize="none"
+          />
+
+          <Button
+            title="Complete Registration"
+            onPress={handleRegister}
+            loading={loading}
+            style={{ marginTop: 16, backgroundColor: "#E76F51" }}
+          />
         </View>
-      </View>
+      </ScrollView>
     </ScreenWrapper>
   );
 }
@@ -78,8 +131,14 @@ export default function BuyerLoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     padding: 24,
+    paddingTop: 60,
+  },
+  backButton: {
+    position: "absolute",
+    top: 60,
+    left: 24,
+    zIndex: 1,
   },
   title: {
     fontSize: 32,
@@ -91,21 +150,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     marginBottom: 32,
-  },
-  footer: {
-    marginTop: 24,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  footerLink: {
-    fontSize: 14,
-    color: "#E76F51",
-    fontWeight: "600",
-    marginLeft: 4,
   },
 });

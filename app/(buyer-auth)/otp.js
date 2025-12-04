@@ -1,41 +1,67 @@
-// File: app/(buyer-auth)/login.js
+// File: app/(buyer-auth)/otp.js
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import { View, Text, StyleSheet } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import Input from "../../src/components/common/Input";
 import Button from "../../src/components/common/Button";
 import { API_BASE_URL } from "../../secret";
+import { useAuth } from "../../src/context/AuthContext";
 
-export default function BuyerLoginScreen() {
+export default function BuyerOTPScreen() {
   const router = useRouter();
-  const [mobileNumber, setMobileNumber] = useState("");
+  const { mobileNumber } = useLocalSearchParams();
+  const { signInBuyer } = useAuth();
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSendOTP = async () => {
-    if (mobileNumber.length !== 10)
-      return alert("Enter a valid 10-digit number.");
+  const handleVerifyOTP = async () => {
+    if (otp.length !== 6) return alert("Enter a valid 6-digit OTP.");
     setLoading(true);
+
     try {
-      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/send-otp`, {
+      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone: `+91${mobileNumber}`,
+          otp: otp,
         }),
       });
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(text || "Server error");
+        throw new Error(text || "Invalid OTP");
       }
 
       const data = await res.json();
-      // Navigate to OTP screen
-      router.push({ pathname: "/(buyer-auth)/otp", params: { mobileNumber } });
+
+      // Check if profile is complete
+      if (!data.isProfileComplete) {
+        // New user or incomplete profile - redirect to registration
+        router.push({
+          pathname: "/(buyer-auth)/register",
+          params: {
+            mobileNumber,
+            token: data.token,
+            buyerId: data.buyer._id,
+          },
+        });
+      } else {
+        // Existing user with complete profile - sign them in directly
+        const buyerData = {
+          id: data.buyer._id,
+          name: data.buyer.contactPerson,
+          companyName: data.buyer.companyName,
+          email: data.buyer.email,
+          phone: data.buyer.phone,
+          token: data.token,
+        };
+        signInBuyer(buyerData);
+      }
     } catch (err) {
-      alert(err.message || "Failed to send OTP");
+      alert(err.message || "Failed to verify OTP");
     } finally {
       setLoading(false);
     }
@@ -44,32 +70,25 @@ export default function BuyerLoginScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <Text style={styles.title}>Buyer Login</Text>
-        <Text style={styles.subtitle}>Access the post-harvest marketplace</Text>
+        <Text style={styles.title}>Verify OTP</Text>
+        <Text style={styles.subtitle}>
+          Enter the 6-digit OTP sent to +91 {mobileNumber}
+        </Text>
 
         <Input
-          label="Mobile Number"
-          value={mobileNumber}
-          onChangeText={setMobileNumber}
-          placeholder="e.g., 9876543210"
-          keyboardType="phone-pad"
+          label="Enter OTP"
+          value={otp}
+          onChangeText={setOtp}
+          placeholder="XXXXXX"
+          keyboardType="number-pad"
         />
 
         <Button
-          title="Send OTP"
-          onPress={handleSendOTP}
+          title="Verify & Proceed"
+          onPress={handleVerifyOTP}
           loading={loading}
           style={{ backgroundColor: "#E76F51" }}
         />
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>New to the marketplace?</Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(buyer-auth)/register")}
-          >
-            <Text style={styles.footerLink}>Register here</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </ScreenWrapper>
   );
@@ -91,21 +110,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     marginBottom: 32,
-  },
-  footer: {
-    marginTop: 24,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  footerLink: {
-    fontSize: 14,
-    color: "#E76F51",
-    fontWeight: "600",
-    marginLeft: 4,
   },
 });
