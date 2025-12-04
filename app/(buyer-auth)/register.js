@@ -1,100 +1,126 @@
 // File: app/(buyer-auth)/register.js
 
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import ScreenWrapper from '../../src/components/common/ScreenWrapper';
-import Input from '../../src/components/common/Input';
-import Button from '../../src/components/common/Button';
-import { useAuth } from '../../src/context/AuthContext';
-import { FontAwesome } from '@expo/vector-icons'; // For back button
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import Input from "../../src/components/common/Input";
+import Button from "../../src/components/common/Button";
+import { useAuth } from "../../src/context/AuthContext";
+import { FontAwesome } from "@expo/vector-icons";
+import { API_BASE_URL } from "../../secret";
 
 export default function BuyerRegistrationScreen() {
   const router = useRouter();
-  // You will need to add signInBuyer to your AuthContext
-  const { signInBuyer } = useAuth(); 
+  const { mobileNumber, token, buyerId } = useLocalSearchParams();
+  const { signInBuyer } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  // Form state based on "Company Details"
-  const [companyName, setCompanyName] = useState('');
-  const [contactPerson, setContactPerson] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Form state
+  const [companyName, setCompanyName] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
+  const [email, setEmail] = useState("");
 
-  const handleRegister = () => {
-    if (!companyName || !contactPerson || !email || !password) {
-      return alert('Please fill in all fields.');
+  const handleRegister = async () => {
+    if (!companyName || !contactPerson || !email) {
+      return alert("Please fill in all fields.");
     }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return alert("Please enter a valid email address.");
+    }
+
     setLoading(true);
 
-    // --- Mock API call ---
-    setTimeout(() => {
-      setLoading(false);
-      
-      // Create the new buyer data object
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/update-profile`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          companyName: companyName,
+          contactPerson: contactPerson,
+          email: email,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Registration failed");
+      }
+
+      const data = await res.json();
+
+      // Create buyer data object and sign in
       const newBuyerData = {
-        id: `b${Math.floor(Math.random() * 1000)}`, // Mock ID
+        id: buyerId,
         name: contactPerson,
         companyName: companyName,
         email: email,
+        phone: `+91${mobileNumber}`,
+        token: token,
       };
-      
-      // Call signInBuyer to save session and trigger redirect
-      if (signInBuyer) {
-        signInBuyer(newBuyerData);
-      } else {
-        alert("Sign-in function not set up in AuthContext.");
-      }
-      
-    }, 1500);
+
+      signInBuyer(newBuyerData);
+    } catch (err) {
+      alert(err.message || "Failed to complete registration");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <ScreenWrapper>
       <ScrollView>
         <View style={styles.container}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => router.back()}
           >
             <FontAwesome name="arrow-left" size={20} color="#264653" />
           </TouchableOpacity>
-          
-          <Text style={styles.title}>Register as a Buyer</Text>
-          <Text style={styles.subtitle}>Register using your Company Details</Text>
 
-          {/* Form based on your image */}
-          <Input 
-            label="Company Name" 
-            value={companyName} 
-            onChangeText={setCompanyName} 
+          <Text style={styles.title}>Register as a Buyer</Text>
+          <Text style={styles.subtitle}>
+            Complete your profile to access the marketplace
+          </Text>
+
+          <Input
+            label="Company Name"
+            value={companyName}
+            onChangeText={setCompanyName}
             placeholder="e.g., Fresh Foods Inc."
           />
-          <Input 
-            label="Contact Person Name" 
-            value={contactPerson} 
-            onChangeText={setContactPerson} 
+          <Input
+            label="Contact Person Name"
+            value={contactPerson}
+            onChangeText={setContactPerson}
             placeholder="e.g., Rohan Gupta"
           />
-          <Input 
-            label="Business Email" 
-            value={email} 
-            onChangeText={setEmail} 
+          <Input
+            label="Business Email"
+            value={email}
+            onChangeText={setEmail}
             keyboardType="email-address"
             placeholder="e.g., procurement@freshfoods.com"
-          />
-          <Input 
-            label="Password" 
-            value={password} 
-            onChangeText={setPassword} 
-            secureTextEntry 
+            autoCapitalize="none"
           />
 
-          <Button 
-            title="Complete Registration" 
-            onPress={handleRegister} 
-            loading={loading} 
-            style={{marginTop: 16, backgroundColor: '#E76F51'}} // Buyer theme
+          <Button
+            title="Complete Registration"
+            onPress={handleRegister}
+            loading={loading}
+            style={{ marginTop: 16, backgroundColor: "#E76F51" }}
           />
         </View>
       </ScrollView>
@@ -106,23 +132,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    paddingTop: 60, // Add padding for back button
+    paddingTop: 60,
   },
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 60,
     left: 24,
     zIndex: 1,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#264653',
+    fontWeight: "bold",
+    color: "#264653",
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginBottom: 32,
   },
 });
