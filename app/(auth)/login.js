@@ -5,20 +5,37 @@ import ScreenWrapper from '../../src/components/common/ScreenWrapper';
 import Input from '../../src/components/common/Input';
 import Button from '../../src/components/common/Button';
 import { styles } from '../../src/styles/auth/LoginScreenStyles';
+import { API_BASE_URL } from "../../secret";
 
 export default function LoginScreen() {
   const router = useRouter();
   const [mobileNumber, setMobileNumber] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSendOTP = () => {
+   const handleSendOTP = async () => {
     if (mobileNumber.length !== 10) return alert('Enter a valid 10-digit number.');
     setLoading(true);
-    // --- Mock API call ---
-    setTimeout(() => {
-      setLoading(false);
+    try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: `+91${mobileNumber}`, 
+        role: "farmer"
+      }),
+    });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Server error');
+      }
+      const data = await res.json();
+      // navigate to OTP screen (adjust if your backend returns different payload)
       router.push({ pathname: '/(auth)/otp', params: { mobileNumber } });
-    }, 1000);
+    } catch (err) {
+      alert(err.message || 'Failed to send OTP');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
