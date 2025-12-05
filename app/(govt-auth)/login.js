@@ -28,11 +28,11 @@ export default function GovtLoginScreen() {
 
     setLoading(true);
     try {
-      // const response = await axios.post(`${API_URL}/api/govt/auth/send-otp`, {
-      //   phone: phone.startsWith("+91") ? phone : `+91${phone}`,
-      // });
+      const response = await axios.post(`${API_URL}/api/govt/auth/send-otp`, {
+        phone: phone.startsWith("+91") ? phone : `+91${phone}`,
+      });
 
-      //Alert.alert("Success", response.data.message);
+      Alert.alert("Success", response.data.message);
       setOtpSent(true);
     } catch (error) {
       console.error("Send OTP Error:", error);
