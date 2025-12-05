@@ -5,69 +5,66 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
+import { API_BASE_URL } from "../../secret";
 
 export default function AlertsScreen() {
+  const { user } = useAuth();
+  const authToken = user.token;
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [weatherData, setWeatherData] = useState(null);
   const [alerts, setAlerts] = useState([]);
 
-  // Mock data fetch
-  const fetchData = () => {
-    // Simulate API call
-    setTimeout(() => {
-      setWeatherData({
-        temperature: 28,
-        humidity: 65,
-        rainfall: 12,
-        condition: "Partly Cloudy",
-        windSpeed: 15,
+  const fetchData = async () => {
+    if (!authToken) return;
+    setRefreshing(true);
+
+    try {
+      const headers = { Authorization: `Bearer ${authToken}` };
+
+      // 1. Fetch Weather Data
+      const weatherRes = await fetch(`${API_BASE_URL}/api/data/weather`, {
+        headers,
       });
+      if (weatherRes.ok) {
+        const weatherJson = await weatherRes.json();
+        setWeatherData(weatherJson.weather);
+      } else {
+        console.error("Failed to fetch weather data");
+        setWeatherData(null);
+      }
 
-      setAlerts([
-        {
-          id: 1,
-          type: "disease",
-          severity: "high",
-          title: "Late Blight Alert",
-          description:
-            "High risk of late blight in tomato crops due to humid conditions. Apply fungicide preventively.",
-          crop: "Tomato",
-          date: "2 hours ago",
-        },
-        {
-          id: 2,
-          type: "weather",
-          severity: "medium",
-          title: "Heavy Rain Expected",
-          description:
-            "Heavy rainfall predicted in next 48 hours. Ensure proper drainage in fields.",
-          date: "5 hours ago",
-        },
-        {
-          id: 3,
-          type: "disease",
-          severity: "low",
-          title: "Aphid Infestation Risk",
-          description:
-            "Monitor wheat crops for aphid activity. Early detection can prevent spread.",
-          crop: "Wheat",
-          date: "1 day ago",
-        },
-      ]);
-
+      // 2. Fetch Alerts
+      const alertsRes = await fetch(`${API_BASE_URL}/api/data/alerts`, {
+        headers,
+      });
+      if (alertsRes.ok) {
+        const alertsJson = await alertsRes.json();
+        setAlerts(alertsJson.alerts || []);
+      } else {
+        console.error("Failed to fetch alerts");
+        setAlerts([]);
+      }
+    } catch (error) {
+      console.error("Alerts Fetch Error:", error.message);
+    } finally {
       setRefreshing(false);
-    }, 1000);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (authToken) {
+      fetchData();
+    }
+  }, [authToken]);
 
   const onRefresh = () => {
-    setRefreshing(true);
     fetchData();
   };
 
@@ -87,6 +84,16 @@ export default function AlertsScreen() {
   const getAlertIcon = (type) => {
     return type === "disease" ? "bug" : "cloud";
   };
+
+  if (loading) {
+    return (
+      <ScreenWrapper>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2A9D8F" />
+        </View>
+      </ScreenWrapper>
+    );
+  }
 
   return (
     <ScreenWrapper>
@@ -160,7 +167,7 @@ export default function AlertsScreen() {
 
           {alerts.map((alert) => (
             <View
-              key={alert.id}
+              key={alert._id}
               style={[
                 styles.alertCard,
                 { borderLeftColor: getSeverityColor(alert.severity) },

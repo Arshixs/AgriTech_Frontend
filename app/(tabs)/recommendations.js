@@ -6,112 +6,64 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  ActivityIndicator
 } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
+import {API_BASE_URL} from "../../secret"
 
 export default function RecommendationsScreen() {
+  const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [recommendations, setRecommendations] = useState([]);
   const [soilData, setSoilData] = useState(null);
+  const authToken = user?.token;
 
-  // Mock data fetch
-  const fetchData = () => {
-    setTimeout(() => {
-      setSoilData({
-        pH: 6.5,
-        nitrogen: "Medium",
-        phosphorus: "High",
-        potassium: "Medium",
-        soilType: "Loamy",
-      });
+  const fetchData = async () => {
+    if (!authToken) return;
+    setRefreshing(true);
 
-      setRecommendations([
-        {
-          id: 1,
-          cropName: "Rice (Basmati)",
-          season: "Kharif",
-          suitability: 95,
-          expectedYield: "4-5 tons/hectare",
-          duration: "120-150 days",
-          waterRequirement: "High",
-          icon: "grain",
-          benefits: [
-            "Excellent match for current soil pH",
-            "High market demand",
-            "Good monsoon season crop",
-          ],
-          considerations: [
-            "Requires consistent water supply",
-            "Monitor for blast disease",
-          ],
-        },
-        {
-          id: 2,
-          cropName: "Wheat",
-          season: "Rabi",
-          suitability: 88,
-          expectedYield: "3-4 tons/hectare",
-          duration: "110-130 days",
-          waterRequirement: "Medium",
-          icon: "barley",
-          benefits: [
-            "Suitable for loamy soil",
-            "Good rotation crop after rice",
-            "Stable market prices",
-          ],
-          considerations: ["Requires cool weather", "Monitor soil moisture"],
-        },
-        {
-          id: 3,
-          cropName: "Tomato",
-          season: "Year-round",
-          suitability: 82,
-          expectedYield: "25-30 tons/hectare",
-          duration: "90-120 days",
-          waterRequirement: "Medium",
-          icon: "food-apple",
-          benefits: [
-            "High profit potential",
-            "Multiple harvests possible",
-            "Growing urban demand",
-          ],
-          considerations: [
-            "Requires disease management",
-            "Needs support structures",
-          ],
-        },
-        {
-          id: 4,
-          cropName: "Lentils (Masoor)",
-          season: "Rabi",
-          suitability: 78,
-          expectedYield: "1-1.5 tons/hectare",
-          duration: "90-110 days",
-          waterRequirement: "Low",
-          icon: "seed",
-          benefits: [
-            "Low water requirement",
-            "Improves soil nitrogen",
-            "Good for crop rotation",
-          ],
-          considerations: [
-            "Sensitive to waterlogging",
-            "Market price fluctuations",
-          ],
-        },
-      ]);
+    try {
+      const headers = { "Authorization": `Bearer ${authToken}` };
 
+      // 1. Fetch Latest Soil Data
+      const soilRes = await fetch(`${API_BASE_URL}/api/data/soil/latest`, { headers });
+      if (soilRes.ok) {
+        const soilJson = await soilRes.json();
+        setSoilData(soilJson.soilData);
+      } else {
+        console.error("Failed to fetch soil data");
+        setSoilData(null);
+      }
+
+      // 2. Fetch Crop Recommendations
+      const recRes = await fetch(`${API_BASE_URL}/api/data/recommendations`, { headers });
+      if (recRes.ok) {
+        const recJson = await recRes.json();
+        // Backend returns a 'recommendations' array
+        setRecommendations(recJson.recommendations || []);
+      } else {
+        console.error("Failed to fetch recommendations");
+        setRecommendations([]);
+      }
+
+    } catch (error) {
+      console.error("Recommendations Fetch Error:", error.message);
+    } finally {
       setRefreshing(false);
-    }, 1000);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (authToken) {
+      fetchData();
+    }
+  }, [authToken]);
 
   const onRefresh = () => {
-    setRefreshing(true);
     fetchData();
   };
 
@@ -120,6 +72,19 @@ export default function RecommendationsScreen() {
     if (score >= 70) return "#F4A261";
     return "#E76F51";
   };
+
+  if (loading) {
+    return (
+      <ScreenWrapper>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2A9D8F" />
+        </View>
+      </ScreenWrapper>
+    );
+  }
+  
+  // Helper to ensure data structure safety
+  const getSoilValue = (key) => soilData?.[key] || 'N/A';
 
   return (
     <ScreenWrapper>
@@ -173,7 +138,7 @@ export default function RecommendationsScreen() {
 
           {recommendations.map((crop) => (
             <TouchableOpacity
-              key={crop.id}
+              key={crop._id}
               style={styles.cropCard}
               activeOpacity={0.7}
             >

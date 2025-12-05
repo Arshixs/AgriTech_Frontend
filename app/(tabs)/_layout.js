@@ -52,6 +52,15 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="price-forecast"
+        options={{
+          title: "price-forecast",
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="chart-line" size={24} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

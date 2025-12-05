@@ -10,14 +10,20 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
+import {API_BASE_URL} from "../../secret"
 
 const { width, height } = Dimensions.get("window");
 
 export default function MyFarmScreen() {
+  const { user } = useAuth();
+  const authToken = user.token;
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [selectedField, setSelectedField] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [fields, setFields] = useState([]);
@@ -25,69 +31,59 @@ export default function MyFarmScreen() {
     name: "",
     area: "",
     crop: "",
+    soilType: "",
   });
+  const [farmStats, setFarmStats] = useState({
+    totalArea: 0,
+    activeFields: 0,
+    totalFields: 0,
+    avgHealth: null,
+  });
+  const [isAddingField, setIsAddingField] = useState(false);
+
+
+  const fetchData = async () => {
+    if (!authToken) return;
+    setLoading(true);
+
+    try {
+      const headers = { "Authorization": `Bearer ${authToken}` };
+
+      // 1. Fetch Fields
+      const fieldsRes = await fetch(`${API_BASE_URL}/api/farm/fields`, { headers });
+      if (fieldsRes.ok) {
+        const fieldsData = await fieldsRes.json();
+        setFields(fieldsData.fields || []);
+      } else {
+        throw new Error("Failed to fetch fields");
+      }
+      
+      // 2. Fetch Stats
+      const statsRes = await fetch(`${API_BASE_URL}/api/farm/stats`, { headers });
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setFarmStats({
+          totalArea: parseFloat(statsData.totalArea),
+          activeFields: statsData.activeFields,
+          totalFields: statsData.totalFields,
+          avgHealth: statsData.avgHealth,
+        });
+      } else {
+        console.error("Failed to fetch stats");
+      }
+
+    } catch (error) {
+      console.error("Farm Fetch Error:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Mock data - replace with API call
-    setFields([
-      {
-        id: 1,
-        name: "Field A",
-        area: 5.5,
-        crop: "Rice",
-        soilType: "Loamy",
-        status: "Growing",
-        plantedDate: "2025-01-15",
-        expectedHarvest: "2025-05-20",
-        health: 92,
-        irrigation: "Drip",
-        coordinates: { lat: 25.3176, lng: 82.9739 },
-        color: "#2A9D8F",
-      },
-      {
-        id: 2,
-        name: "Field B",
-        area: 8.2,
-        crop: "Wheat",
-        soilType: "Clay",
-        status: "Preparing",
-        plantedDate: null,
-        expectedHarvest: "2025-06-15",
-        health: null,
-        irrigation: "Sprinkler",
-        coordinates: { lat: 25.3196, lng: 82.9759 },
-        color: "#F4A261",
-      },
-      {
-        id: 3,
-        name: "Field C",
-        area: 3.8,
-        crop: "Tomato",
-        soilType: "Sandy Loam",
-        status: "Growing",
-        plantedDate: "2025-02-01",
-        expectedHarvest: "2025-04-30",
-        health: 85,
-        irrigation: "Drip",
-        coordinates: { lat: 25.3156, lng: 82.9779 },
-        color: "#E76F51",
-      },
-      {
-        id: 4,
-        name: "Field D",
-        area: 6.0,
-        crop: "Cotton",
-        soilType: "Black Soil",
-        status: "Growing",
-        plantedDate: "2025-01-10",
-        expectedHarvest: "2025-06-10",
-        health: 88,
-        irrigation: "Flood",
-        coordinates: { lat: 25.3136, lng: 82.9719 },
-        color: "#606C38",
-      },
-    ]);
-  }, []);
+    if (authToken) {
+      fetchData();
+    }
+  }, [authToken]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -132,37 +128,58 @@ export default function MyFarmScreen() {
       fields.filter((f) => f.health).length
   );
 
-  const handleAddField = () => {
+  const handleAddField = async () => {
     if (!newField.name || !newField.area || !newField.crop) {
       alert("Please fill all fields");
       return;
     }
 
-    const field = {
-      id: fields.length + 1,
-      name: newField.name,
-      area: parseFloat(newField.area),
-      crop: newField.crop,
-      soilType: "Loamy",
-      status: "Preparing",
-      plantedDate: null,
-      expectedHarvest: null,
-      health: null,
-      irrigation: "Drip",
-      coordinates: {
-        lat: 25.3176 + Math.random() * 0.01,
-        lng: 82.9739 + Math.random() * 0.01,
-      },
-      color: ["#2A9D8F", "#F4A261", "#E76F51", "#606C38"][
-        Math.floor(Math.random() * 4)
-      ],
-    };
+    setIsAddingField(true);
 
-    setFields([...fields, field]);
-    setNewField({ name: "", area: "", crop: "" });
-    setShowAddModal(false);
-  };
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/farm/fields`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          name: newField.name,
+          area: parseFloat(newField.area),
+          crop: newField.crop,
+          soilType: newField.soilType || 'Unknown',
+          // Mock coordinates for map visualization
+          coordinates: { 
+            lat: 25.3176 + Math.random() * 0.01,
+            lng: 82.9739 + Math.random() * 0.01,
+          }, 
+        }),
+      });
 
+      if (res.ok) {
+        const responseData = await res.json();
+        
+        // Add the new field to the local state, giving it a color for the map
+        const colorOptions = ["#2A9D8F", "#F4A261", "#E76F51", "#606C38"];
+        const newFieldWithColor = {
+          ...responseData.field,
+          color: colorOptions[Math.floor(Math.random() * colorOptions.length)],
+        };
+        
+        setFields((prevFields) => [...prevFields, newFieldWithColor]);
+        setNewField({ name: "", area: "", crop: "", soilType: "" });
+        setShowAddModal(false);
+        fetchData(); // Refresh stats after adding field
+      } else {
+        const errorText = await res.text();
+        console.error("API Error adding field:", errorText);
+      }
+    } catch (err) {
+      console.error("Network Error adding field:", err.message);
+    } finally {
+      setIsAddingField(false);
+    }
+  }; 
   const renderMap = () => (
     <View style={styles.mapContainer}>
       {/* Map Header */}
@@ -195,7 +212,7 @@ export default function MyFarmScreen() {
           {/* Field Markers */}
           {fields.map((field, index) => (
             <TouchableOpacity
-              key={field.id}
+              key={field._id}
               style={[
                 styles.fieldMarker,
                 {
@@ -395,6 +412,17 @@ export default function MyFarmScreen() {
       </TouchableOpacity>
     );
   };
+
+  if (!authToken || loading) {
+    return (
+      <ScreenWrapper>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2A9D8F" />
+          <Text style={{ marginTop: 10, color: '#666' }}>Loading Farm Data...</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
 
   return (
     <ScreenWrapper>
