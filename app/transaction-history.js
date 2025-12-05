@@ -1,83 +1,86 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   FlatList, 
-  TouchableOpacity 
+  TouchableOpacity, 
+  ActivityIndicator,
+  Alert,
+  RefreshControl
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import ScreenWrapper from '../src/components/common/ScreenWrapper';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import moment from 'moment'; // Make sure to npm install moment
 
-// Mock data
-const MOCK_TRANSACTIONS = [
-  { 
-    id: 't1', 
-    farmerName: 'Ram Singh', 
-    orderId: '1024', 
-    amount: 25000, 
-    date: '2025-10-22', 
-    status: 'Completed' 
-  },
-  { 
-    id: 't2', 
-    farmerName: 'Priya Sharma', 
-    orderId: '1023', 
-    amount: 1500, 
-    date: '2025-10-21', 
-    status: 'Completed' 
-  },
-  { 
-    id: 't3', 
-    farmerName: 'Anil Kumar', 
-    orderId: '1022', 
-    amount: 8000, 
-    date: '2025-10-20', 
-    status: 'Pending' 
-  },
-  { 
-    id: 't4', 
-    farmerName: 'Sunita Devi', 
-    orderId: '1021', 
-    amount: 12500, 
-    date: '2025-10-19', 
-    status: 'Completed' 
-  },
-  { 
-    id: 't5', 
-    farmerName: 'Ravi Verma', 
-    orderId: '1020', 
-    amount: 3000, 
-    date: '2025-10-18', 
-    status: 'Failed' 
-  },
-  { 
-    id: 't6', 
-    farmerName: 'Meena Kumari', 
-    orderId: '1019', 
-    amount: 6200, 
-    date: '2025-10-17', 
-    status: 'Completed' 
-  },
-];
+import { API_BASE_URL } from '../secret';
+import { useAuth } from '../src/context/AuthContext';
 
-const TABS = ['All', 'Completed', 'Pending', 'Failed'];
+const TABS = ['All', 'Completed', 'Pending', 'Rejected'];
 
 export default function TransactionHistoryScreen() {
   const router = useRouter();
-  const [transactions, setTransactions] = useState(MOCK_TRANSACTIONS);
+  const { user } = useAuth();
+  
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('All');
 
-  // Calculate total completed revenue
+  // 1. Fetch Orders and Transform into Transactions
+  const fetchTransactions = async () => {
+    if (!user?.token) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/orders/vendor/list`, {
+        headers: { 'Authorization': `Bearer ${user.token}` }
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        // Transform Order Data to Transaction Format
+        const mappedData = (data.orders || []).map(order => ({
+          id: order._id,
+          orderId: order._id.slice(-6).toUpperCase(), // Short ID for display
+          farmerName: order.buyer?.contactPerson || order.buyer?.companyName || "Unknown",
+          amount: order.totalAmount,
+          date: order.createdAt,
+          // Map backend status to Transaction UI status
+          status: mapStatus(order.status) 
+        }));
+        
+        setTransactions(mappedData);
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Could not fetch transactions");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper to map backend order status to Transaction Tab categories
+  const mapStatus = (backendStatus) => {
+    if (backendStatus === 'completed') return 'Completed';
+    if (backendStatus === 'pending' || backendStatus === 'accepted') return 'Pending';
+    if (backendStatus === 'rejected' || backendStatus === 'cancelled') return 'Rejected';
+    return 'Pending';
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTransactions();
+    }, [])
+  );
+
+  // 2. Calculate Total Revenue (Only Completed)
   const totalRevenue = useMemo(() => {
     return transactions
       .filter(t => t.status === 'Completed')
       .reduce((sum, t) => sum + t.amount, 0);
   }, [transactions]);
 
-  // Filter transactions based on the active tab
+  // 3. Filter Logic
   const filteredTransactions = useMemo(() => {
     if (activeTab === 'All') {
       return transactions;
@@ -85,14 +88,14 @@ export default function TransactionHistoryScreen() {
     return transactions.filter(t => t.status === activeTab);
   }, [activeTab, transactions]);
 
-  // Helper to get styles for different statuses
+  // 4. Styles Helper
   const getStatusStyles = (status) => {
     switch (status) {
       case 'Completed':
         return { icon: 'check-circle', color: '#2A9D8F' };
       case 'Pending':
         return { icon: 'clock-outline', color: '#F4A261' };
-      case 'Failed':
+      case 'Rejected':
         return { icon: 'alert-circle', color: '#E76F51' };
       default:
         return { icon: 'help-circle', color: '#666' };
@@ -100,24 +103,23 @@ export default function TransactionHistoryScreen() {
   };
 
   const renderTransactionItem = ({ item }) => {
-    const status = getStatusStyles(item.status);
-    const date = new Date(item.date);
+    const statusStyle = getStatusStyles(item.status);
 
     return (
       <View style={styles.card}>
-        <View style={[styles.iconContainer, { backgroundColor: status.color + '20' }]}>
-          <MaterialCommunityIcons name={status.icon} size={24} color={status.color} />
+        <View style={[styles.iconContainer, { backgroundColor: statusStyle.color + '20' }]}>
+          <MaterialCommunityIcons name={statusStyle.icon} size={24} color={statusStyle.color} />
         </View>
         <View style={styles.cardInfo}>
           <Text style={styles.cardTitle}>Order #{item.orderId}</Text>
           <Text style={styles.cardSubtitle}>{item.farmerName}</Text>
         </View>
         <View style={styles.cardAmountContainer}>
-          <Text style={styles.cardAmount}>
+          <Text style={[styles.cardAmount, { color: statusStyle.color }]}>
             ₹{item.amount.toLocaleString('en-IN')}
           </Text>
           <Text style={styles.cardDate}>
-            {date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+            {moment(item.date).format('DD MMM')}
           </Text>
         </View>
       </View>
@@ -163,10 +165,13 @@ export default function TransactionHistoryScreen() {
         renderItem={renderTransactionItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchTransactions} />}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No {activeTab.toLowerCase()} transactions.</Text>
-          </View>
+          !loading && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No {activeTab.toLowerCase()} transactions.</Text>
+            </View>
+          )
         }
       />
     </ScreenWrapper>
@@ -176,6 +181,7 @@ export default function TransactionHistoryScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: '#F8F9FA',
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
