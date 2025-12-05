@@ -10,8 +10,8 @@ import { useAuth } from "../../src/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000";
-
+import { API_BASE_URL } from "../../secret";
+const API_URL = API_BASE_URL;
 export default function GovtLoginScreen() {
   const router = useRouter();
   const { signInGovt } = useAuth();
@@ -28,11 +28,11 @@ export default function GovtLoginScreen() {
 
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/govt/auth/send-otp`, {
-        phone: phone.startsWith("+91") ? phone : `+91${phone}`,
-      });
+      // const response = await axios.post(`${API_URL}/api/govt/auth/send-otp`, {
+      //   phone: phone.startsWith("+91") ? phone : `+91${phone}`,
+      // });
 
-      Alert.alert("Success", response.data.message);
+      //Alert.alert("Success", response.data.message);
       setOtpSent(true);
     } catch (error) {
       console.error("Send OTP Error:", error);
