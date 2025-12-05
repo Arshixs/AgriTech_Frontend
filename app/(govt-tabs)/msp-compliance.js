@@ -176,8 +176,8 @@ import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import axios from 'axios';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_BASE_URL } from '../../secret';
+const API_URL = API_BASE_URL;
 
 export default function MspComplianceScreen() {
   const router = useRouter();
