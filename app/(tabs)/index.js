@@ -1,20 +1,80 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator, // Added for loading state
 } from "react-native";
 import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
+import {API_BASE_URL} from "../../secret"
 
 export default function HomeScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const authToken = user?.token; 
+  // console.log("user");
+  // console.log(user.token);
+
+  const [loading, setLoading] = useState(true);
+  const [farmStats, setFarmStats] = useState({
+    totalArea: "0.0",
+    activeFields: 0,
+    activeAlerts: 0,
+    avgHealth: 0
+  });
+  const [todaysTasks, setTodaysTasks] = useState([]);
+
+  const fetchData = async () => {
+    if (!authToken) return;
+    setLoading(true);
+    try {
+      // 1. Fetch Stats
+      const statsRes = await fetch(`${API_BASE_URL}/api/farm/stats`, {
+        headers: { 
+          "Authorization": `Bearer ${authToken}` 
+        }
+      });
+
+      if (!statsRes.ok) throw new Error("Failed to fetch farm stats");
+      const statsData = await statsRes.json();
+      
+      setFarmStats({
+        totalArea: statsData.totalArea || "0.0",
+        activeFields: statsData.activeFields || 0,
+        activeAlerts: statsData.activeAlerts || 0,
+        avgHealth: statsData.avgHealth || 0,
+      });
+    
+      // 2. Fetch Today's Tasks
+      const tasksRes = await fetch(`${API_BASE_URL}/api/farm/tasks/today`, {
+        headers: { 
+          "Authorization": `Bearer ${authToken}` 
+        }
+      });
+      
+      if (!tasksRes.ok) throw new Error("Failed to fetch tasks");
+      const tasksData = await tasksRes.json();
+      setTodaysTasks(tasksData.tasks || []);
+
+    } catch (error) {
+      console.error("Home Screen Fetch Error:", error.message);
+      // Optionally display error to user
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (authToken) {
+      fetchData();
+    }
+  }, [authToken]);
 
   const quickActions = [
     {
@@ -60,10 +120,46 @@ export default function HomeScreen() {
   ];
 
   const stats = [
-    { label: "Total Land", value: "15 Acres", icon: "terrain" },
-    { label: "Active Crops", value: "3", icon: "leaf" },
-    { label: "Alerts", value: "5", icon: "bell-alert" },
+    { label: "Total Land", value: `${farmStats.totalArea} Acres`, icon: "terrain" },
+    { label: "Active Fields", value: `${farmStats.activeFields}`, icon: "leaf" },
+    { label: "Alerts", value: `${farmStats.activeAlerts}`, icon: "bell-alert" },
   ];
+
+  const handleTaskCompletion = async (taskId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/farm/tasks/${taskId}/complete`, {
+        method: "PUT",
+        headers: { 
+          "Authorization": `Bearer ${authToken}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (res.ok) {
+        // Refresh tasks or filter completed task out
+        setTodaysTasks(prevTasks => prevTasks.filter(task => task._id !== taskId));
+        setFarmStats(prevStats => ({ 
+          ...prevStats, 
+          todaysTasks: prevStats.todaysTasks - 1 
+        }));
+      } else {
+        console.error("Failed to complete task");
+      }
+    } catch (error) {
+      console.error("Task completion error:", error.message);
+    }
+  };
+
+  if (!authToken || loading) {
+    return (
+      <ScreenWrapper>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2A9D8F" />
+          <Text style={{ marginTop: 10, color: '#666' }}>Loading Dashboard...</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
 
   return (
     <ScreenWrapper>
@@ -155,40 +251,34 @@ export default function HomeScreen() {
 
           {/* Today's Tasks */}
           <View style={styles.tasksSection}>
-            <Text style={styles.sectionTitle}>Today's Tasks</Text>
-            <View style={styles.taskCard}>
-              <View style={styles.taskLeft}>
-                <MaterialCommunityIcons
-                  name="water"
-                  size={24}
-                  color="#2A9D8F"
-                />
-                <View style={styles.taskInfo}>
-                  <Text style={styles.taskTitle}>Irrigate Field A</Text>
-                  <Text style={styles.taskTime}>Due in 2 hours</Text>
+            <Text style={styles.sectionTitle}>Today's Tasks ({farmStats.todaysTasks})</Text>
+            {todaysTasks.length === 0 ? (
+              <Text style={styles.noTasksText}>No tasks scheduled for today. Good work!</Text>
+            ) : (
+              todaysTasks.map((task) => (
+                <View key={task._id} style={styles.taskCard}>
+                  <View style={styles.taskLeft}>
+                    <MaterialCommunityIcons
+                      name={task.type === 'Irrigation' ? "water" : task.type === 'Fertilization' ? "spray" : "clipboard-text"}
+                      size={24}
+                      color="#2A9D8F"
+                    />
+                    <View style={styles.taskInfo}>
+                      <Text style={styles.taskTitle}>{task.title}</Text>
+                      <Text style={styles.taskTime}>
+                        {task.fieldId?.name ? `Field: ${task.fieldId.name}` : `Type: ${task.type}`}
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={styles.taskCheckbox}
+                    onPress={() => handleTaskCompletion(task._id)}
+                  >
+                    <FontAwesome name="circle-o" size={24} color="#CCC" />
+                  </TouchableOpacity>
                 </View>
-              </View>
-              <TouchableOpacity style={styles.taskCheckbox}>
-                <FontAwesome name="circle-o" size={24} color="#CCC" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.taskCard}>
-              <View style={styles.taskLeft}>
-                <MaterialCommunityIcons
-                  name="spray"
-                  size={24}
-                  color="#F4A261"
-                />
-                <View style={styles.taskInfo}>
-                  <Text style={styles.taskTitle}>Apply Fertilizer</Text>
-                  <Text style={styles.taskTime}>Tomorrow</Text>
-                </View>
-              </View>
-              <TouchableOpacity style={styles.taskCheckbox}>
-                <FontAwesome name="circle-o" size={24} color="#CCC" />
-              </TouchableOpacity>
-            </View>
+              ))
+            )}
           </View>
 
           {/* Sign Out Button */}

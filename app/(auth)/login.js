@@ -16,7 +16,7 @@ export default function LoginScreen() {
     if (mobileNumber.length !== 10) return alert('Enter a valid 10-digit number.');
     setLoading(true);
     try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+    const res = await fetch(`${API_BASE_URL}/api/farmer-auth/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
