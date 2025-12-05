@@ -38,10 +38,20 @@ export default function VendorTabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="rentals"
         options={{
           title: 'Rentals',
+          tabBarIcon: ({ color, size }) => (
+            // Using a valid icon for rentals
+            <MaterialCommunityIcons name="key-variant" color={color} size={size} />
+          ),
+        }}
+      /> */}
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: 'Orders',
           tabBarIcon: ({ color, size }) => (
             // Using a valid icon for rentals
             <MaterialCommunityIcons name="key-variant" color={color} size={size} />
