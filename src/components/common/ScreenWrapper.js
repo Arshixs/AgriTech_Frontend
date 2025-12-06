@@ -1,5 +1,6 @@
 import React from 'react';
-import { SafeAreaView, StatusBar } from 'react-native';
+import { StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from '../../styles/common/ScreenWrapperStyles';
 
 const ScreenWrapper = ({ children }) => (
@@ -8,4 +9,5 @@ const ScreenWrapper = ({ children }) => (
     {children}
   </SafeAreaView>
 );
+
 export default ScreenWrapper;

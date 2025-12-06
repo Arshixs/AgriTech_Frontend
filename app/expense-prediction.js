@@ -1,79 +1,212 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import ScreenWrapper from '../src/components/common/ScreenWrapper';
-import Button from '../src/components/common/Button';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  ActivityIndicator,
+  TextInput,
+} from "react-native";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import ScreenWrapper from "../src/components/common/ScreenWrapper";
+import Button from "../src/components/common/Button";
+import { useAuth } from "../src/context/AuthContext";
+import {API_BASE_URL} from "../secret"
+
 
 export default function ExpensePredictionScreen() {
+  const { user } = useAuth();
+  // Safely access the JWT token from the user object
+  const authToken = user?.token;
+
   const router = useRouter();
   const [selectedCrop, setSelectedCrop] = useState(null);
   const [landArea, setLandArea] = useState('');
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Note: Colors updated to match the final styles previously used for visual consistency
   const crops = [
-    { id: 1, name: 'Rice', icon: 'grain', color: '#F4A261' },
-    { id: 2, name: 'Wheat', icon: 'barley', color: '#E9C46A' },
+    { id: 1, name: 'Rice', icon: 'grain', color: '#2A9D8F' }, 
+    { id: 2, name: 'Wheat', icon: 'barley', color: '#F4A261' },
     { id: 3, name: 'Tomato', icon: 'food-apple', color: '#E76F51' },
-    { id: 4, name: 'Cotton', icon: 'spa', color: '#2A9D8F' },
+    { id: 4, name: 'Cotton', icon: 'spa', color: '#457B9D' },
     { id: 5, name: 'Sugarcane', icon: 'grass', color: '#606C38' },
-    { id: 6, name: 'Potato', icon: 'food', color: '#D4A373' },
+    { id: 6, name: 'Potato', icon: 'food', color: '#E9C46A' },
   ];
 
-  const handlePredictExpense = () => {
+  const handlePredictExpense = async () => {
+    setError(null);
     if (!selectedCrop || !landArea) {
-      alert('Please select a crop and enter land area');
+      console.error('Validation Error: Please select a crop and enter land area.');
+      setError('Please select a crop and enter land area.');
+      return;
+    }
+    if (!authToken) {
+      console.error('Authentication Error: User not logged in.');
+      setError('You must be logged in to run predictions.');
       return;
     }
 
     setLoading(true);
 
-    // Mock API call with calculation
-    setTimeout(() => {
+    try {
       const area = parseFloat(landArea);
-      const baseCostPerAcre = {
-        'Rice': 25000,
-        'Wheat': 20000,
-        'Tomato': 35000,
-        'Cotton': 28000,
-        'Sugarcane': 40000,
-        'Potato': 32000,
-      };
-
-      const base = baseCostPerAcre[selectedCrop.name] * area;
+      if (isNaN(area) || area <= 0) {
+        throw new Error("Invalid area value.");
+      }
       
-      const breakdown = {
-        seeds: Math.round(base * 0.15),
-        fertilizers: Math.round(base * 0.25),
-        pesticides: Math.round(base * 0.12),
-        irrigation: Math.round(base * 0.18),
-        labor: Math.round(base * 0.20),
-        machinery: Math.round(base * 0.10),
-      };
+      const cropName = selectedCrop.name;
+      
+      // API Call to the prediction endpoint (GET method, sending data via query params)
+      const url = `${API_BASE_URL}/api/data/expenses/predict?crop=${cropName}&area=${area}`;
 
-      const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
-
-      setPrediction({
-        crop: selectedCrop.name,
-        area: area,
-        total: total,
-        breakdown: breakdown,
-        perAcre: Math.round(total / area),
-        expectedYield: Math.round(area * 30), // quintals
-        expectedRevenue: Math.round(total * 1.4), // 40% profit margin
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${authToken}`,
+        },
       });
 
+      if (!res.ok) {
+        // Attempt to parse JSON error response for better message
+        const errorText = await res.text();
+        let errorMessage = 'Failed to get prediction from server.';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || errorMessage;
+        } catch {}
+        throw new Error(errorMessage);
+      }
+
+      const data = await res.json();
+      
+      // The backend is expected to return a 'prediction' object containing
+      // total, breakdown, perAcre, expectedYield, and expectedRevenue.
+      setPrediction(data.prediction);
+
+    } catch (err) {
+      console.error("Prediction API Error:", err.message);
+      setError(err.message);
+      setPrediction(null);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const formatCurrency = (amount) => {
+    if (amount === null || isNaN(amount)) return 'N/A';
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0,
     }).format(amount);
+  };
+  
+  // Renders the prediction card using the fetched data
+  const renderPredictionCard = () => {
+    if (!prediction) return null;
+    
+    // Safety check for profit calculation
+    const profit = (prediction.expectedRevenue || 0) - (prediction.total || 0);
+
+    // Map keys to MaterialCommunityIcons names
+    const icons = {
+        seeds: 'seed',
+        fertilizers: 'flask',
+        pesticides: 'bug-outline',
+        irrigation: 'water',
+        labor: 'account-group',
+        machinery: 'tractor',
+    };
+
+    return (
+      <View style={styles.resultContainer}>
+        <View style={styles.resultHeader}>
+          <MaterialCommunityIcons name="calculator" size={28} color="#2A9D8F" />
+          <Text style={styles.resultTitle}>Expense Breakdown</Text>
+        </View>
+
+        {/* Total Cost Card */}
+        <View style={styles.totalCard}>
+          <Text style={styles.totalLabel}>Total Estimated Cost</Text>
+          <Text style={styles.totalAmount}>{formatCurrency(prediction.total)}</Text>
+          <Text style={styles.perAcreText}>
+            {formatCurrency(prediction.perAcre)} per acre
+          </Text>
+        </View>
+
+        {/* Breakdown */}
+        <View style={styles.breakdownCard}>
+          <Text style={styles.breakdownTitle}>Cost Breakdown</Text>
+          
+          {Object.entries(prediction.breakdown || {}).map(([key, value]) => {
+            const percentage = prediction.total > 0 ? ((value / prediction.total) * 100).toFixed(0) : 0;
+
+            return (
+              <View key={key} style={styles.breakdownItem}>
+                <View style={styles.breakdownLeft}>
+                  <MaterialCommunityIcons
+                    name={icons[key] || 'label-outline'}
+                    size={20}
+                    color="#666"
+                  />
+                  <Text style={styles.breakdownLabel}>
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                  </Text>
+                </View>
+                <View style={styles.breakdownRight}>
+                  <Text style={styles.breakdownPercent}>{percentage}%</Text>
+                  <Text style={styles.breakdownAmount}>
+                    {formatCurrency(value)}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Expected Returns */}
+        <View style={styles.returnsCard}>
+          <Text style={styles.returnsTitle}>Expected Returns</Text>
+          <View style={styles.returnItem}>
+            <MaterialCommunityIcons name="chart-line" size={20} color="#2A9D8F" />
+            <Text style={styles.returnLabel}>Expected Yield</Text>
+            <Text style={styles.returnValue}>{prediction.expectedYield} quintals</Text>
+          </View>
+          <View style={styles.returnItem}>
+            <MaterialCommunityIcons name="cash-multiple" size={20} color="#2A9D8F" />
+            <Text style={styles.returnLabel}>Projected Revenue</Text>
+            <Text style={styles.returnValue}>
+              {formatCurrency(prediction.expectedRevenue)}
+            </Text>
+          </View>
+          <View style={styles.returnItem}>
+            <MaterialCommunityIcons name="trending-up" size={20} color="#2A9D8F" />
+            <Text style={styles.returnLabel}>Expected Profit</Text>
+            <Text style={[styles.returnValue, { color: profit >= 0 ? '#2A9D8F' : '#E76F51' }]}>
+              {formatCurrency(profit)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Action Buttons */}
+        <TouchableOpacity
+          style={styles.viewPriceButton}
+          onPress={() => router.push({
+            pathname: '/(tabs)/price-forecast',
+            params: { crop: prediction.crop }
+          })}
+        >
+          <Text style={styles.viewPriceText}>View Price Forecast</Text>
+          <FontAwesome name="chevron-right" size={16} color="#2A9D8F" />
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   return (
@@ -100,7 +233,9 @@ export default function ExpensePredictionScreen() {
                 key={crop.id}
                 style={[
                   styles.cropCard,
-                  selectedCrop?.id === crop.id && styles.cropCardSelected,
+                  // Inline style logic for dynamic colors/selection
+                  selectedCrop?.id === crop.id && { backgroundColor: crop.color, borderColor: crop.color },
+                  selectedCrop?.id !== crop.id && { borderColor: '#E0E0E0' },
                 ]}
                 onPress={() => setSelectedCrop(crop)}
               >
@@ -112,7 +247,7 @@ export default function ExpensePredictionScreen() {
                 <Text
                   style={[
                     styles.cropName,
-                    selectedCrop?.id === crop.id && styles.cropNameSelected,
+                    selectedCrop?.id === crop.id ? styles.cropNameSelected : { color: crop.color },
                   ]}
                 >
                   {crop.name}
@@ -141,99 +276,17 @@ export default function ExpensePredictionScreen() {
             onPress={handlePredictExpense}
             loading={loading}
           />
-
-          {/* Prediction Result */}
-          {prediction && (
-            <View style={styles.resultContainer}>
-              <View style={styles.resultHeader}>
-                <MaterialCommunityIcons name="calculator" size={28} color="#2A9D8F" />
-                <Text style={styles.resultTitle}>Expense Breakdown</Text>
-              </View>
-
-              {/* Total Cost Card */}
-              <View style={styles.totalCard}>
-                <Text style={styles.totalLabel}>Total Estimated Cost</Text>
-                <Text style={styles.totalAmount}>{formatCurrency(prediction.total)}</Text>
-                <Text style={styles.perAcreText}>
-                  {formatCurrency(prediction.perAcre)} per acre
-                </Text>
-              </View>
-
-              {/* Breakdown */}
-              <View style={styles.breakdownCard}>
-                <Text style={styles.breakdownTitle}>Cost Breakdown</Text>
-                
-                {Object.entries(prediction.breakdown).map(([key, value]) => {
-                  const icons = {
-                    seeds: 'seed',
-                    fertilizers: 'flask',
-                    pesticides: 'bug-outline',
-                    irrigation: 'water',
-                    labor: 'account-group',
-                    machinery: 'tractor',
-                  };
-                  const percentage = ((value / prediction.total) * 100).toFixed(0);
-
-                  return (
-                    <View key={key} style={styles.breakdownItem}>
-                      <View style={styles.breakdownLeft}>
-                        <MaterialCommunityIcons
-                          name={icons[key]}
-                          size={20}
-                          color="#666"
-                        />
-                        <Text style={styles.breakdownLabel}>
-                          {key.charAt(0).toUpperCase() + key.slice(1)}
-                        </Text>
-                      </View>
-                      <View style={styles.breakdownRight}>
-                        <Text style={styles.breakdownPercent}>{percentage}%</Text>
-                        <Text style={styles.breakdownAmount}>
-                          {formatCurrency(value)}
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-
-              {/* Expected Returns */}
-              <View style={styles.returnsCard}>
-                <Text style={styles.returnsTitle}>Expected Returns</Text>
-                <View style={styles.returnItem}>
-                  <MaterialCommunityIcons name="chart-line" size={20} color="#2A9D8F" />
-                  <Text style={styles.returnLabel}>Expected Yield</Text>
-                  <Text style={styles.returnValue}>{prediction.expectedYield} quintals</Text>
-                </View>
-                <View style={styles.returnItem}>
-                  <MaterialCommunityIcons name="cash-multiple" size={20} color="#2A9D8F" />
-                  <Text style={styles.returnLabel}>Projected Revenue</Text>
-                  <Text style={styles.returnValue}>
-                    {formatCurrency(prediction.expectedRevenue)}
-                  </Text>
-                </View>
-                <View style={styles.returnItem}>
-                  <MaterialCommunityIcons name="trending-up" size={20} color="#2A9D8F" />
-                  <Text style={styles.returnLabel}>Expected Profit</Text>
-                  <Text style={[styles.returnValue, styles.profitValue]}>
-                    {formatCurrency(prediction.expectedRevenue - prediction.total)}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Action Buttons */}
-              <TouchableOpacity
-                style={styles.viewPriceButton}
-                onPress={() => router.push({
-                  pathname: '/(tabs)/price-forecast',
-                  params: { crop: prediction.crop }
-                })}
-              >
-                <Text style={styles.viewPriceText}>View Price Forecast</Text>
-                <FontAwesome name="chevron-right" size={16} color="#2A9D8F" />
-              </TouchableOpacity>
+          
+          {/* Error Display */}
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>Error: {error}</Text>
             </View>
           )}
+
+          {/* Prediction Result */}
+          {renderPredictionCard()}
+          
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -249,8 +302,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 20,
     marginBottom: 10,
   },
@@ -259,46 +312,46 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#264653',
+    fontWeight: "bold",
+    color: "#264653",
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 30,
+    color: "#666",
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#264653',
-    marginBottom: 15,
+    fontWeight: "600",
+    color: "#264653",
+    marginBottom: 12,
+    marginTop: 15,
   },
   cropsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 30,
+    marginBottom: 20,
   },
   cropCard: {
     width: '31%',
-    aspectRatio: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
+    padding: 10,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
+    marginVertical: 4,
     borderWidth: 2,
-    borderColor: '#E8E8E8',
+    // borderColor: set via inline style based on selection
+    justifyContent: 'center',
+    height: 100,
   },
-  cropCardSelected: {
-    backgroundColor: '#2A9D8F',
-    borderColor: '#2A9D8F',
-  },
+  // Removed cropCardSelected as background color is set inline
   cropName: {
     fontSize: 13,
-    color: '#264653',
-    marginTop: 8,
     fontWeight: '600',
+    marginTop: 5,
+    textAlign: 'center',
+    // color: set via inline style based on selection
   },
   cropNameSelected: {
     color: '#FFFFFF',
@@ -307,149 +360,180 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+    borderRadius: 12,
+    paddingHorizontal: 15,
     borderWidth: 1,
     borderColor: '#DDD',
+    height: 55,
     marginBottom: 20,
   },
   input: {
     flex: 1,
-    paddingHorizontal: 15,
-    paddingVertical: 15,
     fontSize: 18,
-    color: '#333',
+    color: '#264653',
+    fontWeight: 'bold',
   },
   inputUnit: {
-    paddingRight: 15,
     fontSize: 16,
     color: '#666',
+    fontWeight: '500',
+    marginLeft: 10,
+  },
+  errorContainer: {
+    backgroundColor: '#FFF0F0',
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#E76F51',
+  },
+  errorText: {
+    color: '#E76F51',
     fontWeight: '600',
+    textAlign: 'center',
   },
   resultContainer: {
     marginTop: 30,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   resultHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    paddingBottom: 10,
   },
   resultTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#264653',
-    marginLeft: 12,
+    fontWeight: "bold",
+    color: "#264653",
+    marginLeft: 10,
   },
   totalCard: {
-    backgroundColor: '#2A9D8F',
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 10,
+    padding: 15,
     alignItems: 'center',
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
   },
   totalLabel: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    opacity: 0.9,
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '600',
+    marginBottom: 5,
   },
   totalAmount: {
     fontSize: 36,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginVertical: 8,
+    fontWeight: 'extrabold',
+    color: '#E76F51',
   },
   perAcreText: {
     fontSize: 14,
-    color: '#FFFFFF',
-    opacity: 0.8,
+    color: '#888',
+    marginTop: 5,
   },
   breakdownCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
     marginBottom: 20,
+    paddingHorizontal: 5,
   },
   breakdownTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#264653',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   breakdownItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#F8F9FA',
   },
   breakdownLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
   breakdownLabel: {
-    fontSize: 15,
-    color: '#333',
-    marginLeft: 12,
+    fontSize: 14,
+    color: '#555',
+    marginLeft: 10,
   },
   breakdownRight: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 120,
+    justifyContent: 'flex-end',
   },
   breakdownPercent: {
-    fontSize: 12,
-    color: '#888',
-    marginBottom: 2,
+    fontSize: 14,
+    color: '#666',
+    marginRight: 10,
   },
   breakdownAmount: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#264653',
+    minWidth: 70,
+    textAlign: 'right',
   },
   returnsCard: {
-    backgroundColor: '#F0F8F7',
+    backgroundColor: '#E8F5F3',
     borderRadius: 12,
-    padding: 20,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#2A9D8F',
     marginBottom: 20,
   },
   returnsTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#264653',
-    marginBottom: 16,
+    color: '#2A9D8F',
+    marginBottom: 10,
   },
   returnItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    paddingVertical: 8,
   },
   returnLabel: {
-    fontSize: 15,
-    color: '#333',
-    marginLeft: 12,
     flex: 1,
+    fontSize: 15,
+    color: '#264653',
+    marginLeft: 10,
   },
   returnValue: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: 'bold',
     color: '#264653',
   },
   profitValue: {
-    color: '#2A9D8F',
+    fontWeight: 'bold',
   },
   viewPriceButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
-    borderRadius: 8,
-    borderWidth: 2,
+    backgroundColor: '#F0F8F7',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
     borderColor: '#2A9D8F',
   },
   viewPriceText: {
     fontSize: 16,
     color: '#2A9D8F',
     fontWeight: '600',
-    marginRight: 8,
+    marginRight: 10,
   },
 });

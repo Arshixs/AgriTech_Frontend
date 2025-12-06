@@ -11,6 +11,8 @@ import {
   View,
 } from "react-native";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
+import { useAuth } from "../src/context/AuthContext";
+import {API_BASE_URL} from "../secret"
 
 const { width } = Dimensions.get("window");
 
@@ -20,119 +22,43 @@ export default function IoTDashboardScreen() {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  
+  const { user } = useAuth();
+  const authToken = user?.token;
 
-  // Mock data fetch
-  const fetchDeviceData = () => {
-    setTimeout(() => {
-      setDevices([
-        {
-          id: 1,
-          name: "Soil Moisture Sensor",
-          type: "soil",
-          location: "Field A - Section 1",
-          status: "active",
-          battery: 85,
-          readings: {
-            moisture: 65,
-            temperature: 24,
-            ph: 6.8,
-            ec: 1.2,
-          },
-          icon: "water-percent",
-          color: "#2A9D8F",
-          alerts: [],
-        },
-        {
-          id: 2,
-          name: "Weather Station",
-          type: "weather",
-          location: "Central Field",
-          status: "active",
-          battery: 92,
-          readings: {
-            temperature: 28,
-            humidity: 68,
-            rainfall: 0,
-            windSpeed: 12,
-            pressure: 1013,
-            uvIndex: 7,
-          },
-          icon: "weather-partly-cloudy",
-          color: "#F4A261",
-          alerts: ["High UV Index"],
-        },
-        {
-          id: 3,
-          name: "NPK Sensor",
-          type: "nutrient",
-          location: "Field B - Section 2",
-          status: "active",
-          battery: 78,
-          readings: {
-            nitrogen: 45,
-            phosphorus: 38,
-            potassium: 52,
-            soilTemp: 22,
-          },
-          icon: "flask",
-          color: "#E76F51",
-          alerts: ["Low Nitrogen"],
-        },
-        {
-          id: 4,
-          name: "Water Level Monitor",
-          type: "water",
-          location: "Irrigation Tank",
-          status: "active",
-          battery: 95,
-          readings: {
-            level: 78,
-            flow: 25,
-            pressure: 2.5,
-            quality: "Good",
-          },
-          icon: "water",
-          color: "#457B9D",
-          alerts: [],
-        },
-        {
-          id: 5,
-          name: "Crop Health Camera",
-          type: "camera",
-          location: "Field A - Section 3",
-          status: "active",
-          battery: 68,
-          readings: {
-            ndvi: 0.72,
-            coverage: 95,
-            healthScore: 88,
-            diseaseRisk: "Low",
-          },
-          icon: "camera",
-          color: "#606C38",
-          alerts: [],
-        },
-        {
-          id: 6,
-          name: "Pest Trap Sensor",
-          type: "pest",
-          location: "Field C - Corner",
-          status: "warning",
-          battery: 45,
-          readings: {
-            count: 15,
-            species: "Mixed",
-            trapStatus: "Active",
-            lastReset: "2 days ago",
-          },
-          icon: "bug",
-          color: "#E9C46A",
-          alerts: ["Low Battery", "High Pest Count"],
-        },
-      ]);
+  const fetchDeviceData = async () => {
+    // Guard clause: Stop if not authenticated
+    if (!authToken) {
+      setLoading(false);
+      return;
+    }
+    
+    if (!refreshing) setLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/data/iot/devices`, {
+        headers: {
+          "Authorization": `Bearer ${authToken}`,
+        }
+      });
+      
+      if (!res.ok) {
+        throw new Error('Failed to fetch IoT devices.');
+      }
+      
+      const data = await res.json();
+      
+      setDevices(data.devices || []); 
       setLastUpdated(new Date());
+
+    } catch (error) {
+      console.error("IoT Fetch Error:", error.message);
+      setDevices([]);
+    } finally {
       setRefreshing(false);
-    }, 1000);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -220,25 +146,25 @@ export default function IoTDashboardScreen() {
   };
 
   const renderReadings = (device) => {
-    const readings = Object.entries(device.readings);
-    return (
-      <View style={styles.readingsGrid}>
-        {readings.map(([key, value], index) => (
-          <View key={index} style={styles.readingItem}>
-            <Text style={styles.readingLabel}>{formatLabel(key)}</Text>
-            <Text style={styles.readingValue}>{formatValue(key, value)}</Text>
-          </View>
-        ))}
-      </View>
-    );
-  };
+  const readings = device.readings ? Object.entries(device.readings) : [];
+  return (
+    <View style={styles.readingsGrid}>
+      {readings.map(([key, value], index) => (
+        <View key={`${device._id}-${key}`} style={styles.readingItem}>
+          <Text style={styles.readingLabel}>{formatLabel(key)}</Text>
+          <Text style={styles.readingValue}>{formatValue(key, value)}</Text>
+        </View>
+      ))}
+    </View>
+  );
+};
 
   const renderDeviceCard = (device) => (
     <TouchableOpacity
-      key={device.id}
+      key={device._id}
       style={styles.deviceCard}
       onPress={() =>
-        setSelectedDevice(device.id === selectedDevice ? null : device.id)
+        setSelectedDevice(device._id === selectedDevice ? null : device._id)
       }
       activeOpacity={0.7}
     >
@@ -252,7 +178,7 @@ export default function IoTDashboardScreen() {
             ]}
           >
             <MaterialCommunityIcons
-              name={device.icon}
+              name="access-point"
               size={24}
               color="#FFFFFF"
             />
@@ -302,7 +228,7 @@ export default function IoTDashboardScreen() {
       </View>
 
       {/* Readings - Show only when selected */}
-      {selectedDevice === device.id && (
+      {selectedDevice === device._id && (
         <View style={styles.readingsContainer}>
           <View style={styles.readingsDivider} />
           {renderReadings(device)}

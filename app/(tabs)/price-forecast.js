@@ -10,15 +10,20 @@ import {
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
+import {API_BASE_URL} from "../../secret"
 
 const { width } = Dimensions.get("window");
 
 export default function PriceForecastScreen() {
+  const { user } = useAuth();
   const router = useRouter();
-  const { crop } = useLocalSearchParams();
-  const [selectedCrop, setSelectedCrop] = useState(crop || "Rice");
+  const { crop: initialCrop } = useLocalSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [selectedCrop, setSelectedCrop] = useState(initialCrop || "Rice");
   const [timeframe, setTimeframe] = useState("3months");
   const [forecast, setForecast] = useState(null);
+  const authToken = user.token;
 
   const crops = ["Rice", "Wheat", "Tomato", "Cotton", "Sugarcane", "Potato"];
   const timeframes = [
@@ -27,72 +32,44 @@ export default function PriceForecastScreen() {
     { value: "6months", label: "6 Months" },
   ];
 
-  useEffect(() => {
-    fetchForecast();
-  }, [selectedCrop, timeframe]);
+  const fetchForecast = async () => {
+    if (!authToken || !selectedCrop || !timeframe) return;
+    setLoading(true);
 
-  const fetchForecast = () => {
-    // Mock price forecast data
-    setTimeout(() => {
-      const currentPrice = {
-        Rice: 2100,
-        Wheat: 2500,
-        Tomato: 1800,
-        Cotton: 6500,
-        Sugarcane: 3200,
-        Potato: 1500,
-      }[selectedCrop];
-
-      const variation = currentPrice * 0.15;
-
-      const predictions = {
-        "1month": currentPrice + (Math.random() * variation - variation / 2),
-        "3months": currentPrice + Math.random() * variation,
-        "6months": currentPrice + Math.random() * variation * 1.5,
-      };
-
-      const chartData = generateChartData(currentPrice, timeframe);
-
-      setForecast({
-        currentPrice: currentPrice,
-        predictedPrice: Math.round(predictions[timeframe]),
-        change: Math.round(predictions[timeframe] - currentPrice),
-        changePercent: (
-          ((predictions[timeframe] - currentPrice) / currentPrice) *
-          100
-        ).toFixed(1),
-        confidence: 85,
-        chartData: chartData,
-        factors: [
-          { name: "Market Demand", impact: "high", trend: "up" },
-          { name: "Weather Conditions", impact: "medium", trend: "stable" },
-          { name: "Government Policy", impact: "medium", trend: "up" },
-          { name: "Supply Chain", impact: "low", trend: "stable" },
-        ],
-        historicalAvg: currentPrice - 200,
-        seasonalTrend: "increasing",
+    try {
+      const url = `${API_BASE_URL}/api/data/market/forecast?crop=${selectedCrop}&timeframe=${timeframe}`;
+      
+      const res = await fetch(url, {
+        headers: { 
+          "Authorization": `Bearer ${authToken}` 
+        }
       });
-    }, 1000);
-  };
 
-  const generateChartData = (basePrice, timeframe) => {
-    const periods =
-      timeframe === "1month" ? 4 : timeframe === "3months" ? 12 : 24;
-    const data = [];
-    let currentVal = basePrice * 0.9;
-
-    for (let i = 0; i < periods; i++) {
-      const variation = basePrice * 0.05;
-      currentVal += Math.random() * variation - variation / 4;
-      data.push({
-        period: i,
-        price: Math.round(currentVal),
-      });
+      if (!res.ok) {
+        const errorJson = await res.json();
+        throw new Error(errorJson.message || `Failed to fetch forecast for ${selectedCrop}`);
+      }
+      
+      const data = await res.json();
+      setForecast(data.forecast);
+      
+    } catch (error) {
+      console.error("Forecast Fetch Error:", error.message);
+      setForecast(null);
+    } finally {
+      setLoading(false);
     }
-    return data;
   };
+
+  useEffect(() => {
+    if (authToken) {
+      fetchForecast();
+    }
+  }, [authToken, selectedCrop, timeframe]);
+
 
   const formatCurrency = (amount) => {
+    if (amount === null || isNaN(amount)) return 'N/A';
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
@@ -101,10 +78,12 @@ export default function PriceForecastScreen() {
   };
 
   const renderSimpleChart = () => {
-    if (!forecast) return null;
+    if (!forecast || !forecast.chartData || forecast.chartData.length === 0) return null;
 
-    const maxPrice = Math.max(...forecast.chartData.map((d) => d.price));
-    const minPrice = Math.min(...forecast.chartData.map((d) => d.price));
+    const chartData = forecast.chartData;
+    const prices = chartData.map((d) => d.price);
+    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...prices);
     const range = maxPrice - minPrice;
 
     return (

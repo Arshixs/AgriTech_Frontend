@@ -36,11 +36,12 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
+  // const signInFarmer = async (userData, token) => {
   const signInFarmer = async (userData) => {
     const farmerUser = { ...userData, role: "farmer" };
     await SecureStore.setItemAsync("user", JSON.stringify(farmerUser));
     setUser(farmerUser);
-    router.replace("/(tabs)"); // Redirect to farmer dashboard
+    router.replace("/(tabs)");
   };
 
   const signInVendor = async (vendorData) => {
