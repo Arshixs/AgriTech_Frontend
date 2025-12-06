@@ -1,25 +1,22 @@
-// File: app/(buyer-auth)/register.js
-
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import Input from "../../src/components/common/Input";
-import Button from "../../src/components/common/Button";
-import { useAuth } from "../../src/context/AuthContext";
 import { FontAwesome } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import Input from "../../src/components/common/Input";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 
 export default function BuyerRegistrationScreen() {
   const router = useRouter();
-  const { mobileNumber, token, buyerId } = useLocalSearchParams();
-  const { signInBuyer } = useAuth();
+  const { phone } = useLocalSearchParams(); // Get phone from Login screen
   const [loading, setLoading] = useState(false);
 
   // Form state
@@ -28,52 +25,54 @@ export default function BuyerRegistrationScreen() {
   const [email, setEmail] = useState("");
 
   const handleRegister = async () => {
+    // 1. Validation
     if (!companyName || !contactPerson || !email) {
-      return alert("Please fill in all fields.");
+      return Alert.alert("Missing Fields", "Please fill in all details.");
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return alert("Please enter a valid email address.");
+      return Alert.alert(
+        "Invalid Email",
+        "Please enter a valid email address."
+      );
     }
 
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/update-profile`, {
+      // 2. Send OTP (Creates account in DB if not exists)
+      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/send-otp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          companyName: companyName,
-          contactPerson: contactPerson,
-          email: email,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Registration failed");
-      }
 
       const data = await res.json();
 
-      // Create buyer data object and sign in
-      const newBuyerData = {
-        id: buyerId,
-        name: contactPerson,
-        companyName: companyName,
-        email: email,
-        phone: `+91${mobileNumber}`,
-        token: token,
-      };
+      if (res.ok) {
+        // 3. Prepare Pending Profile Data
+        const pendingProfile = JSON.stringify({
+          companyName,
+          contactPerson,
+          email,
+        });
 
-      signInBuyer(newBuyerData);
+        // 4. Navigate to OTP with profile data
+        router.push({
+          pathname: "/(buyer-auth)/otp",
+          params: {
+            mobileNumber: phone,
+            role: "buyer",
+            pendingProfile: pendingProfile,
+          },
+        });
+      } else {
+        Alert.alert("Error", data.message || "Registration failed.");
+      }
     } catch (err) {
-      alert(err.message || "Failed to complete registration");
+      console.error(err);
+      Alert.alert("Network Error", "Could not connect to server.");
     } finally {
       setLoading(false);
     }
@@ -90,9 +89,9 @@ export default function BuyerRegistrationScreen() {
             <FontAwesome name="arrow-left" size={20} color="#264653" />
           </TouchableOpacity>
 
-          <Text style={styles.title}>Register as a Buyer</Text>
+          <Text style={styles.title}>New Buyer Profile</Text>
           <Text style={styles.subtitle}>
-            Complete your profile to access the marketplace
+            Registering for: <Text style={{ fontWeight: "bold" }}>{phone}</Text>
           </Text>
 
           <Input
@@ -117,7 +116,7 @@ export default function BuyerRegistrationScreen() {
           />
 
           <Button
-            title="Complete Registration"
+            title="Send OTP & Verify"
             onPress={handleRegister}
             loading={loading}
             style={{ marginTop: 16, backgroundColor: "#E76F51" }}
