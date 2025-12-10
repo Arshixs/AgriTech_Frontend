@@ -23,13 +23,13 @@ export default function LogisticsReportsScreen() {
       icon: 'check-all', 
       color: '#2A9D8F' 
     },
-    { 
-      title: 'Logistics Partners', 
-      value: '45', 
-      label: 'Active Carriers', 
-      icon: 'truck-fast', 
-      color: '#606C38' 
-    },
+    //{ 
+    //   title: 'Logistics Partners', 
+    //   value: '45', 
+    //   label: 'Active Carriers', 
+    //   icon: 'truck-fast', 
+    //   color: '#606C38' 
+    // },
   ];
 
   const reportLinks = [
