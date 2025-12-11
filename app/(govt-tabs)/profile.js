@@ -720,7 +720,7 @@ export default function GovtProfileScreen() {
               />
               <DetailRow
                 label="Designation"
-                value={localUser?.designation || "MSP Complianc"}
+                value={localUser?.designation || "MSP Compliance"}
               />
               <DetailRow label="Phone" value={localUser?.phone || "N/A"} />
               {localUser?.homeAddress && (
@@ -926,12 +926,12 @@ function EditProfileModal({ visible, onClose, user, onSaved }) {
               placeholder="your.email@example.com"
               autoCapitalize="none"
             />
-            <LabelInput
+            {/* <LabelInput
               label="Employee ID"
               value={form.employeeId}
               onChangeText={(v) => updateField("employeeId", v)}
               placeholder="Enter employee ID"
-            />
+            /> */}
             <LabelInput
               label="Phone"
               value={form.phone}
