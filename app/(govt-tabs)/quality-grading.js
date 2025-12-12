@@ -687,7 +687,7 @@ export default function QualityGradingScreen() {
         if (res.ok) {
           const data = await res.json();
           setPendingRequests(data.requests || []);
-           console.log(data.requests);
+           //console.log(data.requests);
         }
       } else {
         const res = await fetch(
@@ -723,6 +723,7 @@ export default function QualityGradingScreen() {
 
       if (res.ok) {
         const data = await res.json();
+        console.log(data.request);
         setSelectedRequest(data.request);
         setShowSearchModal(false);
         setShowGradingModal(true);
@@ -762,6 +763,7 @@ export default function QualityGradingScreen() {
 
   const handleOpenGrading = (request) => {
     setSelectedRequest(request);
+    console.log("THE REQUEST",request);
     setGradingForm({
       grade: "",
       moisture: "",
@@ -781,6 +783,7 @@ export default function QualityGradingScreen() {
 
   const handleSubmitGrading = async () => {
     // Validation
+    console.log(selectedRequest);
     if (!gradingForm.grade) {
       Alert.alert("Validation", "Please select a grade");
       return;
