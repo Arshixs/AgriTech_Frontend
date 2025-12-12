@@ -125,6 +125,14 @@ export default function HomeScreen() {
       color: "#457B9D",
       route: "/iot-devices",
     },
+    {
+      id: 7,
+      title: "My Orders",
+      description: "All orders and Rentals",
+      icon: "access-point",
+      color: "#809d45ff",
+      route: "/farmer-orders-screen",
+    }
   ];
 
   const stats = [
