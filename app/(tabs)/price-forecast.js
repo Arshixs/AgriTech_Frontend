@@ -20,7 +20,7 @@ export default function PriceForecastScreen() {
   const router = useRouter();
   const { crop: initialCrop } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
-  const [selectedCrop, setSelectedCrop] = useState(initialCrop || "Rice");
+  const [selectedCrop, setSelectedCrop] = useState(initialCrop || "Wheat");
   const [timeframe, setTimeframe] = useState("3months");
   const [forecast, setForecast] = useState(null);
   const authToken = user.token;

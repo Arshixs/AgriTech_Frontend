@@ -103,11 +103,11 @@ export default function HomeScreen() {
     },
     {
       id: 4,
-      title: "Crop Guide",
-      description: "Get recommendations",
-      icon: "sprout",
-      color: "#606C38",
-      route: "/(tabs)/recommendations",
+      title: "Msp",
+      description: "View MSP for Crops",
+      icon: "currency-inr",
+      color: "#6a870aff",
+      route: "/view-msp",
     },
     {
       id: 5,
@@ -116,6 +116,14 @@ export default function HomeScreen() {
       icon: "access-point",
       color: "#457B9D",
       route: "/iot-devices",
+    },
+    {
+      id: 6,
+      title: "Crop Guide",
+      description: "Get recommendations",
+      icon: "sprout",
+      color: "#606C38",
+      route: "/(tabs)/recommendations",
     },
   ];
 

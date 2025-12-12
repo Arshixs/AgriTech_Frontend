@@ -225,6 +225,20 @@ export default function ExpensePredictionScreen() {
             Get accurate cost estimates for your farming activities
           </Text>
 
+          {/* Land Area Input */}
+          <Text style={styles.sectionTitle}>Enter Land Area</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={landArea}
+              onChangeText={setLandArea}
+              placeholder="e.g., 5"
+              keyboardType="decimal-pad"
+              placeholderTextColor="#888"
+            />
+            <Text style={styles.inputUnit}>Acres</Text>
+          </View>
+
           {/* Crop Selection */}
           <Text style={styles.sectionTitle}>Select Your Crop</Text>
           <View style={styles.cropsGrid}>
@@ -256,19 +270,7 @@ export default function ExpensePredictionScreen() {
             ))}
           </View>
 
-          {/* Land Area Input */}
-          <Text style={styles.sectionTitle}>Enter Land Area</Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={landArea}
-              onChangeText={setLandArea}
-              placeholder="e.g., 5"
-              keyboardType="decimal-pad"
-              placeholderTextColor="#888"
-            />
-            <Text style={styles.inputUnit}>Acres</Text>
-          </View>
+          
 
           {/* Predict Button */}
           <Button
