@@ -1,166 +1,3 @@
-// // File: app/(govt-tabs)/msp-compliance.js
-
-// import React, { useState } from 'react';
-// import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-// import ScreenWrapper from '../../src/components/common/ScreenWrapper';
-// import { useRouter } from 'expo-router';
-// import { MaterialCommunityIcons } from '@expo/vector-icons';
-
-// // Mock data for MSP violations
-// const MOCK_VIOLATIONS = [
-//   {
-//     id: 'v1',
-//     crop: 'Wheat',
-//     farmerName: 'Anil Kumar',
-//     listingPrice: 2100,
-//     msp: 2150,
-//   },
-//   {
-//     id: 'v2',
-//     crop: 'Basmati Rice',
-//     farmerName: 'Ram Singh',
-//     listingPrice: 3000,
-//     msp: 3200,
-//   },
-//   {
-//     id: 'v3',
-//     crop: 'Paddy (Grade A)',
-//     farmerName: 'Meena Kumari',
-//     listingPrice: 2000,
-//     msp: 2040,
-//   },
-// ];
-
-// export default function MspComplianceScreen() {
-//   const router = useRouter();
-//   const [violations, setViolations] = useState(MOCK_VIOLATIONS);
-
-//   const renderItem = ({ item }) => (
-//     <TouchableOpacity 
-//       style={styles.card}
-//       // Navigate to a details screen to take action
-//       onPress={() => router.push({ 
-//         pathname: '/listing-violation', 
-//         params: { id: item.id } 
-//       })}
-//     >
-//       <View style={styles.iconContainer}>
-//         <MaterialCommunityIcons name="alert-circle" size={32} color="#E76F51" />
-//       </View>
-//       <View style={styles.cardInfo}>
-//         <Text style={styles.cardTitle}>{item.crop}</Text>
-//         <Text style={styles.cardSubtitle}>Farmer: {item.farmerName}</Text>
-//       </View>
-//       <View style={styles.priceInfo}>
-//         <Text style={styles.priceLabel}>Listed Price</Text>
-//         <Text style={styles.priceValue}>₹{item.listingPrice}</Text>
-//         <Text style={styles.mspValue}>(MSP: ₹{item.msp})</Text>
-//       </View>
-//     </TouchableOpacity>
-//   );
-
-//   return (
-//     <ScreenWrapper>
-//       <View style={styles.header}>
-//         <Text style={styles.headerTitle}>MSP Compliance</Text>
-//       </View>
-//       <FlatList
-//         data={violations}
-//         renderItem={renderItem}
-//         keyExtractor={(item) => item.id}
-//         contentContainerStyle={styles.listContainer}
-//         ListHeaderComponent={
-//           <Text style={styles.listHeader}>
-//             {violations.length} listings found below MSP
-//           </Text>
-//         }
-//         ListEmptyComponent={
-//           <Text style={styles.emptyText}>No MSP violations found.</Text>
-//         }
-//       />
-//     </ScreenWrapper>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   header: {
-//     paddingHorizontal: 20,
-//     paddingTop: 40,
-//     paddingBottom: 16,
-//     backgroundColor: '#FFF',
-//   },
-//   headerTitle: {
-//     fontSize: 28,
-//     fontWeight: 'bold',
-//     color: '#264653',
-//   },
-//   listContainer: {
-//     padding: 20,
-//   },
-//   listHeader: {
-//     fontSize: 16,
-//     color: '#E76F51',
-//     marginBottom: 16,
-//     fontWeight: '600',
-//   },
-//   card: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 12,
-//     padding: 16,
-//     marginBottom: 16,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.08,
-//     shadowRadius: 4,
-//     elevation: 2,
-//     borderLeftWidth: 5,
-//     borderLeftColor: '#E76F51',
-//   },
-//   iconContainer: {
-//     marginRight: 16,
-//   },
-//   cardInfo: {
-//     flex: 1,
-//   },
-//   cardTitle: {
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//     color: '#264653',
-//   },
-//   cardSubtitle: {
-//     fontSize: 14,
-//     color: '#555',
-//     marginTop: 4,
-//   },
-//   priceInfo: {
-//     alignItems: 'flex-end',
-//   },
-//   priceLabel: {
-//     fontSize: 12,
-//     color: '#666',
-//   },
-//   priceValue: {
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//     color: '#E76F51',
-//   },
-//   mspValue: {
-//     fontSize: 12,
-//     color: '#666',
-//     fontStyle: 'italic',
-//   },
-//   emptyText: {
-//     textAlign: 'center',
-//     marginTop: 50,
-//     fontSize: 16,
-//     color: '#666',
-//   },
-// });
-
-// File: app/(govt-tabs)/msp-compliance.js
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   View, 
@@ -186,7 +23,7 @@ export default function MspComplianceScreen() {
   const [mspData, setMspData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState('all'); // all, kharif, rabi, year-round
+  const [filter, setFilter] = useState('all'); //  kharif, rabi, year-round
 
   const fetchMSPData = async () => {
     try {
@@ -295,17 +132,19 @@ export default function MspComplianceScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>MSP Compliance</Text>
-        <TouchableOpacity 
+        <Text style={styles.headerTitle}>
+          MSP {filter === "rabi" ? "(2026-2027)" : "(2025-2026)"}
+        </Text>
+        <TouchableOpacity
           style={styles.addButton}
-          onPress={() => router.push('/add-msp')}
+          onPress={() => router.push("/add-msp")}
         >
           <MaterialCommunityIcons name="plus" size={24} color="#FFF" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.filterContainer}>
-        <FilterButton label="All" value="all" />
+        {/* <FilterButton label="All" value="all" /> */}
         <FilterButton label="Kharif" value="kharif" />
         <FilterButton label="Rabi" value="rabi" />
         <FilterButton label="Year-Round" value="year-round" />
@@ -320,13 +159,18 @@ export default function MspComplianceScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListHeaderComponent={
-          <Text style={styles.listHeader}>
-            {mspData.length} crops listed
-          </Text>
+          <View style={styles.mspListSubheaderView}>
+            <Text style={styles.listHeader}>{mspData.length} crops listed</Text>
+            <Text style={styles.listRefresh} onPress={onRefresh}>Refresh</Text>
+          </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <MaterialCommunityIcons name="alert-circle-outline" size={48} color="#CCC" />
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={48}
+              color="#CCC"
+            />
             <Text style={styles.emptyText}>No MSP data available</Text>
           </View>
         }
@@ -340,94 +184,101 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 16,
-    backgroundColor: '#FFF',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    backgroundColor: "#FFF",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#264653',
+    fontWeight: "bold",
+    color: "#264653",
+  },
+  mspListSubheaderView: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  listRefresh: {
+    color: "#0000FF",
   },
   addButton: {
-    backgroundColor: '#606C38',
+    backgroundColor: "#606C38",
     width: 44,
     height: 44,
     borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
   filterContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   filterButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: "#F0F0F0",
   },
   filterButtonActive: {
-    backgroundColor: '#606C38',
+    backgroundColor: "#606C38",
   },
   filterText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
   },
   filterTextActive: {
-    color: '#FFF',
+    color: "#FFF",
   },
   listContainer: {
     padding: 20,
   },
   listHeader: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginBottom: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
     borderLeftWidth: 4,
-    borderLeftColor: '#606C38',
+    borderLeftColor: "#606C38",
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
   cardTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   cropName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#264653',
+    fontWeight: "bold",
+    color: "#264653",
     marginLeft: 8,
     flex: 1,
   },
@@ -438,54 +289,54 @@ const styles = StyleSheet.create({
   },
   seasonText: {
     fontSize: 11,
-    fontWeight: 'bold',
-    color: '#FFF',
+    fontWeight: "bold",
+    color: "#FFF",
   },
   cardBody: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   priceContainer: {
     flex: 1,
   },
   priceLabel: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginBottom: 4,
   },
   priceValue: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#606C38',
+    fontWeight: "bold",
+    color: "#606C38",
   },
   unitText: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginTop: 2,
   },
   editButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F0F2E6',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#F0F2E6",
+    justifyContent: "center",
+    alignItems: "center",
   },
   effectiveText: {
     fontSize: 12,
-    color: '#888',
+    color: "#888",
     marginTop: 12,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   emptyContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 80,
   },
   emptyText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
 });
