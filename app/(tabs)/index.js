@@ -87,6 +87,14 @@ export default function HomeScreen() {
     },
     {
       id: 2,
+      title: "Marketplace",
+      description: "Rentals and buy raw maerials",
+      icon: "tools",
+      color: "#2A9D8F",
+      route: "/vendor-market-screen",
+    },
+    {
+      id: 3,
       title: "Price Forecast",
       description: "Track crop prices",
       icon: "chart-line",
@@ -94,7 +102,7 @@ export default function HomeScreen() {
       route: "/(tabs)/price-forecast",
     },
     {
-      id: 3,
+      id: 4,
       title: "Weather & Alerts",
       description: "Stay updated",
       icon: "bell",
@@ -102,7 +110,7 @@ export default function HomeScreen() {
       route: "/(tabs)/alerts",
     },
     {
-      id: 4,
+      id: 5,
       title: "Crop Guide",
       description: "Get recommendations",
       icon: "sprout",
@@ -110,12 +118,28 @@ export default function HomeScreen() {
       route: "/(tabs)/recommendations",
     },
     {
-      id: 5,
+      id: 6,
       title: "IoT Devices",
       description: "Monitor sensors",
       icon: "access-point",
       color: "#457B9D",
       route: "/iot-devices",
+    },
+    {
+      id: 7,
+      title: "My Orders",
+      description: "All orders and Rentals",
+      icon: "access-point",
+      color: "#809d45ff",
+      route: "/farmer-orders-screen",
+    },
+    {
+      id: 8,
+      title: "My Certificates",
+      description: "All certificates",
+      icon: "check-decagram",
+      color: "#4dff00ff",
+      route: "/quality",
     },
   ];
 

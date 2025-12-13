@@ -680,7 +680,7 @@ export default function QualityGradingScreen() {
     try {
       const headers = { Authorization: `Bearer ${authToken}` };
 
-      if (activeTab === "pending") {
+     // if (activeTab === "pending") {
         const res = await fetch(`${API_BASE_URL}/api/quality/govt/pending`, {
           headers,
         });
@@ -689,16 +689,16 @@ export default function QualityGradingScreen() {
           setPendingRequests(data.requests || []);
            //console.log(data.requests);
         }
-      } else {
-        const res = await fetch(
+      // } else {
+        const res2 = await fetch(
           `${API_BASE_URL}/api/quality/govt/my-requests`,
           { headers }
         );
-        if (res.ok) {
-          const data = await res.json();
+        if (res2.ok) {
+          const data = await res2.json();
           setMyRequests(data.requests || []);
         }
-      }
+    //  }
     } catch (error) {
       console.error("Fetch Error:", error);
       Alert.alert("Error", "Failed to load data");
