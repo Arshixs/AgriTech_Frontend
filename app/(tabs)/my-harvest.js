@@ -595,7 +595,7 @@ export default function MyHarvestScreen() {
         <Text style={styles.headerTitle}>My Harvest</Text>
         <TouchableOpacity
           style={styles.infoButton}
-          onPress={() => router.push("/(tabs)/quality")}
+          onPress={() => router.push("/quality")}
         >
           <MaterialCommunityIcons
             name="certificate"

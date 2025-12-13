@@ -132,7 +132,15 @@ export default function HomeScreen() {
       icon: "access-point",
       color: "#809d45ff",
       route: "/farmer-orders-screen",
-    }
+    },
+    {
+      id: 8,
+      title: "My Certificates",
+      description: "All certificates",
+      icon: "check-decagram",
+      color: "#4dff00ff",
+      route: "/quality",
+    },
   ];
 
   const stats = [
