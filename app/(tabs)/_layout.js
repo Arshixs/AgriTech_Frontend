@@ -12,7 +12,7 @@ export default function TabsLayout() {
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
-          marginBottom:30
+          marginBottom: 30,
         },
       }}
     >
@@ -55,9 +55,18 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="price-forecast"
         options={{
-          title: "price-forecast",
+          title: "Price Forecast",
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="chart-line" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="my-harvest"
+        options={{
+          title: "Harvest",
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="check-decagram" size={24} color={color} />
           ),
         }}
       />
