@@ -1,43 +1,81 @@
-// File: app/(buyer-auth)/login.js
-
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import Input from "../../src/components/common/Input";
-import Button from "../../src/components/common/Button";
+import { useState } from "react";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import Input from "../../src/components/common/Input";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 
 export default function BuyerLoginScreen() {
   const router = useRouter();
   const [mobileNumber, setMobileNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSendOTP = async () => {
-    if (mobileNumber.length !== 10)
-      return alert("Enter a valid 10-digit number.");
+  const handleContinue = async () => {
+    // 1. Basic Validation
+    if (mobileNumber.length !== 10) {
+      return Alert.alert("Invalid Input", "Enter a valid 10-digit number.");
+    }
+
     setLoading(true);
+    const fullPhoneNumber = `+91${mobileNumber}`;
+
     try {
+      // 2. CHECK IF BUYER EXISTS
+      const checkRes = await fetch(
+        `${API_BASE_URL}/api/buyer/auth/buyer-exist`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: fullPhoneNumber }),
+        }
+      );
+
+      const checkData = await checkRes.json();
+
+      if (checkRes.status === 404 || checkData.exists === false) {
+        // CASE A: NEW BUYER -> Redirect to Registration
+        // Pass phone number so they don't type it again
+        router.push({
+          pathname: "/(buyer-auth)/register",
+          params: { phone: fullPhoneNumber },
+        });
+      } else if (checkRes.ok && checkData.exists === true) {
+        // CASE B: RETURNING BUYER -> Send OTP immediately
+        await sendOtpAndNavigate(fullPhoneNumber);
+      } else {
+        Alert.alert("Error", checkData.message || "Something went wrong.");
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Network Error", "Check your connection and IP address.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendOtpAndNavigate = async (phone) => {
+    try {
+      // const res = { ok: true };
       const res = await fetch(`${API_BASE_URL}/api/buyer/auth/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: `+91${mobileNumber}`,
-        }),
+        body: JSON.stringify({ phone }),
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Server error");
-      }
-
       const data = await res.json();
-      // Navigate to OTP screen
-      router.push({ pathname: "/(buyer-auth)/otp", params: { mobileNumber } });
+
+      if (res.ok) {
+        Alert.alert("Welcome Back", "OTP sent to your registered number.");
+        router.push({
+          pathname: "/(buyer-auth)/otp",
+          params: { mobileNumber: phone, role: "buyer" },
+        });
+      } else {
+        Alert.alert("Error", data.message || "Failed to send OTP");
+      }
     } catch (err) {
-      alert(err.message || "Failed to send OTP");
-    } finally {
-      setLoading(false);
+      Alert.alert("Error", "Failed to send OTP request.");
     }
   };
 
@@ -53,23 +91,15 @@ export default function BuyerLoginScreen() {
           onChangeText={setMobileNumber}
           placeholder="e.g., 9876543210"
           keyboardType="phone-pad"
+          maxLength={10}
         />
 
         <Button
-          title="Send OTP"
-          onPress={handleSendOTP}
+          title="Continue"
+          onPress={handleContinue}
           loading={loading}
           style={{ backgroundColor: "#E76F51" }}
         />
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>New to the marketplace?</Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(buyer-auth)/register")}
-          >
-            <Text style={styles.footerLink}>Register here</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </ScreenWrapper>
   );
@@ -91,21 +121,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     marginBottom: 32,
-  },
-  footer: {
-    marginTop: 24,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  footerLink: {
-    fontSize: 14,
-    color: "#E76F51",
-    fontWeight: "600",
-    marginLeft: 4,
   },
 });

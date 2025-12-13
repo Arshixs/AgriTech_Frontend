@@ -92,7 +92,7 @@ export default function VendorProfileScreen() {
               />
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.menuItem}
               onPress={() => router.push("/expense-calculator")}
             >
@@ -107,12 +107,12 @@ export default function VendorProfileScreen() {
                 size={24}
                 color="#CCC"
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {/* Settings Section */}
-          <Text style={styles.sectionTitle}>Settings</Text>
-          <View style={styles.menuContainer}>
+          {/* <Text style={styles.sectionTitle}>Settings</Text> */}
+          {/* <View style={styles.menuContainer}>
             <TouchableOpacity style={styles.menuItem}>
               <MaterialCommunityIcons name="bank" size={24} color="#457B9D" />
               <Text style={styles.menuItemText}>Payment Details</Text>
@@ -131,7 +131,7 @@ export default function VendorProfileScreen() {
                 color="#CCC"
               />
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           {/* Sign Out */}
           <View style={styles.signOutContainer}>

@@ -1,8 +1,8 @@
 // File: src/context/AuthContext.js
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { useRouter } from 'expo-router'; // Make sure this is imported
+import { useRouter } from "expo-router"; // Make sure this is imported
+import * as SecureStore from "expo-secure-store";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 // Create the context
 const AuthContext = createContext(null);
@@ -23,12 +23,12 @@ export const AuthProvider = ({ children }) => {
     const loadUser = async () => {
       let userString = null;
       try {
-        userString = await SecureStore.getItemAsync('user'); 
+        userString = await SecureStore.getItemAsync("user");
         if (userString) {
-          setUser(JSON.parse(userString)); 
+          setUser(JSON.parse(userString));
         }
       } catch (e) {
-        console.error('Failed to load user data:', e);
+        console.error("Failed to load user data:", e);
       } finally {
         setIsLoading(false);
       }
@@ -38,50 +38,49 @@ export const AuthProvider = ({ children }) => {
 
   // const signInFarmer = async (userData, token) => {
   const signInFarmer = async (userData) => {
-    const farmerUser = { ...userData, role: 'farmer' };
-    await SecureStore.setItemAsync('user', JSON.stringify(farmerUser));
+    const farmerUser = { ...userData, role: "farmer" };
+    await SecureStore.setItemAsync("user", JSON.stringify(farmerUser));
     setUser(farmerUser);
-    router.replace('/(tabs)');
+    router.replace("/(tabs)");
   };
 
-  
   const signInVendor = async (vendorData) => {
-    const vendorUser = { ...vendorData, role: 'vendor' };
-    await SecureStore.setItemAsync('user', JSON.stringify(vendorUser));
+    const vendorUser = { ...vendorData, role: "vendor" };
+    await SecureStore.setItemAsync("user", JSON.stringify(vendorUser));
     setUser(vendorUser);
-    router.replace('/(vendor-tabs)'); // Redirect to vendor dashboard
+    router.replace("/(vendor-tabs)"); // Redirect to vendor dashboard
   };
 
   const signInBuyer = async (buyerData) => {
-    const buyerUser = { ...buyerData, role: 'buyer' };
-    await SecureStore.setItemAsync('user', JSON.stringify(buyerUser));
+    const buyerUser = { ...buyerData, role: "buyer" };
+    await SecureStore.setItemAsync("user", JSON.stringify(buyerUser));
     setUser(buyerUser);
-    router.replace('/(buyer-tabs)'); // Redirect to buyer dashboard
+    router.replace("/(buyer-tabs)"); // Redirect to buyer dashboard
   };
 
   const signInGovt = async (govtData) => {
-    const govtUser = { ...govtData, role: 'govt' };
-    await SecureStore.setItemAsync('user', JSON.stringify(govtUser));
+    const govtUser = { ...govtData, role: "govt" };
+    await SecureStore.setItemAsync("user", JSON.stringify(govtUser));
     setUser(govtUser);
-    router.replace('/(govt-tabs)'); // Redirect to govt dashboard
+    router.replace("/(govt-tabs)"); // Redirect to govt dashboard
   };
 
   const signOut = async () => {
-    await SecureStore.deleteItemAsync('user');
+    await SecureStore.deleteItemAsync("user");
     setUser(null);
-    router.replace('../'); // Redirect to root (Role Selection)
+    router.replace("../"); // Redirect to root (Role Selection)
   };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        isLoading, 
-        signInFarmer, 
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        signInFarmer,
         signInVendor,
-        signInBuyer, 
-        signInGovt, 
-        signOut 
+        signInBuyer,
+        signInGovt,
+        signOut,
       }}
     >
       {children}

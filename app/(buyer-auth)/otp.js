@@ -1,67 +1,81 @@
-// File: app/(buyer-auth)/otp.js
-
-import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import Input from "../../src/components/common/Input";
-import Button from "../../src/components/common/Button";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import Input from "../../src/components/common/Input";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 
 export default function BuyerOTPScreen() {
   const router = useRouter();
-  const { mobileNumber } = useLocalSearchParams();
+  const { mobileNumber, pendingProfile } = useLocalSearchParams();
   const { signInBuyer } = useAuth();
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleVerifyOTP = async () => {
-    if (otp.length !== 6) return alert("Enter a valid 6-digit OTP.");
+    if (!otp || otp.length !== 6) return alert("Enter a valid 6-digit OTP.");
     setLoading(true);
+    console.log(mobileNumber);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: `+91${mobileNumber}`,
-          otp: otp,
-        }),
-      });
+      const verifyRes = await fetch(
+        `${API_BASE_URL}/api/buyer/auth/verify-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: `${mobileNumber}`,
+            otp: otp,
+          }),
+        }
+      );
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Invalid OTP");
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.message || "Verification failed");
       }
 
-      const data = await res.json();
+      // 2. Token & Buyer Data received
+      const { token, buyer } = verifyData;
+      let finalBuyerData = { ...buyer, token };
 
-      // Check if profile is complete
-      if (!data.isProfileComplete) {
-        // New user or incomplete profile - redirect to registration
-        router.push({
-          pathname: "/(buyer-auth)/register",
-          params: {
-            mobileNumber,
-            token: data.token,
-            buyerId: data.buyer._id,
-          },
-        });
-      } else {
-        // Existing user with complete profile - sign them in directly
-        const buyerData = {
-          id: data.buyer._id,
-          name: data.buyer.contactPerson,
-          companyName: data.buyer.companyName,
-          email: data.buyer.email,
-          phone: data.buyer.phone,
-          token: data.token,
-        };
-        signInBuyer(buyerData);
+      // 3. Check if there is a Pending Profile (New Registration)
+      if (pendingProfile) {
+        const profileData = JSON.parse(pendingProfile);
+
+        // Update Profile on Backend
+        const updateRes = await fetch(
+          `${API_BASE_URL}/api/buyer/auth/update-profile`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(profileData),
+          }
+        );
+
+        const updateData = await updateRes.json();
+
+        if (!updateRes.ok) {
+          Alert.alert(
+            "Warning",
+            "OTP Verified but Profile Update failed. Please update profile in settings."
+          );
+        } else {
+          // Update our local buyer object with the new profile info
+          finalBuyerData = { ...finalBuyerData, ...updateData.buyer };
+        }
       }
+
+      await signInBuyer(finalBuyerData);
     } catch (err) {
-      alert(err.message || "Failed to verify OTP");
+      console.error(err);
+      Alert.alert("Error", err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
