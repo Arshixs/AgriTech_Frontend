@@ -1,71 +1,67 @@
-// File: app/listing-details.js
-
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity,
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
   Alert,
-  Image,
-  ActivityIndicator
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import ScreenWrapper from '../src/components/common/ScreenWrapper';
-import Button from '../src/components/common/Button';
-import Input from '../src/components/common/Input';
-import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import { API_BASE_URL } from "../secret";
+import Button from "../src/components/common/Button";
+import ScreenWrapper from "../src/components/common/ScreenWrapper";
+import { useAuth } from "../src/context/AuthContext";
 
 export default function ListingDetailsScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams(); // Get the listing ID
-  
+  const { id } = useLocalSearchParams();
+  const { user } = useAuth();
+
   const [listing, setListing] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [bidPrice, setBidPrice] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Mock data loading
-  useEffect(() => {
-    // --- Mock API call to fetch listing details ---
-    setTimeout(() => {
-      setListing({
-        id: id,
-        crop: 'Basmati Rice (Grade A)',
-        quantity: '50 Tons',
-        farmerName: 'Ram Singh',
-        location: 'Varanasi, UP',
-        basePrice: 3200, // as a number
-        image: 'https://via.placeholder.com/400.png?text=Rice+Harvest',
-        description: 'High-quality Basmati rice, harvested this season. Available for immediate pickup. MSP compliant.',
+  // =========================
+  // FETCH LISTING DETAILS
+  // =========================
+  const fetchListingDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/api/sales/marketplace/${id}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
       });
-      setIsLoading(false);
-    }, 1000);
-  }, [id]);
 
-  const handlePlaceBid = () => {
-    const myBid = parseFloat(bidPrice);
-    if (isNaN(myBid) || myBid <= 0) {
-      return Alert.alert('Error', 'Please enter a valid bid price.');
+      const data = await res.json();
+
+      if (res.ok) {
+        setListing(data.marketplaceSale);
+      } else {
+        Alert.alert("Error", data.message || "Failed to load listing");
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Network error");
+    } finally {
+      setLoading(false);
     }
-
-    if (myBid < listing.basePrice) {
-      return Alert.alert('Error', `Your bid must be at least ₹${listing.basePrice}/quintal.`);
-    }
-
-    // --- Mock API call ---
-    console.log(`Placing bid of ${myBid} on listing ${id}`);
-    
-    Alert.alert(
-      'Bid Placed',
-      `Your bid of ₹${myBid}/quintal has been placed.`,
-      [
-        { text: 'OK', onPress: () => router.push('/(buyer-tabs)/bidding') }
-      ]
-    );
   };
 
-  if (isLoading) {
+  useFocusEffect(
+    useCallback(() => {
+      if (id) fetchListingDetails();
+    }, [id])
+  );
+
+  // =========================
+  // LOADING STATES
+  // =========================
+  if (loading) {
     return (
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
@@ -75,52 +71,180 @@ export default function ListingDetailsScreen() {
     );
   }
 
+  if (!listing) {
+    return (
+      <ScreenWrapper>
+        <View style={styles.loadingContainer}>
+          <Text>Listing not found.</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
+
+  // =========================
+  // DATA FORMATTING
+  // =========================
+  const cropName = listing.cropId?.cropName || "Unknown Crop";
+  const farmerName = listing.farmerId?.name || "Unknown Farmer";
+  const farmerLocation = listing.farmerId?.address || "Location N/A";
+  const quantity = `${listing.quantity} ${listing.unit}`;
+
+  const isAuctionActive = listing.status === "active";
+
+  const isWinning =
+    listing.highestBidder &&
+    user?.userId &&
+    listing.highestBidder.toString() === user.userId.toString();
+
+  const currentPrice =
+    listing.totalBids > 0 ? listing.currentHighestBid : listing.minimumPrice;
+
+  // =========================
+  // UI
+  // =========================
   return (
     <ScreenWrapper>
-      {/* Header */}
+      {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <FontAwesome name="arrow-left" size={20} color="#264653" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Listing Details</Text>
       </View>
-      
-      <ScrollView>
-        <Image source={{ uri: listing.image }} style={styles.listingImage} />
+
+      {/* REFRESH BUTTON */}
+      <TouchableOpacity
+        style={styles.refreshButton}
+        onPress={fetchListingDetails}
+      >
+        <MaterialCommunityIcons name="refresh" size={20} color="#264653" />
+        <Text style={styles.refreshText}>Refresh</Text>
+      </TouchableOpacity>
+
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={fetchListingDetails}
+          />
+        }
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        {/* IMAGE PLACEHOLDER */}
+        <View style={styles.imagePlaceholder}>
+          <MaterialCommunityIcons name="sprout" size={64} color="#2A9D8F" />
+        </View>
+
         <View style={styles.container}>
-          <Text style={styles.cropName}>{listing.crop}</Text>
-          <Text style={styles.farmerName}>
-            Posted by {listing.farmerName} ({listing.location})
-          </Text>
-          
+          <Text style={styles.cropName}>{cropName}</Text>
+
+          {/* FARMER INFO */}
+          <View style={styles.farmerRow}>
+            <MaterialCommunityIcons
+              name="account-circle"
+              size={40}
+              color="#CCC"
+            />
+            <View style={{ marginLeft: 12 }}>
+              <Text style={styles.farmerName}>{farmerName}</Text>
+              <Text style={styles.farmerLocation}>{farmerLocation}</Text>
+            </View>
+          </View>
+
+          {/* DETAILS */}
           <View style={styles.detailsGrid}>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Quantity</Text>
-              <Text style={styles.detailValue}>{listing.quantity}</Text>
+              <Text style={styles.detailValue}>{quantity}</Text>
             </View>
             <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Base Price</Text>
-              <Text style={styles.detailValue}>₹{listing.basePrice}/quintal</Text>
+              <Text style={styles.detailLabel}>
+                {listing.totalBids > 0
+                  ? "Current Highest Bid"
+                  : "Starting Price"}
+              </Text>
+              <Text style={[styles.detailValue, { color: "#E76F51" }]}>
+                ₹{currentPrice}
+              </Text>
             </View>
           </View>
-          
-          <Text style={styles.description}>{listing.description}</Text>
-          
-          {/* Bidding Section */}
-          <View style={styles.biddingContainer}>
-            <Text style={styles.biddingTitle}>Place Your Bid</Text>
-            <Input 
-              label="Your Price (₹ per quintal)"
-              value={bidPrice}
-              onChangeText={setBidPrice}
-              keyboardType="numeric"
-              placeholder={`Must be > ₹${listing.basePrice}`}
-            />
-            <Button
-              title="Place Bid"
-              onPress={handlePlaceBid}
-              style={styles.bidButton}
-            />
+
+          {/* QUALITY CERT */}
+          {listing.hasQualityCertificate && (
+            <View style={styles.certBox}>
+              <MaterialCommunityIcons
+                name="certificate"
+                size={24}
+                color="#E9C46A"
+              />
+              <Text style={styles.certText}>
+                Quality Certified: Grade {listing.qualityGrade}
+              </Text>
+            </View>
+          )}
+
+          {/* STATUS & ACTIONS */}
+          <View style={{ marginTop: 20 }}>
+            {isAuctionActive ? (
+              <>
+                {isWinning && (
+                  <View style={styles.winningBox}>
+                    <MaterialCommunityIcons
+                      name="trophy"
+                      size={24}
+                      color="#2A9D8F"
+                    />
+                    <Text style={styles.winningText}>
+                      You are currently winning this auction
+                    </Text>
+                  </View>
+                )}
+
+                <Button
+                  title="Go to Bidding Room"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/bidding-room",
+                      params: { saleId: listing._id },
+                    })
+                  }
+                  style={styles.bidRoomButton}
+                />
+              </>
+            ) : (
+              <View style={styles.statusContainer}>
+                <Text style={styles.statusTitle}>
+                  Status: {listing.status.toUpperCase()}
+                </Text>
+
+                {listing.status === "sold" && (
+                  <Text style={styles.statusMessage}>
+                    This listing has been sold.
+                  </Text>
+                )}
+
+                {listing.status === "unsold" && (
+                  <Text style={styles.statusMessage}>
+                    Auction ended with no bids.
+                  </Text>
+                )}
+
+                {listing.status === "cancelled" && (
+                  <Text style={styles.statusMessage}>
+                    Listing was cancelled by the seller.
+                  </Text>
+                )}
+
+                {listing.status === "pending" && (
+                  <Text style={styles.statusMessage}>
+                    Auction has not started yet.
+                  </Text>
+                )}
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -128,92 +252,143 @@ export default function ListingDetailsScreen() {
   );
 }
 
+// =========================
+// STYLES
+// =========================
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 16,
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
   },
   backButton: {
     marginRight: 16,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#264653',
+    fontWeight: "bold",
+    color: "#264653",
+  },
+  refreshButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-end",
+    marginRight: 20,
+    marginTop: 10,
+  },
+  refreshText: {
+    marginLeft: 6,
+    color: "#264653",
+    fontWeight: "600",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
-  listingImage: {
-    width: '100%',
-    height: 250,
+  imagePlaceholder: {
+    width: "100%",
+    height: 200,
+    backgroundColor: "#E8F5E9",
+    justifyContent: "center",
+    alignItems: "center",
   },
   container: {
     padding: 20,
   },
   cropName: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#264653',
-    marginBottom: 8,
-  },
-  farmerName: {
-    fontSize: 16,
-    color: '#666',
+    fontWeight: "bold",
+    color: "#264653",
     marginBottom: 16,
   },
+  farmerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEE",
+  },
+  farmerName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+  },
+  farmerLocation: {
+    fontSize: 14,
+    color: "#666",
+  },
   detailsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#F8F9FA',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#F8F9FA",
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
   },
   detailItem: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 4,
   },
   detailValue: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#264653',
+    fontWeight: "600",
+    color: "#264653",
   },
-  description: {
-    fontSize: 15,
-    color: '#333',
-    lineHeight: 22,
+  certBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF8E1",
+    padding: 12,
+    borderRadius: 8,
     marginBottom: 24,
   },
-  biddingContainer: {
+  certText: {
+    marginLeft: 10,
+    color: "#F9A825",
+    fontWeight: "bold",
+  },
+  winningBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E0F2F1",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  winningText: {
+    marginLeft: 10,
+    color: "#2A9D8F",
+    fontWeight: "bold",
+  },
+  bidRoomButton: {
+    backgroundColor: "#E76F51",
+  },
+  statusContainer: {
     padding: 20,
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: "#ECEFF1",
+    borderRadius: 12,
+    alignItems: "center",
   },
-  biddingTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#264653',
-    textAlign: 'center',
-    marginBottom: 16,
+  statusTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#37474F",
   },
-  bidButton: {
-    backgroundColor: '#E76F51',
+  statusMessage: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#607D8B",
   },
 });

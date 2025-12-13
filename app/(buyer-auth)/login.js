@@ -56,17 +56,17 @@ export default function BuyerLoginScreen() {
 
   const sendOtpAndNavigate = async (phone) => {
     try {
-      const res = { ok: true };
-      // const res = await fetch(`${API_BASE_URL}/api/buyer/auth/send-otp`, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ phone }),
-      // });
+      // const res = { ok: true };
+      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
 
-      // const data = await res.json();
+      const data = await res.json();
 
       if (res.ok) {
-        // Alert.alert("Welcome Back", "OTP sent to your registered number.");
+        Alert.alert("Welcome Back", "OTP sent to your registered number.");
         router.push({
           pathname: "/(buyer-auth)/otp",
           params: { mobileNumber: phone, role: "buyer" },
