@@ -64,6 +64,10 @@ export default function BiddingRoom() {
     ).start();
   }, []);
 
+  useEffect(() => {
+    console.log("saleInfo updated:", saleInfo);
+  }, [saleInfo]);
+
   // Flash animation when new bid arrives
   const flashNewBid = () => {
     bidFlashAnim.setValue(1);
@@ -86,12 +90,12 @@ export default function BiddingRoom() {
       });
 
       const data = await res.json();
-
+      console.log(data.bids.currentHighestBid);
       if (res.ok) {
-        setBids(data.bids || []);
-        setCurrentHighest(data.currentHighestBid || 0);
-        setAuctionEndDate(data.auctionEndDate);
-        setHighestBidder(data.highestBidder);
+        setBids(data.bids.bids || []);
+        setCurrentHighest(data.bids.currentHighestBid || 0);
+        setAuctionEndDate(data.bids.auctionEndDate);
+        setHighestBidder(data.bids.highestBidder);
       } else {
         Alert.alert("Error", data.message || "Failed to load bids");
       }
@@ -122,7 +126,6 @@ export default function BiddingRoom() {
       }
 
       const sale = data.marketplaceSale;
-
       setSaleInfo(sale);
 
       // Use backend as source of truth
@@ -270,14 +273,27 @@ export default function BiddingRoom() {
   };
 
   useEffect(() => {
-    fetchBids();
-    fetchSaleInfo();
+    const initializeAuction = async () => {
+      try {
+        // Step 1: Fetch sale info first
+        await fetchSaleInfo();
+
+        // Step 2: Then fetch bids (after sale info is loaded)
+        await fetchBids();
+      } catch (error) {
+        console.error("Failed to initialize auction:", error);
+      }
+    };
+
+    initializeAuction();
   }, []);
+  console.log(`highestBidder: ${highestBidder}`);
+  console.log(`user: ${user?._id}`);
 
   const isWinning =
     highestBidder &&
-    user?.buyerId &&
-    highestBidder.toString() === user.buyerId.toString();
+    user?._id &&
+    highestBidder.toString() === user._id.toString();
 
   const auctionEnded = timeLeft === "Auction Ended";
 
@@ -295,7 +311,9 @@ export default function BiddingRoom() {
     );
   }
 
-  console.log(bids);
+  console.log(`Bids: ${bids}`);
+  console.log(`isWinning: ${isWinning}`);
+  console.log(`highestBidder: ${highestBidder}`);
 
   return (
     <ScreenWrapper>
@@ -405,7 +423,7 @@ export default function BiddingRoom() {
             <View style={styles.currentBidContainer}>
               <Text style={styles.currentBidLabel}>Current Highest Bid</Text>
               <Text style={styles.currentBidAmount}>
-                ₹{saleInfo.currentHighestBid}
+                ₹{currentHighest.toLocaleString()}
               </Text>
               <Text style={styles.totalBidsText}>
                 {bids.length} {bids.length === 1 ? "bid" : "bids"} placed
@@ -414,19 +432,9 @@ export default function BiddingRoom() {
 
             {/* WINNING STATUS */}
             {isWinning && !auctionEnded && (
-              <Animated.View
-                style={[
-                  styles.winningBadge,
-                  { transform: [{ scale: pulseAnim }] },
-                ]}
-              >
-                <MaterialCommunityIcons
-                  name="trophy"
-                  size={20}
-                  color="#FFD700"
-                />
-                <Text style={styles.winningText}>You're Winning! 🎉</Text>
-              </Animated.View>
+              <View style={{ alignItems: "center" }}>
+                <Text style={styles.winningText}>🏆 You're Winning!</Text>
+              </View>
             )}
           </Animated.View>
 
