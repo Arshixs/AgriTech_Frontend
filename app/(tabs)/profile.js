@@ -30,6 +30,7 @@ export default function FarmerProfileScreen() {
   const [saving, setSaving] = useState(false);
   const [fetchingGps, setFetchingGps] = useState(false); // Added for GPS loading
   const [isMapModalVisible, setMapModalVisible] = useState(false); // Added for Modal
+  const [tempCoords, setTempCoords] = useState({ lat: null, lng: null });
 
   const mapRef = useRef(null);
   const previewMapRef = useRef(null);
@@ -92,14 +93,8 @@ export default function FarmerProfileScreen() {
    */
   const handleMapPress = useCallback((e) => {
     const coords = e.nativeEvent.coordinate;
-    setProfile(prev => ({ ...prev, coordinates: { lat: coords.latitude, lng: coords.longitude } }));
-
-    setPreviewRegion({
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
+    // Update ONLY temp state
+    setTempCoords({ lat: coords.latitude, lng: coords.longitude });
   }, []);
 
   const getCurrentLocation = async () => {
@@ -114,13 +109,8 @@ export default function FarmerProfileScreen() {
       let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const { latitude, longitude } = loc.coords;
 
-      setProfile(prev => ({ ...prev, coordinates: { lat: latitude, lng: longitude } }));
-      setPreviewRegion({
-        latitude,
-        longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
+      // Update ONLY temp state
+      setTempCoords({ lat: latitude, lng: longitude });
 
       if (mapRef.current) {
         mapRef.current.animateToRegion({
@@ -138,10 +128,22 @@ export default function FarmerProfileScreen() {
   };
 
   const handleConfirmLocation = () => {
-    if (!profile.coordinates?.lat) {
+    if (!tempCoords.lat) {
       RNAlert.alert('Alert', 'Please select a location on the map');
       return;
     }
+    
+    // Save temp to profile
+    setProfile(prev => ({ ...prev, coordinates: tempCoords }));
+    
+    // Sync the small preview map
+    setPreviewRegion({
+      latitude: tempCoords.lat,
+      longitude: tempCoords.lng,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    });
+
     setMapModalVisible(false);
   };
 
@@ -207,8 +209,11 @@ export default function FarmerProfileScreen() {
 
           <TouchableOpacity
             style={styles.mapPreview}
-            onPress={() => setMapModalVisible(true)}
-            activeOpacity={0.8}
+            onPress={() => {
+              // Initialize tempCoords with existing profile coords when opening
+              setTempCoords(profile.coordinates); 
+              setMapModalVisible(true);
+            }}
           >
             <MapView
               ref={previewMapRef}
@@ -309,11 +314,11 @@ export default function FarmerProfileScreen() {
                 showsMyLocationButton={false}
                 provider={PROVIDER_GOOGLE}
               >
-                {profile.coordinates?.lat && (
+                {tempCoords?.lat && (
                   <Marker
                     coordinate={{
-                      latitude: profile.coordinates.lat,
-                      longitude: profile.coordinates.lng
+                      latitude: tempCoords.lat,
+                      longitude: tempCoords.lng
                     }}
                     draggable
                     onDragEnd={handleMapPress}
@@ -327,7 +332,7 @@ export default function FarmerProfileScreen() {
                   <MaterialCommunityIcons name="close" size={24} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.modalTitle}>
-                  {profile.coordinates?.lat ? '✓ Location Selected' : 'Pin your Farm'}
+                  {tempCoords?.lat ? 'Location Selected' : 'Pin your Farm'}
                 </Text>
                 <TouchableOpacity onPress={handleConfirmLocation} style={styles.confirmBtn}>
                   <Text style={styles.confirmBtnText}>Confirm</Text>

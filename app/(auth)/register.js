@@ -30,6 +30,7 @@ export default function RegistrationScreen() {
     const previewMapRef = useRef(null); // Separate ref for preview map
     const [location, setLocation] = useState(null); // { lat, lng }
     const [isMapModalVisible, setMapModalVisible] = useState(false);
+    const [tempLocation, setTempLocation] = useState(null);
     
     // Store region for preview map
     const [previewRegion, setPreviewRegion] = useState({
@@ -44,15 +45,8 @@ export default function RegistrationScreen() {
      */
     const handleMapPress = useCallback((e) => {
         const coords = e.nativeEvent.coordinate;
-        setLocation({ lat: coords.latitude, lng: coords.longitude });
-        
-        // Update preview region to center on selected location
-        setPreviewRegion({
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-        });
+        // Update temporary state, NOT main state
+        setTempLocation({ lat: coords.latitude, lng: coords.longitude });
     }, []);
 
     /**
@@ -77,27 +71,17 @@ export default function RegistrationScreen() {
 
             const { latitude, longitude } = loc.coords;
             
-            // Update main location
-            const newLocation = { lat: latitude, lng: longitude };
-            setLocation(newLocation);
-            
-            // Update preview region
-            setPreviewRegion({
-                latitude: latitude,
-                longitude: longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-            });
+            // Update temporary state, NOT main state
+            setTempLocation({ lat: latitude, lng: longitude });
 
             // Animate main map
             if (mapRef.current) {
-                const targetRegion = {
+                mapRef.current.animateToRegion({
                     latitude,
                     longitude,
                     latitudeDelta: 0.005,
                     longitudeDelta: 0.005,
-                };
-                mapRef.current.animateToRegion(targetRegion, 500);
+                }, 500);
             }
 
             // Also animate preview map when modal closes
@@ -127,20 +111,19 @@ export default function RegistrationScreen() {
      */
     const handleConfirmLocation = () => {
         // If no location selected but we have GPS location, use that
-        if (!location) {
+        if (!tempLocation) {
             alert('Please select a location on the map');
             return;
         }
+        setLocation(tempLocation);
         
         // Ensure preview map is updated
-        if (previewMapRef.current) {
-            previewMapRef.current.animateToRegion({
-                latitude: location.lat,
-                longitude: location.lng,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-            }, 100);
-        }
+        setPreviewRegion({
+            latitude: tempLocation.lat,
+            longitude: tempLocation.lng,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+        });
         
         setMapModalVisible(false);
     };
@@ -269,11 +252,11 @@ export default function RegistrationScreen() {
                             showsMyLocationButton={false}
                             provider={PROVIDER_GOOGLE}
                         >
-                            {location && (
+                            {tempLocation && (
                                 <Marker 
                                     coordinate={{ 
-                                        latitude: location.lat, 
-                                        longitude: location.lng 
+                                        latitude: tempLocation.lat, 
+                                        longitude: tempLocation.lng 
                                     }}
                                     draggable
                                     onDragEnd={handleMapPress}
@@ -315,10 +298,10 @@ export default function RegistrationScreen() {
                         </TouchableOpacity>
 
                         {/* Bottom Info */}
-                        {location && (
+                        {tempLocation && (
                             <View style={styles.coordsInfo}>
                                 <Text style={styles.coordsText}>
-                                    Lat: {location.lat.toFixed(6)}, Lng: {location.lng.toFixed(6)}
+                                    Lat: {tempLocation.lat.toFixed(6)}, Lng: {tempLocation.lng.toFixed(6)}
                                 </Text>
                                 <Text style={styles.coordsHint}>
                                     Tap on map or drag marker to adjust
