@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     top: 50, left: 20, right: 20,
     flexDirection: 'row',
     backgroundColor: 'white',
-    borderRadius: 30,
+    borderRadius: 10,
     paddingHorizontal: 15,
     paddingVertical: 12,
     alignItems: 'center',
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   },
   iconBtn: { padding: 6 },
   modalTitle: { flex: 1, textAlign: 'center', fontWeight: 'bold', color: '#264653', fontSize: 17 },
-  confirmBtn: { backgroundColor: '#2A9D8F', paddingHorizontal: 22, paddingVertical: 9, borderRadius: 20 },
+  confirmBtn: { backgroundColor: '#2A9D8F', paddingHorizontal: 22, paddingVertical: 9, borderRadius: 10 },
   confirmBtnText: { color: 'white', fontWeight: 'bold', fontSize: 15 },
   gpsFab: {
     position: 'absolute',

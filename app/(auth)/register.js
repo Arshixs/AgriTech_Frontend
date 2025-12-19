@@ -217,14 +217,14 @@ export default function RegistrationScreen() {
                     <MapView 
                         ref={previewMapRef}
                         style={StyleSheet.absoluteFillObject}
-                        initialRegion={previewRegion}
+                        // initialRegion={previewRegion}
                         region={previewRegion} // Use region prop for updates
                         scrollEnabled={false}
                         zoomEnabled={false}
                         pitchEnabled={false}
                         rotateEnabled={false}
                         provider={PROVIDER_GOOGLE}
-                        cacheEnabled={true}
+                        cacheEnabled={false}
                         loadingEnabled={true}
                     >
                         {location && (
@@ -291,7 +291,7 @@ export default function RegistrationScreen() {
                                 <MaterialCommunityIcons name="close" size={24} color="#333" />
                             </TouchableOpacity>
                             <Text style={styles.modalTitle}>
-                                {location ? '✓ Location Selected' : 'Pin your Farm'}
+                                {location ? 'Location Selected' : 'Pin your Farm'}
                             </Text>
                             <TouchableOpacity 
                                 onPress={handleConfirmLocation} 
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
         right: 20,
         flexDirection: 'row',
         backgroundColor: 'white',
-        borderRadius: 30,
+        borderRadius: 10,
         paddingHorizontal: 15,
         paddingVertical: 12,
         alignItems: 'center',
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#2A9D8F', 
         paddingHorizontal: 22, 
         paddingVertical: 9, 
-        borderRadius: 20,
+        borderRadius: 10,
         elevation: 3,
     },
     confirmBtnText: { 
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     },
     gpsFab: {
         position: 'absolute',
-        bottom: 100,
+        bottom: 120,
         right: 20,
         backgroundColor: 'white',
         width: 60,
