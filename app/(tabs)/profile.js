@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,23 +7,33 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
+  RefreshControl,
+  Modal,
   Alert as RNAlert,
 } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // Added MapView
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Location from 'expo-location';
 import { useRouter } from "expo-router";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import Button from "../../src/components/common/Button";
 import { useAuth } from "../../src/context/AuthContext";
-import {API_BASE_URL} from "../../secret"
+import { API_BASE_URL } from "../../secret"
 
 export default function FarmerProfileScreen() {
   const { user, signOut } = useAuth();
   const authToken = user?.token;
   const router = useRouter();
 
+  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fetchingGps, setFetchingGps] = useState(false); // Added for GPS loading
+  const [isMapModalVisible, setMapModalVisible] = useState(false); // Added for Modal
+
+  const mapRef = useRef(null);
+  const previewMapRef = useRef(null);
+
   const [profile, setProfile] = useState({
     name: "",
     phone: "",
@@ -32,9 +42,17 @@ export default function FarmerProfileScreen() {
     coordinates: { lat: null, lng: null }
   });
 
-  // Fetch initial profile data from backend
+  // Map region state
+  const [previewRegion, setPreviewRegion] = useState({
+    latitude: 20.5937,
+    longitude: 78.9629,
+    latitudeDelta: 12,
+    longitudeDelta: 12,
+  });
+
   const fetchProfile = async () => {
     if (!authToken) return;
+    setRefreshing(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/farmer-auth/profile`, {
         headers: { "Authorization": `Bearer ${authToken}` },
@@ -42,10 +60,20 @@ export default function FarmerProfileScreen() {
       const data = await res.json();
       if (res.ok) {
         setProfile(data.farmer);
+        // Sync map preview if coords exist
+        if (data.farmer.coordinates?.lat) {
+          setPreviewRegion({
+            latitude: data.farmer.coordinates.lat,
+            longitude: data.farmer.coordinates.lng,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+        }
       }
     } catch (error) {
       console.error("Profile Fetch Error:", error);
     } finally {
+      setRefreshing(false);
       setLoading(false);
     }
   };
@@ -54,38 +82,73 @@ export default function FarmerProfileScreen() {
     fetchProfile();
   }, []);
 
-  // Request location and update local state
-  const handleUpdateLocation = async () => {
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchProfile();
+  }, []);
+
+  /**
+   * MAP LOGIC FROM REGISTER.JS
+   */
+  const handleMapPress = useCallback((e) => {
+    const coords = e.nativeEvent.coordinate;
+    setProfile(prev => ({ ...prev, coordinates: { lat: coords.latitude, lng: coords.longitude } }));
+
+    setPreviewRegion({
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    });
+  }, []);
+
+  const getCurrentLocation = async () => {
+    setFetchingGps(true);
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        RNAlert.alert("Permission Denied", "Location access is required for accurate weather alerts.");
+        RNAlert.alert('Permission Denied', 'Location permission is required');
         return;
       }
 
-      setSaving(true);
-      let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      
-      const newCoords = {
-        lat: location.coords.latitude,
-        lng: location.coords.longitude
-      };
+      let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const { latitude, longitude } = loc.coords;
 
-      setProfile(prev => ({ ...prev, coordinates: newCoords }));
-      
-      // Immediately suggest saving if coordinates changed
-      RNAlert.alert("Location Found", `Lat: ${newCoords.lat.toFixed(4)}, Lng: ${newCoords.lng.toFixed(4)}. Please Save Changes.`);
+      setProfile(prev => ({ ...prev, coordinates: { lat: latitude, lng: longitude } }));
+      setPreviewRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+
+      if (mapRef.current) {
+        mapRef.current.animateToRegion({
+          latitude,
+          longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        }, 500);
+      }
     } catch (error) {
-      RNAlert.alert("Error", "Could not fetch current location.");
+      RNAlert.alert('Error', 'Failed to get location');
     } finally {
-      setSaving(false);
+      setFetchingGps(false);
     }
+  };
+
+  const handleConfirmLocation = () => {
+    if (!profile.coordinates?.lat) {
+      RNAlert.alert('Alert', 'Please select a location on the map');
+      return;
+    }
+    setMapModalVisible(false);
   };
 
   const handleSaveChanges = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/farmer-auth/register`, { // Reusing registration update logic
+      const res = await fetch(`${API_BASE_URL}/api/farmer-auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -100,8 +163,8 @@ export default function FarmerProfileScreen() {
       });
 
       if (res.ok) {
-        RNAlert.alert("Success", "Profile and location updated successfully.");
-        fetchProfile(); // Refresh
+        RNAlert.alert("Success", "Profile updated successfully.");
+        fetchProfile();
       } else {
         throw new Error("Update failed.");
       }
@@ -124,101 +187,166 @@ export default function FarmerProfileScreen() {
 
   return (
     <ScreenWrapper>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <View style={styles.container}>
-          
+
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.avatarContainer}>
-                <FontAwesome name="user-circle" size={80} color="#2A9D8F" />
+              <FontAwesome name="user-circle" size={80} color="#2A9D8F" />
             </View>
             <Text style={styles.userName}>{profile.name || "Farmer"}</Text>
             <Text style={styles.userPhone}>{profile.phone}</Text>
           </View>
 
-          {/* Location Management Card */}
-          <View style={styles.locationCard}>
-            <View style={styles.cardHeaderRow}>
-                <MaterialCommunityIcons name="map-marker-radius" size={24} color="#E76F51" />
-                <Text style={styles.cardTitle}>Farm Location</Text>
-            </View>
-            <Text style={styles.locationDescription}>
-                Setting your precise location ensures you get accurate localized weather alerts and crop recommendations.
-            </Text>
-            
-            <View style={styles.coordsDisplay}>
-                <View style={styles.coordItem}>
-                    <Text style={styles.coordLabel}>Latitude</Text>
-                    <Text style={styles.coordValue}>{profile.coordinates?.lat?.toFixed(6) || "Not Set"}</Text>
-                </View>
-                <View style={styles.coordDivider} />
-                <View style={styles.coordItem}>
-                    <Text style={styles.coordLabel}>Longitude</Text>
-                    <Text style={styles.coordValue}>{profile.coordinates?.lng?.toFixed(6) || "Not Set"}</Text>
-                </View>
-            </View>
+          {/* Location Management Section (Updated to match Register style) */}
+          <Text style={styles.sectionTitle}>Farm Location</Text>
 
-            <TouchableOpacity 
-                style={styles.locationButton} 
-                onPress={handleUpdateLocation}
-                disabled={saving}
+          <TouchableOpacity
+            style={styles.mapPreview}
+            onPress={() => setMapModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <MapView
+              ref={previewMapRef}
+              style={StyleSheet.absoluteFillObject}
+              region={previewRegion}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              pitchEnabled={false}
+              rotateEnabled={false}
+              provider={PROVIDER_GOOGLE}
             >
-                <MaterialCommunityIcons name="crosshairs-gps" size={20} color="#FFFFFF" />
-                <Text style={styles.locationButtonText}>Get Current Location</Text>
-            </TouchableOpacity>
-          </View>
+              {profile.coordinates?.lat && (
+                <Marker
+                  coordinate={{
+                    latitude: profile.coordinates.lat,
+                    longitude: profile.coordinates.lng
+                  }}
+                  pinColor="#2A9D8F"
+                />
+              )}
+            </MapView>
+
+            {!profile.coordinates?.lat && (
+              <View style={styles.placeholderOverlay}>
+                <MaterialCommunityIcons name="map-marker-plus" size={40} color="#2A9D8F" />
+                <Text style={styles.placeholderText}>Tap to set location on Map</Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
           {/* Personal Information */}
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>Personal Details</Text>
-            
+
             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Full Name</Text>
-                <TextInput 
-                    style={styles.input}
-                    value={profile.name}
-                    onChangeText={(t) => setProfile({...profile, name: t})}
-                    placeholder="Enter full name"
-                />
+              <Text style={styles.inputLabel}>Full Name</Text>
+              <TextInput
+                style={styles.input}
+                value={profile.name}
+                onChangeText={(t) => setProfile({ ...profile, name: t })}
+                placeholder="Enter full name"
+              />
             </View>
 
             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Adhar Number</Text>
-                <TextInput 
-                    style={styles.input}
-                    value={profile.adharNumber}
-                    onChangeText={(t) => setProfile({...profile, adharNumber: t})}
-                    placeholder="12 Digit Adhar"
-                    keyboardType="numeric"
-                />
+              <Text style={styles.inputLabel}>Adhar Number</Text>
+              <TextInput
+                style={styles.input}
+                value={profile.adharNumber}
+                editable={false}
+                onChangeText={(t) => setProfile({ ...profile, adharNumber: t })}
+                placeholder="12 Digit Adhar"
+                keyboardType="numeric"
+              />
             </View>
 
             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Farm Address</Text>
-                <TextInput 
-                    style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
-                    value={profile.address}
-                    onChangeText={(t) => setProfile({...profile, address: t})}
-                    placeholder="Enter complete address"
-                    multiline
-                />
+              <Text style={styles.inputLabel}>Farm Address</Text>
+              <TextInput
+                style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
+                value={profile.address}
+                onChangeText={(t) => setProfile({ ...profile, address: t })}
+                placeholder="Enter complete address"
+                multiline
+              />
             </View>
           </View>
 
           {/* Action Buttons */}
           <View style={styles.actions}>
-            <Button 
-                title="Save Profile Changes" 
-                onPress={handleSaveChanges} 
-                loading={saving}
-                style={{ backgroundColor: '#2A9D8F' }}
+            <Button
+              title="Save Profile Changes"
+              onPress={handleSaveChanges}
+              loading={saving}
+              style={{ backgroundColor: '#2A9D8F' }}
             />
-            
+
             <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-                <MaterialCommunityIcons name="logout" size={20} color="#E76F51" />
-                <Text style={styles.signOutText}>Logout Account</Text>
+              <MaterialCommunityIcons name="logout" size={20} color="#E76F51" />
+              <Text style={styles.signOutText}>Logout Account</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Fullscreen Map Modal (Copied from Register) */}
+          <Modal
+            visible={isMapModalVisible}
+            animationType="slide"
+            statusBarTranslucent
+            onRequestClose={() => setMapModalVisible(false)}
+          >
+            <View style={styles.modalBody}>
+              <MapView
+                ref={mapRef}
+                style={styles.fullMap}
+                initialRegion={previewRegion}
+                onPress={handleMapPress}
+                showsUserLocation={true}
+                showsMyLocationButton={false}
+                provider={PROVIDER_GOOGLE}
+              >
+                {profile.coordinates?.lat && (
+                  <Marker
+                    coordinate={{
+                      latitude: profile.coordinates.lat,
+                      longitude: profile.coordinates.lng
+                    }}
+                    draggable
+                    onDragEnd={handleMapPress}
+                    pinColor="#2A9D8F"
+                  />
+                )}
+              </MapView>
+
+              <View style={styles.modalHeader}>
+                <TouchableOpacity onPress={() => setMapModalVisible(false)} style={styles.iconBtn}>
+                  <MaterialCommunityIcons name="close" size={24} color="#333" />
+                </TouchableOpacity>
+                <Text style={styles.modalTitle}>
+                  {profile.coordinates?.lat ? '✓ Location Selected' : 'Pin your Farm'}
+                </Text>
+                <TouchableOpacity onPress={handleConfirmLocation} style={styles.confirmBtn}>
+                  <Text style={styles.confirmBtnText}>Confirm</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={styles.gpsFab}
+                onPress={getCurrentLocation}
+                disabled={fetchingGps}
+              >
+                {fetchingGps ? (
+                  <ActivityIndicator color="#2A9D8F" size="small" />
+                ) : (
+                  <MaterialCommunityIcons name="crosshairs-gps" size={28} color="#2A9D8F" />
+                )}
+              </TouchableOpacity>
+            </View>
+          </Modal>
 
         </View>
       </ScrollView>
@@ -234,45 +362,33 @@ const styles = StyleSheet.create({
   avatarContainer: { marginBottom: 15 },
   userName: { fontSize: 24, fontWeight: 'bold', color: '#264653' },
   userPhone: { fontSize: 16, color: '#666', marginTop: 4 },
-  
-  // Location Card
-  locationCard: {
-    backgroundColor: '#FFFFFF',
+
+  // Map Preview (Style from Register)
+  mapPreview: {
+    height: 180,
+    backgroundColor: '#e8f4f8',
     borderRadius: 16,
-    padding: 20,
+    overflow: 'hidden',
     marginBottom: 25,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#F0F0F0'
+    borderWidth: 2,
+    borderColor: '#2A9D8F',
+    borderStyle: 'dashed',
+    position: 'relative',
   },
-  cardHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#264653', marginLeft: 10 },
-  locationDescription: { fontSize: 13, color: '#666', lineHeight: 18, marginBottom: 15 },
-  coordsDisplay: {
-    flexDirection: 'row',
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    alignItems: 'center'
-  },
-  coordItem: { flex: 1, alignItems: 'center' },
-  coordLabel: { fontSize: 11, color: '#888', marginBottom: 4, textTransform: 'uppercase' },
-  coordValue: { fontSize: 15, fontWeight: '700', color: '#264653' },
-  coordDivider: { width: 1, height: 30, backgroundColor: '#DDD' },
-  locationButton: {
-    flexDirection: 'row',
-    backgroundColor: '#E76F51',
-    paddingVertical: 12,
-    borderRadius: 10,
+  placeholderOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(248, 249, 250, 0.9)',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    zIndex: 1,
   },
-  locationButtonText: { color: '#FFFFFF', fontWeight: 'bold', marginLeft: 10 },
+  placeholderText: {
+    color: '#2A9D8F',
+    marginTop: 12,
+    fontWeight: '600',
+    fontSize: 15,
+  },
 
   // Form
   infoSection: { marginBottom: 20 },
@@ -289,7 +405,48 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#264653'
   },
+  disabledInput: {
+    backgroundColor: '#F0F0F0', // Greyed out background
+    color: '#888',             // Muted text color
+    borderColor: '#E0E0E0',
+  },
+  helperText: {
+    fontSize: 11,
+    color: '#999',
+    marginTop: 4,
+    fontStyle: 'italic'
+  },
 
+  // Modal Styles (From Register)
+  modalBody: { flex: 1, backgroundColor: '#000' },
+  fullMap: { flex: 1 },
+  modalHeader: {
+    position: 'absolute',
+    top: 50, left: 20, right: 20,
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    borderRadius: 30,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    alignItems: 'center',
+    elevation: 15,
+  },
+  iconBtn: { padding: 6 },
+  modalTitle: { flex: 1, textAlign: 'center', fontWeight: 'bold', color: '#264653', fontSize: 17 },
+  confirmBtn: { backgroundColor: '#2A9D8F', paddingHorizontal: 22, paddingVertical: 9, borderRadius: 20 },
+  confirmBtnText: { color: 'white', fontWeight: 'bold', fontSize: 15 },
+  gpsFab: {
+    position: 'absolute',
+    bottom: 50, right: 20,
+    backgroundColor: 'white',
+    width: 60, height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 12,
+  },
+
+  
   // Footer Actions
   actions: { marginTop: 10 },
   signOutButton: {
