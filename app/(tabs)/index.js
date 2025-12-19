@@ -197,7 +197,10 @@ export default function HomeScreen() {
                 {user ? user.name : "Farmer"}!
               </Text>
             </View>
-            <TouchableOpacity style={styles.profileButton}>
+            <TouchableOpacity 
+              style={styles.profileButton}
+              onPress={() => router.push('/(tabs)/profile')}
+            >
               <FontAwesome name="user-circle" size={40} color="#2A9D8F" />
             </TouchableOpacity>
           </View>
