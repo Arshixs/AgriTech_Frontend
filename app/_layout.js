@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
+import '../src/i18n';
 
 const RootLayout = () => {
   const { user, isLoading, signOut } = useAuth(); 
