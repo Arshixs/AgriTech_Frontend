@@ -26,7 +26,7 @@ const RootLayout = () => {
       // --- (No changes to this logic) ---
     } else {
       if (!inAuthGroup && !atRootIndex) {
-        router.replace('/');
+        router.replace('../');
       }
     }
   }, [user, isLoading, segments, router, signOut]); 
