@@ -1,0 +1,161 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "back": "Back",
+    "continue": "Continue"
+  },
+  "index": {
+    "welcome": "Welcome to Agri-Tech",
+    "select_role": "Choose Your Identity",
+    "farmer": "Farmer",
+    "buyer": "Buyer",
+    "vendor": "Vendor",
+    "govt": "Govt Official",
+    "language_toggle": "हिन्दी"
+  },
+  "farmer": {
+    "auth": {
+      "login": {
+        "title": "Welcome Farmer",
+        "label": "Mobile Number",
+        "placeholder": "Enter 10 digit number",
+        "button": "Send OTP",
+        "err_invalid_phone": "Enter a valid 10-digit number.",
+        "err_send_failed": "Failed to send OTP",
+        "err_server": "Server error"
+      },
+      "otp": {
+        "title": "Verify OTP",
+        "subtitle": "Enter the 6-digit OTP sent to +91 {{mobile}}",
+        "label": "Enter OTP",
+        "placeholder": "XXXXXX",
+        "button": "Verify & Proceed",
+        "err_invalid_len": "Enter a valid 6-digit OTP.",
+        "err_invalid_otp": "Invalid or Expired OTP.",
+        "err_verify_failed": "Failed to verify OTP"
+      }
+    },
+    "dashboard": {
+      "greeting": "Welcome back,",
+      "loading": "Loading Dashboard...",
+      "stats": {
+        "land": "Total Land",
+        "fields": "Active Fields",
+        "alerts": "Alerts",
+        "acres": "Acres"
+      },
+      "featured": {
+        "title": "Expense Predictor",
+        "desc": "Get accurate cost estimates for your crops"
+      },
+      "sections": {
+        "actions": "Quick Actions",
+        "tasks": "Today's Tasks"
+      },
+      "actions": {
+        "expense": "Expense Predictor",
+        "expense_desc": "Calculate farming costs",
+        "market": "Marketplace",
+        "market_desc": "Rentals and raw materials",
+        "forecast": "Price Forecast",
+        "forecast_desc": "Track crop prices",
+        "alerts": "Weather & Alerts",
+        "alerts_desc": "Stay updated",
+        "guide": "Crop Guide",
+        "guide_desc": "Get recommendations",
+        "iot": "IoT Devices",
+        "iot_desc": "Monitor sensors",
+        "orders": "My Orders",
+        "orders_desc": "Orders and Rentals",
+        "certs": "My Certificates",
+        "certs_desc": "All certificates"
+      },
+      "tasks": {
+        "no_tasks": "No tasks scheduled for today. Good work!",
+        "field": "Field",
+        "type": "Type"
+      },
+      "sign_out": "Sign Out"
+    },
+    "farm": {
+      "header": "My Farm",
+      "stats": {
+        "total_acres": "Total Acres",
+        "active_fields": "Active Fields"
+      },
+      "fields": {
+        "title": "My Fields",
+        "add_button": "Add Field",
+        "acres": "acres",
+        "soil": "Soil",
+        "plant_crop": "Plant a Crop",
+        "current_crop": "Current Crop",
+        "harvest": "Harvest",
+        "status": {
+          "growing": "Growing",
+          "preparing": "Preparing",
+          "harvesting": "Harvesting",
+          "fallow": "Fallow"
+        }
+      },
+      "add_modal": {
+        "name_placeholder": "e.g., North Field",
+        "area_placeholder": "e.g., 5.5",
+        "soil_placeholder": "e.g., Loamy",
+        "title": "Add New Field",
+        "field_name": "Field Name *",
+        "area": "Area (acres) *",
+        "location": "Field Location *",
+        "tap_location": "Tap to set field location",
+        "soil_type": "Soil Type",
+        "submit": "Add Field",
+        "submitting": "Adding..."
+      },
+      "plant_modal": {
+        "title": "Select Crop for {{name}}",
+        "choose": "Choose a Crop *",
+        "water": "Water",
+        "submit": "Plant Crop",
+        "submitting": "Planting..."
+      },
+      "harvest_modal": {
+        "title": "Harvest {{name}}",
+        "quantity": "Quantity Harvested *",
+        "unit": "Unit",
+        "storage": "Storage Location",
+        "notes": "Notes",
+        "submit": "Record Harvest",
+        "submitting": "Recording..."
+      },
+      "map": {
+        "pin": "Pin Field Location",
+        "set": "Location Set",
+        "done": "Done"
+      },
+      "alerts": {
+        "validation": "Please fill all required fields",
+        "success_add": "Field added successfully",
+        "success_plant": "Crop planted successfully",
+        "success_harvest": "Crop harvested and recorded successfully! Field is now fallow."
+      }
+    },
+    "alerts": {
+      "header": "Weather & Alerts",
+      "weather_title": "Current Weather",
+      "temp": "Temperature",
+      "humidity": "Humidity",
+      "rainfall": "Rainfall",
+      "wind": "Wind",
+      "section_title": "Active Alerts",
+      "severity": {
+        "high": "HIGH",
+        "medium": "MEDIUM",
+        "low": "LOW"
+      },
+      "units": {
+        "kmh": "km/h"
+      }
+    }
+  }
+}
