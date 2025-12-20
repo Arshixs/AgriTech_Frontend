@@ -80,64 +80,64 @@ export default function HomeScreen() {
   const quickActions = [
     {
       id: 1,
-      title: t("farmer.dashboard.actions.expense"),
-      description: t("farmer.dashboard.actions.expense_desc"),
+      title: t("Expense Predictor"),
+      description: t("Calculate farming costs"),
       icon: "calculator",
       color: "#2A9D8F",
       route: "/expense-prediction",
     },
     {
       id: 2,
-      title: t("farmer.dashboard.actions.market"),
-      description: t("farmer.dashboard.actions.market_desc"),
+      title: t("Marketplace"),
+      description: t("Rentals and buy raw maerials"),
       icon: "tools",
       color: "#2A9D8F",
       route: "/vendor-market-screen",
     },
     {
       id: 3,
-      title: t("farmer.dashboard.actions.forecast"),
-      description: t("farmer.dashboard.actions.forecast_desc"),
+      title: t("Price Forecast"),
+      description: t("Track crop prices"),
       icon: "chart-line",
       color: "#F4A261",
       route: "/(tabs)/price-forecast",
     },
     {
       id: 4,
-      title: t("farmer.dashboard.actions.alerts"),
-      description: t("farmer.dashboard.actions.alerts_desc"),
+      title: t("Weather & Alerts"),
+      description: t("Stay updated"),
       icon: "bell",
       color: "#E76F51",
       route: "/(tabs)/alerts",
     },
     {
       id: 5,
-      title: t("farmer.dashboard.actions.guide"),
-      description: t("farmer.dashboard.actions.guide_desc"),
+      title: t("Crop Guide"),
+      description: t("Get recommendations"),
       icon: "sprout",
       color: "#606C38",
       route: "/(tabs)/recommendations",
     },
     {
       id: 6,
-      title: t("farmer.dashboard.actions.iot"),
-      description: t("farmer.dashboard.actions.iot_desc"),
+      title: t("IoT Devices"),
+      description: t("Monitor sensors"),
       icon: "access-point",
       color: "#457B9D",
       route: "/iot-devices",
     },
     {
       id: 7,
-      title: t("farmer.dashboard.actions.orders"),
-      description: t("farmer.dashboard.actions.orders_desc"),
+      title: t("My Orders"),
+      description: t("All orders and Rentals"),
       icon: "access-point",
       color: "#809d45ff",
       route: "/farmer-orders-screen",
     },
     {
       id: 8,
-      title: t("farmer.dashboard.actions.certs"),
-      description: t("farmer.dashboard.actions.certs_desc"),
+      title: t("My Certificates"),
+      description: t("All certificates"),
       icon: "check-decagram",
       color: "#4dff00ff",
       route: "/quality",
@@ -146,17 +146,17 @@ export default function HomeScreen() {
 
   const stats = [
     {
-      label: t("farmer.dashboard.stats.land"),
-      value: `${farmStats.totalArea} ${t("farmer.dashboard.stats.acres")}`,
+      label: t("Total Land"),
+      value: `${farmStats.totalArea} ${t("Acres")}`,
       icon: "terrain",
     },
     {
-      label: t("farmer.dashboard.stats.fields"),
+      label: t("Active Fields"),
       value: `${farmStats.activeFields}`,
       icon: "leaf",
     },
     {
-      label: t("farmer.dashboard.stats.alerts"),
+      label: t("Alerts"),
       value: `${farmStats.activeAlerts}`,
       icon: "bell-alert",
     },
@@ -198,7 +198,7 @@ export default function HomeScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2A9D8F" />
           <Text style={{ marginTop: 10, color: "#666" }}>
-            {t("farmer.dashboard.loading")}
+            {t("Loading Dashboard...")}
           </Text>
         </View>
       </ScreenWrapper>
@@ -213,10 +213,10 @@ export default function HomeScreen() {
           <View style={styles.header}>
             <View>
               <Text style={styles.greeting}>
-                {t('farmer.dashboard.greeting')}
+                {t("Welcome back,")}
               </Text>
               <Text style={styles.userName}>
-                {user ? user.name : t("index.farmer")}!
+                {user ? user.name : t("Farmer")}!
               </Text>
             </View>
             <TouchableOpacity
@@ -259,10 +259,10 @@ export default function HomeScreen() {
                 </View>
                 <View style={styles.featuredText}>
                   <Text style={styles.featuredTitle}>
-                    {t("farmer.dashboard.featured.title")}
+                    {t("Expense Predictor")}
                   </Text>
                   <Text style={styles.featuredDescription}>
-                    {t("farmer.dashboard.featured.desc")}
+                    {t("Get accurate cost estimates for your crops")}
                   </Text>
                 </View>
               </View>
@@ -272,7 +272,7 @@ export default function HomeScreen() {
 
           {/* Quick Actions */}
           <Text style={styles.sectionTitle}>
-            {t("farmer.dashboard.sections.actions")}
+            {t("Quick Actions")}
           </Text>
           <View style={styles.actionsGrid}>
             {quickActions.map((action) => (
@@ -305,11 +305,11 @@ export default function HomeScreen() {
           {/* Today's Tasks */}
           <View style={styles.tasksSection}>
             <Text style={styles.sectionTitle}>
-              {t("farmer.dashboard.sections.tasks")} ({farmStats.todaysTasks})
+              {t("Today's Tasks")} ({farmStats.todaysTasks})
             </Text>
             {todaysTasks.length === 0 ? (
               <Text style={styles.noTasksText}>
-                {t("farmer.dashboard.tasks.no_tasks")}
+                {t("No tasks scheduled for today. Good work!")}
               </Text>
             ) : (
               todaysTasks.map((task) => (
@@ -330,10 +330,10 @@ export default function HomeScreen() {
                       <Text style={styles.taskTitle}>{task.title}</Text>
                       <Text style={styles.taskTime}>
                         {task.fieldId?.name
-                          ? `${t("farmer.dashboard.tasks.field")}: ${
+                          ? `${t("Field")}: ${
                               task.fieldId.name
                             }`
-                          : `${t("farmer.dashboard.tasks.type")}: ${task.type}`}
+                          : `${t("Type")}: ${task.type}`}
                       </Text>
                     </View>
                   </View>
@@ -350,7 +350,7 @@ export default function HomeScreen() {
 
           {/* Sign Out Button */}
           <View style={styles.signOutContainer}>
-            <Button title={t('farmer.dashboard.sign_out')} onPress={signOut} />
+            <Button title={t("Sign Out")} onPress={signOut} />
           </View>
         </View>
       </ScrollView>

@@ -104,7 +104,7 @@ export default function MyFarmScreen() {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(t('farmer.farm.alerts.error'), t('farmer.farm.alerts.location_denied'));
+        Alert.alert(t("Permission Denied"), t("Location permission is required"));
         return;
       }
       let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
@@ -113,7 +113,7 @@ export default function MyFarmScreen() {
       const newRegion = { latitude, longitude, latitudeDelta: 0.005, longitudeDelta: 0.005 };
       mapRef.current?.animateToRegion(newRegion, 500);
     } catch (error) {
-      Alert.alert(t('farmer.farm.alerts.error'), t('farmer.farm.alerts.gps_failed'));
+      Alert.alert(t("Error"), t("Failed to get location"));
     } finally {
       setFetchingGps(false);
     }
@@ -134,7 +134,7 @@ export default function MyFarmScreen() {
 
   const handleAddField = async () => {
     if (!newField.name || !newField.area || !newField.coordinates) {
-      Alert.alert(t('farmer.farm.alerts.validation'), t('farmer.farm.add_modal.validation_msg'));
+      Alert.alert("Validation", t("Please fill all required fields and select a location"));
       return;
     }
 
@@ -155,13 +155,13 @@ export default function MyFarmScreen() {
       });
 
       if (res.ok) {
-        Alert.alert(t('farmer.farm.alerts.success'), t('farmer.farm.alerts.success_add'));
+        Alert.alert("Success", t("Field added successfully"));
         setNewField({ name: "", area: "", soilType: "", coordinates: null });
         setShowAddFieldModal(false);
         fetchData();
       }
     } catch (error) {
-      Alert.alert(t('farmer.farm.alerts.error'), t('farmer.farm.alerts.failed_add'));
+      Alert.alert(t("Error"), t("Failed to add field"));
     } finally {
       setIsSubmitting(false);
     }
@@ -175,7 +175,7 @@ export default function MyFarmScreen() {
 
   const handleUpdateFieldCrop = async () => {
     if (!selectedCropId) {
-      Alert.alert(t('farmer.farm.alerts.validation'), t('farmer.farm.plant_modal.choose'));
+      Alert.alert(t("Validation"), t("Please select a crop"));
       return;
     }
 
@@ -195,12 +195,12 @@ export default function MyFarmScreen() {
       });
 
       if (res.ok) {
-        Alert.alert(t('farmer.farm.alerts.success'), t('farmer.farm.alerts.success_plant'));
+        Alert.alert(t("Success"), t("Crop planted successfully"));
         setShowUpdateCropModal(false);
         fetchData();
       }
     } catch (error) {
-      Alert.alert(t('farmer.farm.alerts.error'), t('farmer.farm.alerts.failed_plant'));
+      Alert.alert(t("Error"), t("Failed to update crop"));
     } finally {
       setIsSubmitting(false);
     }
@@ -208,7 +208,7 @@ export default function MyFarmScreen() {
 
   const handleOpenHarvestModal = (field) => {
     if (!field.cropId) {
-      Alert.alert(t('farmer.farm.alerts.error'), t('farmer.farm.alerts.no_crop_error'));
+      Alert.alert(t("Error"), t("No crop planted in this field"));
       return;
     }
     setSelectedField(field);
@@ -223,7 +223,7 @@ export default function MyFarmScreen() {
 
   const handleHarvestCrop = async () => {
     if (!harvestData.quantity) {
-      Alert.alert(t('farmer.farm.alerts.validation'), t('farmer.farm.harvest_modal.quantity'));
+      Alert.alert(t("Validation"), t("Please enter harvest quantity"));
       return;
     }
 
@@ -245,12 +245,12 @@ export default function MyFarmScreen() {
       });
 
       if (res.ok) {
-        Alert.alert(t('farmer.farm.alerts.success'), t('farmer.farm.alerts.success_harvest'));
+        Alert.alert(t("Success"), t("Crop harvested and recorded successfully! Field is now fallow."));
         setShowHarvestModal(false);
         fetchData();
       }
     } catch (error) {
-      Alert.alert(t('farmer.farm.alerts.error'), t('farmer.farm.alerts.failed_harvest'));
+      Alert.alert(t("Error"), t( "Failed to record harvest"));
     } finally {
       setIsSubmitting(false);
     }
@@ -258,10 +258,10 @@ export default function MyFarmScreen() {
 
   const getStatusText = (status) => {
     switch (status) {
-      case "Growing": return t('farmer.farm.fields.status.growing');
-      case "Preparing": return t('farmer.farm.fields.status.preparing');
-      case "Harvesting": return t('farmer.farm.fields.status.harvesting');
-      case "Fallow": return t('farmer.farm.fields.status.fallow');
+      case "Growing": return t("Growing");
+      case "Preparing": return t("Preparing");
+      case "Harvesting": return t("Harvesting");
+      case "Fallow": return t("Fallow");
       default: return status;
     }
   };
@@ -283,7 +283,7 @@ export default function MyFarmScreen() {
           <View style={[styles.fieldColorIndicator, { backgroundColor: field.color || "#2A9D8F" }]} />
           <View style={styles.fieldTitleContainer}>
             <Text style={styles.fieldName}>{field.name}</Text>
-            <Text style={styles.fieldArea}>{field.area} {t('farmer.farm.fields.acres')} • {field.soilType}</Text>
+            <Text style={styles.fieldArea}>{field.area} {t("acres")} • {field.soilType}</Text>
           </View>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(field.status) }]}>
@@ -297,7 +297,7 @@ export default function MyFarmScreen() {
             <MaterialCommunityIcons name={field.cropId.icon || "sprout"} size={20} color="#2A9D8F" />
           </View>
           <View style={styles.cropInfo}>
-            <Text style={styles.cropLabel}>{t('farmer.farm.fields.current_crop')}</Text>
+            <Text style={styles.cropLabel}>{t("Current Crop")}</Text>
             <Text style={styles.cropName}>{field.cropId.cropName}</Text>
           </View>
           <TouchableOpacity 
@@ -313,7 +313,7 @@ export default function MyFarmScreen() {
           onPress={() => handleSelectCropForField(field)}
         >
           <MaterialCommunityIcons name="plus-circle" size={24} color="#2A9D8F" />
-          <Text style={styles.noCropText}>{t('farmer.farm.fields.plant_crop')}</Text>
+          <Text style={styles.noCropText}>{t("Plant a Crop")}</Text>
         </TouchableOpacity>
       )}
 
@@ -324,7 +324,7 @@ export default function MyFarmScreen() {
             onPress={() => handleOpenHarvestModal(field)}
           >
             <MaterialCommunityIcons name="grass" size={18} color="#2A9D8F" />
-            <Text style={styles.actionText}>{t('farmer.farm.fields.harvest')}</Text>
+            <Text style={styles.actionText}>{t("Harvest")}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -345,27 +345,27 @@ export default function MyFarmScreen() {
     <ScreenWrapper>
       <ScrollView>
         <View style={styles.content}>
-          <Text style={styles.header}>{t('farmer.farm.header')}</Text>
+          <Text style={styles.header}>{t("My Farm")}</Text>
 
           <View style={styles.statsContainer}>
             <View style={styles.statCard}>
               <MaterialCommunityIcons name="land-fields" size={24} color="#2A9D8F" />
               <Text style={styles.statValue}>{fields.reduce((sum, f) => sum + f.area, 0).toFixed(1)}</Text>
-              <Text style={styles.statLabel}>{t('farmer.farm.stats.total_acres')}</Text>
+              <Text style={styles.statLabel}>{t("Total Acres")}</Text>
             </View>
             <View style={styles.statCard}>
               <MaterialCommunityIcons name="sprout" size={24} color="#606C38" />
               <Text style={styles.statValue}>{fields.filter(f => f.status === "Growing").length}/{fields.length}</Text>
-              <Text style={styles.statLabel}>{t('farmer.farm.stats.active_fields')}</Text>
+              <Text style={styles.statLabel}>{t("Active Fields")}</Text>
             </View>
           </View>
 
           <View style={styles.fieldsSection}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{t('farmer.farm.fields.title')}</Text>
+              <Text style={styles.sectionTitle}>{t("My Fields")}</Text>
               <TouchableOpacity style={styles.addButton} onPress={() => setShowAddFieldModal(true)}>
                 <MaterialCommunityIcons name="plus" size={20} color="#FFF" />
-                <Text style={styles.addButtonText}>{t('farmer.farm.fields.add_button')}</Text>
+                <Text style={styles.addButtonText}>{t("Add Field")}</Text>
               </TouchableOpacity>
             </View>
             {fields.map(renderFieldCard)}
@@ -378,34 +378,34 @@ export default function MyFarmScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t('farmer.farm.add_modal.title')}</Text>
+              <Text style={styles.modalTitle}>{t("Add New Field")}</Text>
               <TouchableOpacity onPress={() => setShowAddFieldModal(false)}>
                 <FontAwesome name="times" size={24} color="#666" />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalBody}>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('farmer.farm.add_modal.field_name')}</Text>
+                <Text style={styles.inputLabel}>{t("Field Name *")}</Text>
                 <TextInput
                   style={styles.input}
                   value={newField.name}
                   onChangeText={(text) => setNewField({ ...newField, name: text })}
-                  placeholder={t('farmer.farm.add_modal.name_placeholder')}
+                  placeholder={t("e.g., North Field")}
                 />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('farmer.farm.add_modal.area')}</Text>
+                <Text style={styles.inputLabel}>{t("Area (acres) *")}</Text>
                 <TextInput
                   style={styles.input}
                   value={newField.area}
                   onChangeText={(text) => setNewField({ ...newField, area: text })}
                   keyboardType="decimal-pad"
-                  placeholder={t('farmer.farm.add_modal.area_placeholder')}
+                  placeholder={t("e.g., 5.5")}
                 />
               </View>
               
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('farmer.farm.add_modal.location')}</Text>
+                <Text style={styles.inputLabel}>{t("Field Location *")}</Text>
                 <TouchableOpacity 
                     style={styles.mapPreview} 
                     onPress={() => {
@@ -428,23 +428,23 @@ export default function MyFarmScreen() {
                     {!newField.coordinates && (
                         <View style={styles.placeholderOverlay}>
                             <MaterialCommunityIcons name="map-marker-plus" size={30} color="#2A9D8F" />
-                            <Text style={styles.placeholderText}>{t('farmer.farm.add_modal.tap_location')}</Text>
+                            <Text style={styles.placeholderText}>{t("Tap to set field location")}</Text>
                         </View>
                     )}
                 </TouchableOpacity>
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('farmer.farm.add_modal.soil_type')}</Text>
+                <Text style={styles.inputLabel}>{t("Soil Type")}</Text>
                 <TextInput
                   style={styles.input}
                   value={newField.soilType}
                   onChangeText={(text) => setNewField({ ...newField, soilType: text })}
-                  placeholder={t('farmer.farm.add_modal.soil_placeholder')}
+                  placeholder={t("e.g., Loamy")}
                 />
               </View>
               <TouchableOpacity style={styles.submitButton} onPress={handleAddField} disabled={isSubmitting}>
-                <Text style={styles.submitButtonText}>{isSubmitting ? t('farmer.farm.add_modal.submitting') : t('farmer.farm.add_modal.submit')}</Text>
+                <Text style={styles.submitButtonText}>{isSubmitting ? t("Adding...") : t("Add Field")}</Text>
               </TouchableOpacity>
               <View style={{ height: 40 }} />
             </ScrollView>
@@ -473,10 +473,10 @@ export default function MyFarmScreen() {
                   <MaterialCommunityIcons name="close" size={24} color="#333" />
               </TouchableOpacity>
               
-              <Text style={styles.fullMapTitle}>{tempCoords ? t('farmer.farm.map.set') : t('farmer.farm.map.pin')}</Text>
+              <Text style={styles.fullMapTitle}>{tempCoords ? t("Location Set") : t("Pin Field Location")}</Text>
               
               <TouchableOpacity onPress={confirmMapLocation} style={styles.confirmBtnSmall}>
-                  <Text style={styles.confirmBtnText}>{t('farmer.farm.map.done')}</Text>
+                  <Text style={styles.confirmBtnText}>{t("Done")}</Text>
               </TouchableOpacity>
           </View>
 
@@ -491,13 +491,13 @@ export default function MyFarmScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t('farmer.farm.plant_modal.title', { name: selectedField?.name })}</Text>
+              <Text style={styles.modalTitle}>{t("Select Crop for", { name: selectedField?.name })}</Text>
               <TouchableOpacity onPress={() => setShowUpdateCropModal(false)}>
                 <FontAwesome name="times" size={24} color="#666" />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalBody}>
-              <Text style={styles.inputLabel}>{t('farmer.farm.plant_modal.choose')}</Text>
+              <Text style={styles.inputLabel}>{t("Choose a Crop *")}</Text>
               {crops.map((crop) => (
                 <TouchableOpacity
                   key={crop._id}
@@ -508,14 +508,14 @@ export default function MyFarmScreen() {
                   <View style={styles.cropOptionInfo}>
                     <Text style={[styles.cropOptionName, selectedCropId === crop._id && styles.cropOptionNameSelected]}>{crop.cropName}</Text>
                     <Text style={[styles.cropOptionDetails, selectedCropId === crop._id && styles.cropOptionDetailsSelected]}>
-                      {crop.season} • {crop.duration} • {crop.waterRequirement} {t('farmer.farm.plant_modal.water')}
+                      {crop.season} • {crop.duration} • {crop.waterRequirement} {t("Water")}
                     </Text>
                   </View>
                   {selectedCropId === crop._id && <FontAwesome name="check-circle" size={20} color="#FFF" />}
                 </TouchableOpacity>
               ))}
               <TouchableOpacity style={styles.submitButton} onPress={handleUpdateFieldCrop} disabled={isSubmitting}>
-                <Text style={styles.submitButtonText}>{isSubmitting ? t('farmer.farm.plant_modal.submitting') : t('farmer.farm.plant_modal.submit')}</Text>
+                <Text style={styles.submitButtonText}>{isSubmitting ? t("Planting...") : t("Plant Crop")}</Text>
               </TouchableOpacity>
               <View style={{ height: 40 }} />
             </ScrollView>
@@ -528,14 +528,14 @@ export default function MyFarmScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t('farmer.farm.harvest_modal.title', { name: selectedField?.cropId?.cropName })}</Text>
+              <Text style={styles.modalTitle}>{t("Harvest ", { name: selectedField?.cropId?.cropName })}</Text>
               <TouchableOpacity onPress={() => setShowHarvestModal(false)}>
                 <FontAwesome name="times" size={24} color="#666" />
               </TouchableOpacity>
             </View>
             <View style={styles.modalBody}>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('farmer.farm.harvest_modal.quantity')}</Text>
+                <Text style={styles.inputLabel}>{t("Quantity Harvested *")}</Text>
                 <TextInput
                   style={styles.input}
                   value={harvestData.quantity}
@@ -545,7 +545,7 @@ export default function MyFarmScreen() {
                 />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('farmer.farm.harvest_modal.unit')}</Text>
+                <Text style={styles.inputLabel}>{t("Unit")}</Text>
                 <View style={styles.unitRow}>
                   {["kg", "quintal", "ton"].map((unit) => (
                     <TouchableOpacity
@@ -559,7 +559,7 @@ export default function MyFarmScreen() {
                 </View>
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('farmer.farm.harvest_modal.storage')}</Text>
+                <Text style={styles.inputLabel}>{t("Storage Location")}</Text>
                 <TextInput
                   style={styles.input}
                   value={harvestData.storageLocation}
@@ -568,7 +568,7 @@ export default function MyFarmScreen() {
                 />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('farmer.farm.harvest_modal.notes')}</Text>
+                <Text style={styles.inputLabel}>{t("Notes")}</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={harvestData.notes}
@@ -579,7 +579,7 @@ export default function MyFarmScreen() {
                 />
               </View>
               <TouchableOpacity style={styles.submitButton} onPress={handleHarvestCrop} disabled={isSubmitting}>
-                <Text style={styles.submitButtonText}>{isSubmitting ? t('farmer.farm.harvest_modal.submitting') : t('farmer.farm.harvest_modal.submit')}</Text>
+                <Text style={styles.submitButtonText}>{isSubmitting ? t("Recording...") : t("Record Harvest")}</Text>
               </TouchableOpacity>
             </View>
           </View>

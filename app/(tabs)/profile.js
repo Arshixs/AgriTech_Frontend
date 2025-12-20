@@ -19,11 +19,13 @@ import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import Button from "../../src/components/common/Button";
 import { useAuth } from "../../src/context/AuthContext";
 import { API_BASE_URL } from "../../secret"
+import { useTranslation } from 'react-i18next';
 
 export default function FarmerProfileScreen() {
   const { user, signOut } = useAuth();
   const authToken = user?.token;
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -72,7 +74,7 @@ export default function FarmerProfileScreen() {
         }
       }
     } catch (error) {
-      console.error("Profile Fetch Error:", error);
+      console.error(t("Profile Fetch Error:"), error);
     } finally {
       setRefreshing(false);
       setLoading(false);
@@ -102,7 +104,7 @@ export default function FarmerProfileScreen() {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        RNAlert.alert('Permission Denied', 'Location permission is required');
+        RNAlert.alert('Permission Denied', t('Location permission is required'));
         return;
       }
 
@@ -121,7 +123,7 @@ export default function FarmerProfileScreen() {
         }, 500);
       }
     } catch (error) {
-      RNAlert.alert('Error', 'Failed to get location');
+      RNAlert.alert('Error', t('Failed to get location'));
     } finally {
       setFetchingGps(false);
     }
@@ -129,7 +131,7 @@ export default function FarmerProfileScreen() {
 
   const handleConfirmLocation = () => {
     if (!tempCoords.lat) {
-      RNAlert.alert('Alert', 'Please select a location on the map');
+      RNAlert.alert('Alert', t('Please select a location on the map'));
       return;
     }
     
@@ -165,13 +167,13 @@ export default function FarmerProfileScreen() {
       });
 
       if (res.ok) {
-        RNAlert.alert("Success", "Profile updated successfully.");
+        RNAlert.alert("Success", t("Profile updated successfully."));
         fetchProfile();
       } else {
         throw new Error("Update failed.");
       }
     } catch (error) {
-      RNAlert.alert("Error", "Failed to update profile.");
+      RNAlert.alert("Error", t("Failed to update profile."));
     } finally {
       setSaving(false);
     }
@@ -200,12 +202,12 @@ export default function FarmerProfileScreen() {
             <View style={styles.avatarContainer}>
               <FontAwesome name="user-circle" size={80} color="#2A9D8F" />
             </View>
-            <Text style={styles.userName}>{profile.name || "Farmer"}</Text>
+            <Text style={styles.userName}>{profile.name || t("Farmer")}</Text>
             <Text style={styles.userPhone}>{profile.phone}</Text>
           </View>
 
           {/* Location Management Section (Updated to match Register style) */}
-          <Text style={styles.sectionTitle}>Farm Location</Text>
+          <Text style={styles.sectionTitle}>{t("Farm Location")}</Text>
 
           <TouchableOpacity
             style={styles.mapPreview}
@@ -239,44 +241,44 @@ export default function FarmerProfileScreen() {
             {!profile.coordinates?.lat && (
               <View style={styles.placeholderOverlay}>
                 <MaterialCommunityIcons name="map-marker-plus" size={40} color="#2A9D8F" />
-                <Text style={styles.placeholderText}>Tap to set location on Map</Text>
+                <Text style={styles.placeholderText}>{t("Tap to set location on Map")}</Text>
               </View>
             )}
           </TouchableOpacity>
 
           {/* Personal Information */}
           <View style={styles.infoSection}>
-            <Text style={styles.sectionTitle}>Personal Details</Text>
+            <Text style={styles.sectionTitle}>{t("Personal Details")}</Text>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Full Name</Text>
+              <Text style={styles.inputLabel}>{t("Full Name")}</Text>
               <TextInput
                 style={styles.input}
                 value={profile.name}
                 onChangeText={(t) => setProfile({ ...profile, name: t })}
-                placeholder="Enter full name"
+                placeholder={t("Enter full name")}
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Adhar Number</Text>
+              <Text style={styles.inputLabel}>{t("Adhar Number")}</Text>
               <TextInput
                 style={styles.input}
                 value={profile.adharNumber}
                 editable={false}
                 onChangeText={(t) => setProfile({ ...profile, adharNumber: t })}
-                placeholder="12 Digit Adhar"
+                placeholder={t("12 Digit Adhar")}
                 keyboardType="numeric"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Farm Address</Text>
+              <Text style={styles.inputLabel}>{t("Farm Address")}</Text>
               <TextInput
                 style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
                 value={profile.address}
                 onChangeText={(t) => setProfile({ ...profile, address: t })}
-                placeholder="Enter complete address"
+                placeholder={t("Enter complete address")}
                 multiline
               />
             </View>
@@ -293,7 +295,7 @@ export default function FarmerProfileScreen() {
 
             <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
               <MaterialCommunityIcons name="logout" size={20} color="#E76F51" />
-              <Text style={styles.signOutText}>Logout Account</Text>
+              <Text style={styles.signOutText}>{t("Logout Account")}</Text>
             </TouchableOpacity>
           </View>
 
@@ -332,10 +334,10 @@ export default function FarmerProfileScreen() {
                   <MaterialCommunityIcons name="close" size={24} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.modalTitle}>
-                  {tempCoords?.lat ? 'Location Selected' : 'Pin your Farm'}
+                  {tempCoords?.lat ? t('Location Selected') : t('Pin your Farm')}
                 </Text>
                 <TouchableOpacity onPress={handleConfirmLocation} style={styles.confirmBtn}>
-                  <Text style={styles.confirmBtnText}>Confirm</Text>
+                  <Text style={styles.confirmBtnText}>{t("Confirm")}</Text>
                 </TouchableOpacity>
               </View>
 
