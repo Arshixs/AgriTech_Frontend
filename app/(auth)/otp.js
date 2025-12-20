@@ -19,7 +19,7 @@ export default function OTPScreen() {
   const { signInFarmer } = useAuth();
 
   const handleVerifyOTP = async () => {
-    if (otp.length !== 6) return alert(t('farmer.auth.otp.err_invalid_len'));
+    if (otp.length !== 6) return alert(t("Enter a valid 6-digit OTP."));
 
     setLoading(true);
 
@@ -35,7 +35,7 @@ export default function OTPScreen() {
 
         if (!res.ok) {
             const errorData = await res.json();
-            throw new Error(errorData.message || t('farmer.auth.otp.err_invalid_otp'));
+            throw new Error(errorData.message || t("Invalid or Expired OTP."));
         }
 
         const data = await res.json();
@@ -51,7 +51,7 @@ export default function OTPScreen() {
         }
 
     } catch (err) {
-        alert(err.message || t('farmer.auth.otp.err_verify_failed'));
+        alert(err.message || t("Failed to verify OTP"));
     } finally {
         setLoading(false);
     }
@@ -60,19 +60,19 @@ export default function OTPScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <Text style={styles.title}>{t('farmer.auth.otp.title')}</Text>
+        <Text style={styles.title}>{t("Verify OTP")}</Text>
         <Text style={styles.subtitle}>
-          {t('farmer.auth.otp.subtitle', { mobile: mobileNumber })}
+          {t("Enter the 6-digit OTP sent to +91 {{mobile}}", { mobile: mobileNumber })}
         </Text>
         <Input
-          label={t('farmer.auth.otp.label')}
+          label={t("Enter OTP")}
           value={otp}
           onChangeText={setOtp}
-          placeholder={t('farmer.auth.otp.placeholder')}
+          placeholder="XXXXXX"
           keyboardType="number-pad"
         />
         <Button 
-          title={t('farmer.auth.otp.button')} 
+          title={t("Verify & Proceed")} 
           onPress={handleVerifyOTP} 
           loading={loading} 
         />

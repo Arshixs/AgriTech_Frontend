@@ -111,14 +111,14 @@ export default function AlertsScreen() {
         }
       >
         <View style={styles.container}>
-          <Text style={styles.header}>{t('farmer.alerts.weather_title')}</Text>
+          <Text style={styles.header}>{t("Weather & Alerts")}</Text>
 
           {/* Weather Card */}
           {weatherData && (
             <View style={styles.weatherCard}>
               <View style={styles.weatherHeader}>
                 <FontAwesome name="sun-o" size={32} color="#F4A261" />
-                <Text style={styles.weatherTitle}>{t('farmer.alerts.temp')}</Text>
+                <Text style={styles.weatherTitle}>{t("Current Weather")}</Text>
               </View>
 
               <View style={styles.weatherGrid}>
@@ -128,7 +128,7 @@ export default function AlertsScreen() {
                     size={20}
                     color="#264653"
                   />
-                  <Text style={styles.weatherLabel}>{t('farmer.alerts.temp')}</Text>
+                  <Text style={styles.weatherLabel}>{t("Temperature")}</Text>
                   <Text style={styles.weatherValue}>
                     {weatherData.temperature}°C
                   </Text>
@@ -140,7 +140,7 @@ export default function AlertsScreen() {
                     size={20}
                     color="#2A9D8F"
                   />
-                  <Text style={styles.weatherLabel}>{t('farmer.alerts.humidity')}</Text>
+                  <Text style={styles.weatherLabel}>{t("Humidity")}</Text>
                   <Text style={styles.weatherValue}>
                     {weatherData.humidity}%
                   </Text>
@@ -148,7 +148,7 @@ export default function AlertsScreen() {
 
                 <View style={styles.weatherItem}>
                   <FontAwesome name="tint" size={20} color="#457B9D" />
-                  <Text style={styles.weatherLabel}>{t('farmer.alerts.rainfall')}</Text>
+                  <Text style={styles.weatherLabel}>{t("Rainfall")}</Text>
                   <Text style={styles.weatherValue}>
                     {weatherData.rainfall}mm
                   </Text>
@@ -160,9 +160,9 @@ export default function AlertsScreen() {
                     size={20}
                     color="#606C38"
                   />
-                  <Text style={styles.weatherLabel}>{t('farmer.alerts.wind')}</Text>
+                  <Text style={styles.weatherLabel}>{t("Wind")}</Text>
                   <Text style={styles.weatherValue}>
-                    {weatherData.windSpeed} {t('farmer.alerts.units.kmh')}
+                    {weatherData.windSpeed} {t("km/h")}
                   </Text>
                 </View>
               </View>
@@ -170,7 +170,7 @@ export default function AlertsScreen() {
           )}
 
           {/* Alerts Section */}
-          <Text style={styles.sectionTitle}>{t('farmer.alerts.section_title')}</Text>
+          <Text style={styles.sectionTitle}>{t("Active Alerts")}</Text>
 
           {alerts.map((alert) => (
             <View

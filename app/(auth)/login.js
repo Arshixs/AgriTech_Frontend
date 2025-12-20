@@ -15,7 +15,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
    const handleSendOTP = async () => {
-    if (mobileNumber.length !== 10) return alert(t('farmer.auth.login.err_invalid_phone'));
+    if (mobileNumber.length !== 10) return alert(t("Enter a valid 10-digit number."));
     setLoading(true);
     try {
     const res = await fetch(`${API_BASE_URL}/api/farmer-auth/send-otp`, {
@@ -28,13 +28,13 @@ export default function LoginScreen() {
     });
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(text || t('farmer.auth.login.err_server'));
+        throw new Error(text || t("Server error"));
       }
       const data = await res.json();
       // navigate to OTP screen (adjust if your backend returns different payload)
       router.push({ pathname: '/(auth)/otp', params: { mobileNumber } });
     } catch (err) {
-      alert(err.message || t('farmer.auth.login.err_send_failed'));
+      alert(err.message || t("Failed to send OTP"));
     } finally {
       setLoading(false);
     }
@@ -43,15 +43,15 @@ export default function LoginScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <Text style={styles.title}>{t('farmer.auth.login.title')}</Text>
+        <Text style={styles.title}>{t("Welcome Farmer")}</Text>
         <Input
-          label={t('farmer.auth.login.label')}
+          label={t("Mobile Number")}
           value={mobileNumber}
           onChangeText={setMobileNumber}
-          placeholder={t('farmer.auth.login.placeholder')}
+          placeholder={t("e.g., 9876543210")}
           keyboardType="phone-pad"
         />
-        <Button title={t('farmer.auth.login.button')} onPress={handleSendOTP} loading={loading} />
+        <Button title={t("Send OTP")} onPress={handleSendOTP} loading={loading} />
       </View>
     </ScreenWrapper>
   );

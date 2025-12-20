@@ -23,12 +23,12 @@ export default function RoleSelectionScreen() {
         activeOpacity={0.7}
       >
         <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
-        <Text style={styles.langText}>{t("index.language_toggle")}</Text>
+        <Text style={styles.langText}>{t("हिन्दी")}</Text>
       </TouchableOpacity>
 
       <View style={styles.container}>
-        <Text style={styles.title}>{t("index.welcome")}</Text>
-        <Text style={styles.subtitle}>{t("index.select_role")}</Text>
+        <Text style={styles.title}>{t("Welcome to Agri-Tech")}</Text>
+        <Text style={styles.subtitle}>{t("How would you like to continue?")}</Text>
 
         {/* Farmer Button */}
         <TouchableOpacity
@@ -36,7 +36,7 @@ export default function RoleSelectionScreen() {
           onPress={() => router.push("/(auth)/login")}
         >
           <MaterialCommunityIcons name="barley" size={40} color="#FFFFFF" />
-          <Text style={styles.buttonText}>{t("index.farmer")}</Text>
+          <Text style={styles.buttonText}>{t("I am a Farmer")}</Text>
         </TouchableOpacity>
 
         {/* Vendor Button */}
@@ -45,7 +45,7 @@ export default function RoleSelectionScreen() {
           onPress={() => router.push("/(vendor-auth)/login")}
         >
           <MaterialCommunityIcons name="store" size={40} color="#FFFFFF" />
-          <Text style={styles.buttonText}>{t("index.vendor")}</Text>
+          <Text style={styles.buttonText}>{t("I am a Vendor")}</Text>
         </TouchableOpacity>
 
         {/* Buyer Button */}
@@ -54,7 +54,7 @@ export default function RoleSelectionScreen() {
           onPress={() => router.push("/(buyer-auth)/login")}
         >
           <MaterialCommunityIcons name="briefcase-account" size={40} color="#FFFFFF" />
-          <Text style={styles.buttonText}>{t("index.buyer")}</Text>
+          <Text style={styles.buttonText}>{t("I am a Buyer")}</Text>
         </TouchableOpacity>
 
         {/* Govt BUTTON */}
@@ -63,7 +63,7 @@ export default function RoleSelectionScreen() {
           onPress={() => router.push("/(govt-auth)/login")}
         >
           <MaterialCommunityIcons name="bank" size={40} color="#FFFFFF" />
-          <Text style={styles.buttonText}>{t("index.govt")}</Text>
+          <Text style={styles.buttonText}>{t("Government Login")}</Text>
         </TouchableOpacity>
       </View>
     </ScreenWrapper>
