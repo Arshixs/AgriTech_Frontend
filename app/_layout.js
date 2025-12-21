@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
+import '../src/i18n';
 
 const RootLayout = () => {
   const { user, isLoading, signOut } = useAuth(); 
@@ -26,7 +27,7 @@ const RootLayout = () => {
       // --- (No changes to this logic) ---
     } else {
       if (!inAuthGroup && !atRootIndex) {
-        router.replace('/');
+        router.replace('../');
       }
     }
   }, [user, isLoading, segments, router, signOut]); 

@@ -1,19 +1,18 @@
 // File: app/(govt-tabs)/_layout.js
 
-import React from 'react';
-import { Tabs } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
 export default function GovtTabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#606C38', // Govt Theme Color
-        tabBarInactiveTintColor: '#888',
+        tabBarActiveTintColor: "#606C38", // Govt Theme Color
+        tabBarInactiveTintColor: "#888",
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '600',
+          fontWeight: "600",
         },
         tabBarStyle: {
           paddingTop: 4,
@@ -23,31 +22,43 @@ export default function GovtTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="view-dashboard" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="view-dashboard"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="quality-approval"
+        name="quality-grading"
         options={{
-          title: 'Quality',
+          title: "Quality",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="check-decagram" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="check-decagram"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="msp-compliance"
         options={{
-          title: 'MSP',
+          title: "MSP",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="shield-check" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="shield-check"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="logistics-reports"
         options={{
           title: 'Reports',
@@ -55,13 +66,17 @@ export default function GovtTabLayout() {
             <MaterialCommunityIcons name="chart-bar" color={color} size={size} />
           ),
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-cog" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="account-cog"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />

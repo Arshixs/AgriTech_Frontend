@@ -1,38 +1,81 @@
 // File: app/(govt-tabs)/index.js
 
-import React from 'react';
+import React, {useState,useEffect} from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import ScreenWrapper from '../../src/components/common/ScreenWrapper';
 import { useAuth } from '../../src/context/AuthContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-
+import { API_BASE_URL } from "../../secret";
 export default function GovtDashboard() {
   const { user } = useAuth();
+  const [pendingRequests,setPendingRequests]=useState(0);
+  const[myRequests,setMyRequests]=useState(0);
+   const authToken = user?.token;
+  
+    const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const stats = [
-    { label: 'Pending Gradings', value: '142', icon: 'check-decagram', color: '#F4A261' },
-    { label: 'MSP Violations', value: '8', icon: 'shield-check', color: '#E76F51' },
-    { label: 'Total Audits', value: '1,280', icon: 'clipboard-list', color: '#457B9D' },
-  ];
+  // const stats = [
+  //   { label: 'Pending Gradings', value: '142', icon: 'check-decagram', color: '#F4A261' },
+  //   { label: 'MSP Violations', value: '8', icon: 'shield-check', color: '#E76F51' },
+  //   { label: 'Total Audits', value: '1,280', icon: 'clipboard-list', color: '#457B9D' },
+  // ];
+
+   useEffect(() => {
+      if (authToken) {
+        fetchData();
+      }
+    }, [authToken]);
+  
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const headers = { Authorization: `Bearer ${authToken}` };
+  
+       // if (activeTab === "pending") {
+          const res = await fetch(`${API_BASE_URL}/api/quality/govt/pending`, {
+            headers,
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setPendingRequests(data.requests.length || 0);
+             //console.log(data.requests);
+          }
+        // } else {
+          const res2 = await fetch(
+            `${API_BASE_URL}/api/quality/govt/my-requests`,
+            { headers }
+          );
+          if (res2.ok) {
+            const data = await res2.json();
+            setMyRequests(data.requests.length || 0);
+          }
+      //  }
+      } catch (error) {
+        console.error("Fetch Error:", error);
+        //Alert.alert("Error", "Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const quickActions = [
     {
       title: 'Approve Quality',
       icon: 'check-decagram',
-      route: '/(govt-tabs)/quality-approval',
+      route: '/(govt-tabs)/quality-grading',
     },
     {
       title: 'Enforce MSP',
       icon: 'shield-check',
       route: '/(govt-tabs)/msp-compliance',
     },
-    {
-      title: 'View Reports',
-      icon: 'chart-bar',
-      route: '/(govt-tabs)/logistics-reports',
-    },
+    // {
+    //   title: 'View Reports',
+    //   icon: 'chart-bar',
+    //   route: '/(govt-tabs)/logistics-reports',
+    // },
     {
       title: 'Manage Profile',
       icon: 'account-cog',
@@ -48,11 +91,9 @@ export default function GovtDashboard() {
           <View style={styles.header}>
             <View>
               <Text style={styles.greeting}>Welcome,</Text>
-              <Text style={styles.userName}>
-                {user?.name || 'Officer'}
-              </Text>
+              <Text style={styles.userName}>{user?.name || "Officer"}</Text>
               <Text style={styles.department}>
-                {user?.department || 'Govt. of India'}
+                {user?.department || "Govt. of India"}
               </Text>
             </View>
             <View style={styles.logoContainer}>
@@ -63,7 +104,7 @@ export default function GovtDashboard() {
           {/* Stats Cards */}
           <Text style={styles.sectionTitle}>Overview</Text>
           <View style={styles.statsContainer}>
-            {stats.map((stat, index) => (
+            {/* {stats.map((stat, index) => (
               <View key={index} style={[styles.statCard, {borderColor: stat.color}]}>
                 <MaterialCommunityIcons
                   name={stat.icon}
@@ -73,7 +114,16 @@ export default function GovtDashboard() {
                 <Text style={styles.statValue}>{stat.value}</Text>
                 <Text style={styles.statLabel}>{stat.label}</Text>
               </View>
-            ))}
+            ))} */}
+            <View style={[styles.statCard, { borderColor: "#F4A261" }]}>
+              <MaterialCommunityIcons
+                name="check-decagram"
+                size={32}
+                color={"#F4A261"}
+              />
+              <Text style={styles.statValue}>{pendingRequests}</Text>
+              <Text style={styles.statLabel}>Pending Gradings</Text>
+            </View>
           </View>
 
           {/* Quick Actions */}

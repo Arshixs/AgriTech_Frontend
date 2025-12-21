@@ -11,9 +11,11 @@ import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 import { API_BASE_URL } from "../../secret";
+import { useTranslation } from "react-i18next";
 
 export default function AlertsScreen() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const authToken = user.token;
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -81,6 +83,11 @@ export default function AlertsScreen() {
     }
   };
 
+  const getSeverityLabel = (severity) => {
+    // Translate the severity badge text
+    return t(`farmer.alerts.severity.${severity}`).toUpperCase();
+  };
+
   const getAlertIcon = (type) => {
     return type === "disease" ? "bug" : "cloud";
   };
@@ -104,14 +111,14 @@ export default function AlertsScreen() {
         }
       >
         <View style={styles.container}>
-          <Text style={styles.header}>Weather & Alerts</Text>
+          <Text style={styles.header}>{t("Weather & Alerts")}</Text>
 
           {/* Weather Card */}
           {weatherData && (
             <View style={styles.weatherCard}>
               <View style={styles.weatherHeader}>
                 <FontAwesome name="sun-o" size={32} color="#F4A261" />
-                <Text style={styles.weatherTitle}>Current Weather</Text>
+                <Text style={styles.weatherTitle}>{t("Current Weather")}</Text>
               </View>
 
               <View style={styles.weatherGrid}>
@@ -121,7 +128,7 @@ export default function AlertsScreen() {
                     size={20}
                     color="#264653"
                   />
-                  <Text style={styles.weatherLabel}>Temperature</Text>
+                  <Text style={styles.weatherLabel}>{t("Temperature")}</Text>
                   <Text style={styles.weatherValue}>
                     {weatherData.temperature}°C
                   </Text>
@@ -133,7 +140,7 @@ export default function AlertsScreen() {
                     size={20}
                     color="#2A9D8F"
                   />
-                  <Text style={styles.weatherLabel}>Humidity</Text>
+                  <Text style={styles.weatherLabel}>{t("Humidity")}</Text>
                   <Text style={styles.weatherValue}>
                     {weatherData.humidity}%
                   </Text>
@@ -141,7 +148,7 @@ export default function AlertsScreen() {
 
                 <View style={styles.weatherItem}>
                   <FontAwesome name="tint" size={20} color="#457B9D" />
-                  <Text style={styles.weatherLabel}>Rainfall</Text>
+                  <Text style={styles.weatherLabel}>{t("Rainfall")}</Text>
                   <Text style={styles.weatherValue}>
                     {weatherData.rainfall}mm
                   </Text>
@@ -153,9 +160,9 @@ export default function AlertsScreen() {
                     size={20}
                     color="#606C38"
                   />
-                  <Text style={styles.weatherLabel}>Wind</Text>
+                  <Text style={styles.weatherLabel}>{t("Wind")}</Text>
                   <Text style={styles.weatherValue}>
-                    {weatherData.windSpeed} km/h
+                    {weatherData.windSpeed} {t("km/h")}
                   </Text>
                 </View>
               </View>
@@ -163,7 +170,7 @@ export default function AlertsScreen() {
           )}
 
           {/* Alerts Section */}
-          <Text style={styles.sectionTitle}>Active Alerts</Text>
+          <Text style={styles.sectionTitle}>{t("Active Alerts")}</Text>
 
           {alerts.map((alert) => (
             <View

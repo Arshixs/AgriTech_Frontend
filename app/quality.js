@@ -12,10 +12,10 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../src/context/AuthContext";
+import ScreenWrapper from "../src/components/common/ScreenWrapper";
+import { useAuth } from "../src/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { API_BASE_URL } from "../../secret";
+import { API_BASE_URL } from "../secret";
 import { useRouter } from "expo-router";
 
 export default function QualityCertificatesScreen() {

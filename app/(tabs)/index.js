@@ -1,23 +1,25 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator, // Added for loading state
 } from "react-native";
+import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
-import {API_BASE_URL} from "../../secret"
 
 export default function HomeScreen() {
   const { user, signOut } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
-  const authToken = user?.token; 
+  const authToken = user?.token;
   // console.log("user");
   // console.log(user.token);
 
@@ -26,7 +28,7 @@ export default function HomeScreen() {
     totalArea: "0.0",
     activeFields: 0,
     activeAlerts: 0,
-    avgHealth: 0
+    avgHealth: 0,
   });
   const [todaysTasks, setTodaysTasks] = useState([]);
 
@@ -36,32 +38,31 @@ export default function HomeScreen() {
     try {
       // 1. Fetch Stats
       const statsRes = await fetch(`${API_BASE_URL}/api/farm/stats`, {
-        headers: { 
-          "Authorization": `Bearer ${authToken}` 
-        }
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       if (!statsRes.ok) throw new Error("Failed to fetch farm stats");
       const statsData = await statsRes.json();
-      
+
       setFarmStats({
         totalArea: statsData.totalArea || "0.0",
         activeFields: statsData.activeFields || 0,
         activeAlerts: statsData.activeAlerts || 0,
         avgHealth: statsData.avgHealth || 0,
       });
-    
+
       // 2. Fetch Today's Tasks
       const tasksRes = await fetch(`${API_BASE_URL}/api/farm/tasks/today`, {
-        headers: { 
-          "Authorization": `Bearer ${authToken}` 
-        }
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
       });
-      
+
       if (!tasksRes.ok) throw new Error("Failed to fetch tasks");
       const tasksData = await tasksRes.json();
       setTodaysTasks(tasksData.tasks || []);
-
     } catch (error) {
       console.error("Home Screen Fetch Error:", error.message);
       // Optionally display error to user
@@ -79,84 +80,109 @@ export default function HomeScreen() {
   const quickActions = [
     {
       id: 1,
-      title: "Expense Predictor",
-      description: "Calculate farming costs",
+      title: t("Expense Predictor"),
+      description: t("Calculate farming costs"),
       icon: "calculator",
       color: "#2A9D8F",
       route: "/expense-prediction",
     },
     {
       id: 2,
-      title: "Marketplace",
-      description: "Rentals and buy raw maerials",
+      title: t("Marketplace"),
+      description: t("Rentals and buy raw maerials"),
       icon: "tools",
       color: "#2A9D8F",
       route: "/vendor-market-screen",
     },
     {
       id: 3,
-      title: "Price Forecast",
-      description: "Track crop prices",
+      title: t("Price Forecast"),
+      description: t("Track crop prices"),
       icon: "chart-line",
       color: "#F4A261",
       route: "/(tabs)/price-forecast",
     },
     {
       id: 4,
-      title: "Weather & Alerts",
-      description: "Stay updated",
+      title: t("Weather & Alerts"),
+      description: t("Stay updated"),
       icon: "bell",
       color: "#E76F51",
       route: "/(tabs)/alerts",
     },
     {
       id: 5,
-      title: "Crop Guide",
-      description: "Get recommendations",
+      title: t("Crop Guide"),
+      description: t("Get recommendations"),
       icon: "sprout",
       color: "#606C38",
       route: "/(tabs)/recommendations",
     },
     {
       id: 6,
-      title: "IoT Devices",
-      description: "Monitor sensors",
+      title: t("IoT Devices"),
+      description: t("Monitor sensors"),
       icon: "access-point",
       color: "#457B9D",
       route: "/iot-devices",
     },
     {
-      id: 6,
-      title: "Crop Guide",
-      description: "Get recommendations",
-      icon: "sprout",
-      color: "#606C38",
-      route: "/(tabs)/recommendations",
+      id: 7,
+      title: t("My Orders"),
+      description: t("All orders and Rentals"),
+      icon: "access-point",
+      color: "#809d45ff",
+      route: "/farmer-orders-screen",
+    },
+    {
+      id: 8,
+      title: t("My Certificates"),
+      description: t("All certificates"),
+      icon: "check-decagram",
+      color: "#4dff00ff",
+      route: "/quality",
     },
   ];
 
   const stats = [
-    { label: "Total Land", value: `${farmStats.totalArea} Acres`, icon: "terrain" },
-    { label: "Active Fields", value: `${farmStats.activeFields}`, icon: "leaf" },
-    { label: "Alerts", value: `${farmStats.activeAlerts}`, icon: "bell-alert" },
+    {
+      label: t("Total Land"),
+      value: `${farmStats.totalArea} ${t("Acres")}`,
+      icon: "terrain",
+    },
+    {
+      label: t("Active Fields"),
+      value: `${farmStats.activeFields}`,
+      icon: "leaf",
+    },
+    {
+      label: t("Alerts"),
+      value: `${farmStats.activeAlerts}`,
+      icon: "bell-alert",
+    },
   ];
 
   const handleTaskCompletion = async (taskId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/farm/tasks/${taskId}/complete`, {
-        method: "PUT",
-        headers: { 
-          "Authorization": `Bearer ${authToken}`,
-          "Content-Type": "application/json"
+      const res = await fetch(
+        `${API_BASE_URL}/api/farm/tasks/${taskId}/complete`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (res.ok) {
         // Refresh tasks or filter completed task out
-        setTodaysTasks(prevTasks => prevTasks.filter(task => task._id !== taskId));
-        setFarmStats(prevStats => ({ 
-          ...prevStats, 
-          todaysTasks: prevStats.todaysTasks - 1 
+        setTodaysTasks((prevTasks) =>
+          prevTasks.filter((task) => task._id !== taskId)
+        );
+        setFarmStats((prevStats) => ({
+          ...prevStats,
+          todaysTasks: prevStats.todaysTasks - 1,
         }));
       } else {
         console.error("Failed to complete task");
@@ -171,7 +197,9 @@ export default function HomeScreen() {
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2A9D8F" />
-          <Text style={{ marginTop: 10, color: '#666' }}>Loading Dashboard...</Text>
+          <Text style={{ marginTop: 10, color: "#666" }}>
+            {t("Loading Dashboard...")}
+          </Text>
         </View>
       </ScreenWrapper>
     );
@@ -184,12 +212,17 @@ export default function HomeScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.greeting}>Welcome back,</Text>
+              <Text style={styles.greeting}>
+                {t("Welcome back,")}
+              </Text>
               <Text style={styles.userName}>
-                {user ? user.name : "Farmer"}!
+                {user ? user.name : t("Farmer")}!
               </Text>
             </View>
-            <TouchableOpacity style={styles.profileButton}>
+            <TouchableOpacity
+              style={styles.profileButton}
+              onPress={() => router.push("/(tabs)/profile")}
+            >
               <FontAwesome name="user-circle" size={40} color="#2A9D8F" />
             </TouchableOpacity>
           </View>
@@ -225,9 +258,11 @@ export default function HomeScreen() {
                   />
                 </View>
                 <View style={styles.featuredText}>
-                  <Text style={styles.featuredTitle}>Expense Predictor</Text>
+                  <Text style={styles.featuredTitle}>
+                    {t("Expense Predictor")}
+                  </Text>
                   <Text style={styles.featuredDescription}>
-                    Get accurate cost estimates for your crops
+                    {t("Get accurate cost estimates for your crops")}
                   </Text>
                 </View>
               </View>
@@ -236,7 +271,9 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {/* Quick Actions */}
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={styles.sectionTitle}>
+            {t("Quick Actions")}
+          </Text>
           <View style={styles.actionsGrid}>
             {quickActions.map((action) => (
               <TouchableOpacity
@@ -267,26 +304,40 @@ export default function HomeScreen() {
 
           {/* Today's Tasks */}
           <View style={styles.tasksSection}>
-            <Text style={styles.sectionTitle}>Today's Tasks ({farmStats.todaysTasks})</Text>
+            <Text style={styles.sectionTitle}>
+              {t("Today's Tasks")} ({farmStats.todaysTasks})
+            </Text>
             {todaysTasks.length === 0 ? (
-              <Text style={styles.noTasksText}>No tasks scheduled for today. Good work!</Text>
+              <Text style={styles.noTasksText}>
+                {t("No tasks scheduled for today. Good work!")}
+              </Text>
             ) : (
               todaysTasks.map((task) => (
                 <View key={task._id} style={styles.taskCard}>
                   <View style={styles.taskLeft}>
                     <MaterialCommunityIcons
-                      name={task.type === 'Irrigation' ? "water" : task.type === 'Fertilization' ? "spray" : "clipboard-text"}
+                      name={
+                        task.type === "Irrigation"
+                          ? "water"
+                          : task.type === "Fertilization"
+                          ? "spray"
+                          : "clipboard-text"
+                      }
                       size={24}
                       color="#2A9D8F"
                     />
                     <View style={styles.taskInfo}>
                       <Text style={styles.taskTitle}>{task.title}</Text>
                       <Text style={styles.taskTime}>
-                        {task.fieldId?.name ? `Field: ${task.fieldId.name}` : `Type: ${task.type}`}
+                        {task.fieldId?.name
+                          ? `${t("Field")}: ${
+                              task.fieldId.name
+                            }`
+                          : `${t("Type")}: ${task.type}`}
                       </Text>
                     </View>
                   </View>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.taskCheckbox}
                     onPress={() => handleTaskCompletion(task._id)}
                   >
@@ -299,7 +350,7 @@ export default function HomeScreen() {
 
           {/* Sign Out Button */}
           <View style={styles.signOutContainer}>
-            <Button title="Sign Out" onPress={signOut} />
+            <Button title={t("Sign Out")} onPress={signOut} />
           </View>
         </View>
       </ScrollView>
