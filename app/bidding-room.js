@@ -8,7 +8,6 @@ import {
   Alert,
   Animated,
   Dimensions,
-  FlatList,
   StyleSheet,
   Text,
   TextInput,
@@ -45,28 +44,6 @@ export default function BiddingRoom() {
   const [timeLeft, setTimeLeft] = useState("");
   const [highestBidder, setHighestBidder] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-
-  // Pulse animation for winning status
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
-
-  useEffect(() => {
-    console.log("saleInfo updated:", saleInfo);
-  }, [saleInfo]);
 
   // Flash animation when new bid arrives
   const flashNewBid = () => {
@@ -264,6 +241,7 @@ export default function BiddingRoom() {
       Alert.alert("Error", "Network error");
     } finally {
       setPlacingBid(false);
+      fetchBids();
     }
   };
 
@@ -344,7 +322,6 @@ export default function BiddingRoom() {
               />
             </View>
           </View>
-
           {/* CROP INFO CARD */}
           {saleInfo && (
             <View style={styles.cropCard}>
@@ -389,7 +366,6 @@ export default function BiddingRoom() {
               )}
             </View>
           )}
-
           {/* AUCTION STATUS CARD */}
           <Animated.View
             style={[
@@ -437,7 +413,6 @@ export default function BiddingRoom() {
               </View>
             )}
           </Animated.View>
-
           {/* BID INPUT SECTION */}
           {!auctionEnded && (
             <View style={styles.bidInputSection}>
@@ -502,8 +477,8 @@ export default function BiddingRoom() {
               </View>
             </View>
           )}
-
           {/* BID HISTORY */}
+          {/* Replace the FlatList and the maxHeight View with this */}
           <View style={styles.historySection}>
             <Text style={styles.sectionTitle}>Bid History ({bids.length})</Text>
 
@@ -516,15 +491,16 @@ export default function BiddingRoom() {
                 </Text>
               </View>
             ) : (
-              <View style={{ maxHeight: 350 }}>
-                <FlatList
-                  nestedScrollEnabled
-                  data={bids}
-                  keyExtractor={(item) => item._id}
-                  contentContainerStyle={styles.bidList}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={({ item, index }) => (
+              /* ✅ Add ScrollView with constrained height */
+              <ScrollView
+                style={styles.bidScrollContainer}
+                nestedScrollEnabled={true}
+                showsVerticalScrollIndicator={true}
+              >
+                <View style={styles.bidList}>
+                  {bids.map((item, index) => (
                     <View
+                      key={item._id}
                       style={[
                         styles.bidItem,
                         index === 0 && styles.highestBidItem,
@@ -558,9 +534,9 @@ export default function BiddingRoom() {
                         ₹{item.amount.toLocaleString()}
                       </Text>
                     </View>
-                  )}
-                />
-              </View>
+                  ))}
+                </View>
+              </ScrollView>
             )}
           </View>
         </View>
@@ -894,5 +870,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: "#264653",
+  },
+  bidScrollContainer: {
+    maxHeight: 350, // ✅ Constrain height to enable scrolling
   },
 });
