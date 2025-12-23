@@ -58,7 +58,7 @@ export default function VendorTabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="bargain"
         options={{
           title: 'Messages',
@@ -66,7 +66,7 @@ export default function VendorTabLayout() {
             <MaterialCommunityIcons name="chat" color={color} size={size} />
           ),
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="profile"
         options={{
