@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../secret";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
 import { useAuth } from "../src/context/AuthContext";
@@ -28,6 +29,7 @@ export default function FarmerOrdersScreen() {
   const authToken = user?.token;
 
   const router = useRouter();
+  const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
@@ -46,7 +48,7 @@ export default function FarmerOrdersScreen() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to fetch order history.");
+        throw new Error(t("Failed to fetch order history."));
       }
 
       const data = await res.json();
@@ -91,9 +93,9 @@ export default function FarmerOrdersScreen() {
 
   const getOrderTypeDetails = (type) => {
     if (type === "rental") {
-      return { label: "Rental", icon: "truck-fast", color: "#E76F51" };
+      return { label: t("Rental"), icon: "truck-fast", color: "#E76F51" };
     }
-    return { label: "Purchase", icon: "cart", color: "#2A9D8F" };
+    return { label: t("Purchase"), icon: "cart", color: "#2A9D8F" };
   };
 
   const renderOrderCard = (order) => {
@@ -102,7 +104,9 @@ export default function FarmerOrdersScreen() {
 
     // Check if vendor data is available after population
     const vendorName =
-      order.vendor?.organizationName || order.vendor?.name || "Unknown Vendor";
+      order.vendor?.organizationName ||
+      order.vendor?.name ||
+      t("Unknown Vendor");
 
     const isRental = order.orderType === "rental";
     const totalDays = isRental ? order.rentalDuration?.totalDays : null;
@@ -121,25 +125,27 @@ export default function FarmerOrdersScreen() {
               {order.productSnapshot.name}
             </Text>
             <Text style={styles.orderVendorName}>
-              {typeDetails.label} from {vendorName}
+              {typeDetails.label} {t("from")} {vendorName}
             </Text>
           </View>
           <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-            <Text style={styles.statusText}>{order.status.toUpperCase()}</Text>
+            <Text style={styles.statusText}>
+              {t(order.status.toUpperCase())}
+            </Text>
           </View>
         </View>
 
         <View style={styles.orderBody}>
           {/* Amount and Quantity */}
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Total Amount</Text>
+            <Text style={styles.detailLabel}>{t("Total Amount")}</Text>
             <Text style={styles.detailValueAmount}>
               {formatCurrency(order.totalAmount)}
             </Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Quantity</Text>
+            <Text style={styles.detailLabel}>{t("Quantity")}</Text>
             <Text style={styles.detailValue}>
               {order.quantity} {order.productSnapshot.unit}
             </Text>
@@ -149,17 +155,21 @@ export default function FarmerOrdersScreen() {
           {isRental && order.rentalDuration && (
             <>
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Duration</Text>
-                <Text style={styles.detailValue}>{totalDays} Days</Text>
+                <Text style={styles.detailLabel}>{t("Duration")}</Text>
+                <Text style={styles.detailValue}>
+                  {totalDays} {t("Days")}
+                </Text>
               </View>
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Period</Text>
+                <Text style={styles.detailLabel}>{t("Period")}</Text>
                 <Text style={styles.detailValuePeriod}>
                   {new Date(
                     order.rentalDuration.startDate
                   ).toLocaleDateString()}{" "}
                   -{" "}
-                  {new Date(order.rentalDuration.endDate).toLocaleDateString()}
+                  {new Date(
+                    order.rentalDuration.endDate
+                  ).toLocaleDateString()}
                 </Text>
               </View>
             </>
@@ -168,7 +178,8 @@ export default function FarmerOrdersScreen() {
           {/* Footer */}
           <View style={styles.orderFooter}>
             <Text style={styles.orderDate}>
-              Ordered: {new Date(order.createdAt).toLocaleDateString()}
+              {t("Ordered")}:{" "}
+              {new Date(order.createdAt).toLocaleDateString()}
             </Text>
           </View>
         </View>
@@ -182,7 +193,7 @@ export default function FarmerOrdersScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2A9D8F" />
           <Text style={{ marginTop: 10, color: "#666" }}>
-            Loading Order History...
+            {t("Loading Order History...")}
           </Text>
         </View>
       </ScreenWrapper>
@@ -198,15 +209,17 @@ export default function FarmerOrdersScreen() {
         }
       >
         <View style={styles.container}>
-          <Text style={styles.header}>My Orders</Text>
+          <Text style={styles.header}>{t("My Orders")}</Text>
           <Text style={styles.subtitle}>
-            Track the status of your purchases and rentals ({orders.length}{" "}
-            total)
+            {t("Track the status of your purchases and rentals")} (
+            {orders.length} {t("total")})
           </Text>
 
           {error && (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>Error: {error}</Text>
+              <Text style={styles.errorText}>
+                {t("Error")}: {error}
+              </Text>
             </View>
           )}
 
@@ -217,7 +230,9 @@ export default function FarmerOrdersScreen() {
                 size={30}
                 color="#888"
               />
-              <Text style={styles.noOrdersText}>No orders placed yet.</Text>
+              <Text style={styles.noOrdersText}>
+                {t("No orders placed yet.")}
+              </Text>
             </View>
           ) : (
             orders.map(renderOrderCard)

@@ -9,12 +9,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../../secret";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 
 export default function RecommendationsScreen() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fields, setFields] = useState([]);
@@ -114,10 +116,10 @@ export default function RecommendationsScreen() {
         }
       >
         <View style={styles.container}>
-          <Text style={styles.header}>Recommendations</Text>
+          <Text style={styles.header}>{t("Recommendations")}</Text>
 
           {/* Field Selection Horizontal List */}
-          <Text style={styles.sectionLabel}>Select a Field</Text>
+          <Text style={styles.sectionLabel}>{t("Select a Field")}</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -155,25 +157,25 @@ export default function RecommendationsScreen() {
                   color="#606C38"
                 />
                 <Text style={styles.soilTitle}>
-                  Soil Analysis: {selectedField?.name}
+                  {t("Soil Analysis")}: {selectedField?.name}
                 </Text>
               </View>
 
               <View style={styles.soilGrid}>
                 <View style={styles.soilItem}>
-                  <Text style={styles.soilLabel}>pH Level</Text>
+                  <Text style={styles.soilLabel}>{t("pH Level")}</Text>
                   <Text style={styles.soilValue}>{soilData.pH}</Text>
                 </View>
                 <View style={styles.soilItem}>
-                  <Text style={styles.soilLabel}>Soil Type</Text>
+                  <Text style={styles.soilLabel}>{t("Soil Type")}</Text>
                   <Text style={styles.soilValue}>{soilData.soilType}</Text>
                 </View>
                 <View style={styles.soilItem}>
-                  <Text style={styles.soilLabel}>Nitrogen</Text>
+                  <Text style={styles.soilLabel}>{t("Nitrogen")}</Text>
                   <Text style={styles.soilValue}>{soilData.nitrogen}</Text>
                 </View>
                 <View style={styles.soilItem}>
-                  <Text style={styles.soilLabel}>Phosphorus</Text>
+                  <Text style={styles.soilLabel}>{t("Phosphorus")}</Text>
                   <Text style={styles.soilValue}>{soilData.phosphorus}</Text>
                 </View>
               </View>
@@ -186,7 +188,7 @@ export default function RecommendationsScreen() {
                 color="#CCC"
               />
               <Text style={styles.noDataText}>
-                No soil analysis found for this field.
+                {t("No soil analysis found for this field.")}
               </Text>
             </View>
           )}
@@ -194,9 +196,11 @@ export default function RecommendationsScreen() {
           {/* Recommendations List */}
           {recommendations.length > 0 && (
             <>
-              <Text style={styles.sectionTitle}>Recommended Crops</Text>
+              <Text style={styles.sectionTitle}>
+                {t("Recommended Crops")}
+              </Text>
               <Text style={styles.sectionSubtitle}>
-                Best suited for {selectedField?.name}
+                {t("Best suited for")} {selectedField?.name}
               </Text>
 
               {recommendations.map((crop) => (
@@ -215,7 +219,7 @@ export default function RecommendationsScreen() {
                       <View style={styles.cropTitleContainer}>
                         <Text style={styles.cropName}>{crop.cropName}</Text>
                         <Text style={styles.cropSeason}>
-                          {crop.season} Season
+                          {crop.season} {t("Season")}
                         </Text>
                       </View>
                     </View>
@@ -232,7 +236,9 @@ export default function RecommendationsScreen() {
                       <Text style={styles.suitabilityText}>
                         {crop.suitability}%
                       </Text>
-                      <Text style={styles.suitabilityLabel}>Match</Text>
+                      <Text style={styles.suitabilityLabel}>
+                        {t("Match")}
+                      </Text>
                     </View>
                   </View>
 

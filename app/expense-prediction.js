@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../secret";
 import Button from "../src/components/common/Button";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
@@ -18,6 +19,7 @@ export default function ExpensePredictionScreen() {
   const { user } = useAuth();
   const authToken = user?.token;
   const router = useRouter();
+  const { t } = useTranslation();
 
   // State
   const [crops, setCrops] = useState([]);
@@ -60,7 +62,7 @@ export default function ExpensePredictionScreen() {
       const exists = !!(soilData.soilData && soilData.soilData.pH);
       setHasSoilData(exists);
     } catch (err) {
-      console.error("Initialization Error", err);
+      console.error(t("Initialization Error"), err);
       setHasSoilData(false);
     }
   };
@@ -90,7 +92,7 @@ export default function ExpensePredictionScreen() {
   const handlePredictExpense = async () => {
     setError(null);
     if (!selectedCrop || !landArea) {
-      setError("Please select a crop and land area.");
+      setError(t("Please select a crop and land area."));
       return;
     }
 
@@ -106,7 +108,7 @@ export default function ExpensePredictionScreen() {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
-      if (!res.ok) throw new Error("Failed to calculate prediction.");
+      if (!res.ok) throw new Error(t("Failed to calculate prediction."));
       const data = await res.json();
       setPrediction(data.prediction);
     } catch (err) {
@@ -148,10 +150,14 @@ export default function ExpensePredictionScreen() {
             >
               <FontAwesome name="arrow-left" size={20} color="#264653" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Expense Prediction</Text>
+            <Text style={styles.headerTitle}>
+              {t("Expense Prediction")}
+            </Text>
           </View>
 
-          <Text style={styles.sectionTitle}>Select Field (Optional)</Text>
+          <Text style={styles.sectionTitle}>
+            {t("Select Field")}
+          </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -180,7 +186,9 @@ export default function ExpensePredictionScreen() {
 
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.sectionTitle}>Land Area (Acres)</Text>
+              <Text style={styles.sectionTitle}>
+                {t("Land Area (Acres)")}
+              </Text>
               <TextInput
                 style={styles.input}
                 value={landArea}
@@ -210,18 +218,19 @@ export default function ExpensePredictionScreen() {
                   !hasSoilData && { color: "#888" },
                 ]}
               >
-                {hasSoilData ? "Soil-Sync" : "No Soil Data"}
+                {hasSoilData ? t("Soil-Sync") : t("No Soil Data")}
               </Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.sectionTitle}>Select Crop</Text>
+          <Text style={styles.sectionTitle}>{t("Select Crop")}</Text>
           <TextInput
             style={styles.searchBar}
-            placeholder="Search 30+ crops..."
+            placeholder={t("Search 30+ crops...")}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
+
           <View style={styles.cropsGrid}>
             {filteredCrops.map((crop) => (
               <TouchableOpacity
@@ -250,7 +259,7 @@ export default function ExpensePredictionScreen() {
           </View>
 
           <Button
-            title="Analyze Profitability"
+            title={t("Analyze Profitability")}
             onPress={handlePredictExpense}
             loading={loading}
           />
@@ -259,7 +268,7 @@ export default function ExpensePredictionScreen() {
             <View style={styles.resultContainer}>
               <View style={styles.totalCard}>
                 <Text style={styles.totalLabel}>
-                  Total Estimated Investment
+                  {t("Total Estimated Investment")}
                 </Text>
                 <Text style={styles.totalAmount}>
                   {formatCurrency(prediction.total)}
@@ -268,36 +277,38 @@ export default function ExpensePredictionScreen() {
 
               {/* Cost Breakdown Section */}
               <View style={styles.breakdownContainer}>
-                <Text style={styles.sectionTitle}>Cost Breakdown</Text>
+                <Text style={styles.sectionTitle}>
+                  {t("Cost Breakdown")}
+                </Text>
                 {prediction.breakdown && (
                   <>
                     {renderBreakdownItem(
-                      "Seeds",
+                      t("Seeds"),
                       prediction.breakdown.seeds,
                       "seed"
                     )}
                     {renderBreakdownItem(
-                      "Fertilizers",
+                      t("Fertilizers"),
                       prediction.breakdown.fertilizers,
                       "flask"
                     )}
                     {renderBreakdownItem(
-                      "Pesticides",
+                      t("Pesticides"),
                       prediction.breakdown.pesticides,
                       "bug"
                     )}
                     {renderBreakdownItem(
-                      "Irrigation",
+                      t("Irrigation"),
                       prediction.breakdown.irrigation,
                       "water"
                     )}
                     {renderBreakdownItem(
-                      "Labor",
+                      t("Labor"),
                       prediction.breakdown.labor,
                       "account-group"
                     )}
                     {renderBreakdownItem(
-                      "Machinery",
+                      t("Machinery"),
                       prediction.breakdown.machinery,
                       "tractor"
                     )}
@@ -310,19 +321,22 @@ export default function ExpensePredictionScreen() {
                 prediction.expectedRevenueMarket) && (
                 <>
                   <Text style={styles.sectionTitle}>
-                    Expected Revenue Scenarios
+                    {t("Expected Revenue Scenarios")}
                   </Text>
                   <View style={styles.comparisonRow}>
                     {prediction.expectedRevenueMSP !== null && (
                       <View style={styles.revCard}>
-                        <Text style={styles.revLabel}>Govt MSP</Text>
+                        <Text style={styles.revLabel}>
+                          {t("Govt MSP")}
+                        </Text>
                         <Text style={styles.revVal}>
                           {formatCurrency(prediction.expectedRevenueMSP)}
                         </Text>
                         <Text style={styles.profitLabel}>
-                          Profit:{" "}
+                          {t("Profit")}:{" "}
                           {formatCurrency(
-                            prediction.expectedRevenueMSP - prediction.total
+                            prediction.expectedRevenueMSP -
+                              prediction.total
                           )}
                         </Text>
                       </View>
@@ -331,16 +345,19 @@ export default function ExpensePredictionScreen() {
                       <View
                         style={[styles.revCard, { borderColor: "#E9C46A" }]}
                       >
-                        <Text style={styles.revLabel}>Market Rate</Text>
+                        <Text style={styles.revLabel}>
+                          {t("Market Rate")}
+                        </Text>
                         <Text style={styles.revVal}>
                           {formatCurrency(prediction.expectedRevenueMarket)}
                         </Text>
                         <Text
                           style={[styles.profitLabel, { color: "#E9C46A" }]}
                         >
-                          Profit:{" "}
+                          {t("Profit")}:{" "}
                           {formatCurrency(
-                            prediction.expectedRevenueMarket - prediction.total
+                            prediction.expectedRevenueMarket -
+                              prediction.total
                           )}
                         </Text>
                       </View>

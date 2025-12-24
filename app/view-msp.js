@@ -13,15 +13,17 @@ import {
 } from "react-native";
 import { API_BASE_URL } from "../secret";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
+import { useTranslation } from "react-i18next";
 
 export default function MspScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mspList, setMspList] = useState([]);
   const [filteredList, setFilteredList] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeSeasonFilter, setActiveSeasonFilter] = useState("All"); // New State for quick filtering
+  const [activeSeasonFilter, setActiveSeasonFilter] = useState(t("All")); // New State for quick filtering
   const [initialFetchError, setInitialFetchError] = useState(null);
 
   // Data fetch function (PUBLIC endpoint, no Auth token needed)
@@ -33,7 +35,7 @@ export default function MspScreen() {
       const res = await fetch(`${API_BASE_URL}/api/msp`); // Assuming publicRoutes is bound to /api/public
 
       if (!res.ok) {
-        throw new Error("Failed to fetch MSP data.");
+        throw new Error(t("Failed to fetch MSP data."));
       }
 
       const data = await res.json();
@@ -43,7 +45,7 @@ export default function MspScreen() {
       // We rely on the search/filter useEffect to update filteredList
     } catch (error) {
       console.error("MSP Fetch Error:", error.message);
-      setInitialFetchError("Could not connect to fetch public price list.");
+      setInitialFetchError(t("Could not connect to fetch public price list."));
       setMspList([]);
       setFilteredList([]);
     } finally {
@@ -63,7 +65,7 @@ export default function MspScreen() {
     let seasonFilter = activeSeasonFilter;
 
     // 1. Filter by Season
-    if (seasonFilter !== "All") {
+    if (seasonFilter !== t("All")) {
       listToFilter = listToFilter.filter(
         (msp) => msp.season.toLowerCase() === seasonFilter.toLowerCase()
       );
@@ -84,12 +86,12 @@ export default function MspScreen() {
   const onRefresh = () => {
     // Reset filters on pull-to-refresh
     setSearchQuery("");
-    setActiveSeasonFilter("All");
+    setActiveSeasonFilter(t("All"));
     fetchMspData();
   };
 
   const formatCurrency = (amount) => {
-    if (amount === null || isNaN(amount)) return "N/A";
+    if (amount === null || isNaN(amount)) return t("N/A");
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
@@ -125,7 +127,7 @@ export default function MspScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2A9D8F" />
           <Text style={{ marginTop: 10, color: "#666" }}>
-            Fetching Public MSP Data...
+            {t("Fetching Public MSP Data...")}
           </Text>
         </View>
       </ScreenWrapper>
@@ -148,10 +150,10 @@ export default function MspScreen() {
             >
               <FontAwesome name="arrow-left" size={20} color="#264653" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Minimum Support Price</Text>
+            <Text style={styles.headerTitle}>{t("Minimum Support Price")}</Text>
           </View>
           <Text style={styles.subtitle}>
-            Official MSP rates for key crops ({mspList.length} total listed).
+            {t("Official MSP rates for key crops")} ({mspList.length} {t("total listed")})
           </Text>
 
           {/* Search Bar */}
@@ -166,7 +168,7 @@ export default function MspScreen() {
               style={styles.searchInput}
               value={searchQuery}
               onChangeText={setSearchQuery}
-              placeholder="Search by crop name or season..."
+              placeholder={t("Search by crop name or season...")}
               placeholderTextColor="#888"
             />
             {searchQuery.length > 0 && (
@@ -186,19 +188,19 @@ export default function MspScreen() {
           {/* Summary Stats Card (NEW ADDITION) */}
           <View style={styles.summaryStatsContainer}>
             <View style={styles.summaryStatItem}>
-              <Text style={styles.statLabel}>Total Crops</Text>
+              <Text style={styles.statLabel}>{t("Total Crops")}</Text>
               <Text style={styles.statValue}>{totalCrops}</Text>
             </View>
             <View style={styles.summaryStatDivider} />
             <View style={styles.summaryStatItem}>
-              <Text style={styles.statLabel}>Kharif Crops</Text>
+              <Text style={styles.statLabel}>{t("Kharif Crops")}</Text>
               <Text style={[styles.statValue, { color: "#2A9D8F" }]}>
                 {kharifCount}
               </Text>
             </View>
             <View style={styles.summaryStatDivider} />
             <View style={styles.summaryStatItem}>
-              <Text style={styles.statLabel}>Rabi Crops</Text>
+              <Text style={styles.statLabel}>{t("Rabi Crops")}</Text>
               <Text style={[styles.statValue, { color: "#F4A261" }]}>
                 {rabiCount}
               </Text>
@@ -207,7 +209,7 @@ export default function MspScreen() {
 
           {/* Quick Filters (NEW ADDITION) */}
           <View style={styles.filterContainer}>
-            {["All", "Kharif", "Rabi"].map((season) => (
+            {[t("All"), t("Kharif"), t("Rabi")].map((season) => (
               <TouchableOpacity
                 key={season}
                 style={[
@@ -238,7 +240,7 @@ export default function MspScreen() {
           {/* Error Message */}
           {initialFetchError && (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>Error: {initialFetchError}</Text>
+              <Text style={styles.errorText}>{t("Error")}: {initialFetchError}</Text>
             </View>
           )}
 
@@ -262,24 +264,24 @@ export default function MspScreen() {
 
                   <View style={styles.priceRow}>
                     <View style={styles.priceColumn}>
-                      <Text style={styles.priceLabel}>MSP Rate</Text>
+                      <Text style={styles.priceLabel}>{t("MSP Rate")}</Text>
                       <Text style={styles.priceValue}>
                         {formatCurrency(msp.price)}
                       </Text>
                       <Text style={styles.priceUnit}>
-                        per {msp.unit || "quintal"}
+                        {t("per")} {msp.unit || t("quintal")}
                       </Text>
                     </View>
 
                     <View style={styles.detailColumn}>
-                      <Text style={styles.detailLabel}>Implemented Year</Text>
+                      <Text style={styles.detailLabel}>{t("Implemented Year")}</Text>
                       <Text style={styles.detailValue}>
                         {msp.implementedYear || "2024-25"}
                       </Text>
 
-                      <Text style={styles.detailLabel}>Grade</Text>
+                      <Text style={styles.detailLabel}>{t("Grade")}</Text>
                       <Text style={styles.detailValue}>
-                        {msp.grade || "A Grade"}
+                        {msp.grade || t("A Grade")}
                       </Text>
                     </View>
                   </View>
@@ -288,10 +290,10 @@ export default function MspScreen() {
             : !initialFetchError && (
                 <View style={styles.noResultsCard}>
                   <Text style={styles.noResultsText}>
-                    No results found for "{searchQuery || activeSeasonFilter}"
+                    {t("No results found for")} "{searchQuery || activeSeasonFilter}"
                   </Text>
                   <Text style={styles.noResultsSubtext}>
-                    Try adjusting your search or filter.
+                    {t("Try adjusting your search or filter.")}
                   </Text>
                 </View>
               )}

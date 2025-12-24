@@ -1,5 +1,3 @@
-// File: app/(tabs)/quality.js - UPDATED VERSION
-
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -17,8 +15,10 @@ import {
 import { API_BASE_URL } from "../secret";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
 import { useAuth } from "../src/context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export default function QualityCertificatesScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const authToken = user?.token;
   const router = useRouter();
@@ -49,7 +49,6 @@ export default function QualityCertificatesScreen() {
         const data = await res.json();
         let filteredRequests = data.requests || [];
 
-        // Apply filter
         if (filter !== "all") {
           filteredRequests = filteredRequests.filter(
             (r) => r.status === filter
@@ -60,7 +59,7 @@ export default function QualityCertificatesScreen() {
       }
     } catch (error) {
       console.error("Fetch Error:", error);
-      Alert.alert("Error", "Failed to load quality requests");
+      Alert.alert(t("Error"), t("Failed to load quality requests"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -75,7 +74,7 @@ export default function QualityCertificatesScreen() {
           headers: { Authorization: `Bearer ${authToken}` },
         }
       );
-      console.log("Request details:", request);
+      // console.log("Request details:", request);
 
       //   const cropRes = await fetch(
       //     `${API_BASE_URL}/api/crops/crops`,
@@ -95,7 +94,7 @@ export default function QualityCertificatesScreen() {
       }
     } catch (error) {
       console.error("Fetch Details Error:", error);
-      Alert.alert("Error", "Failed to load details");
+      Alert.alert(t("Error"), t("Failed to load details"));
     }
   };
 
@@ -144,10 +143,10 @@ export default function QualityCertificatesScreen() {
           />
           <View style={styles.titleText}>
             <Text style={styles.cropName}>
-              {request.cropId?.cropName || "Unknown Crop"}
+              {request.cropId?.cropName || t("Unknown Crop")}
             </Text>
             <Text style={styles.fieldName}>
-              {request.fieldId?.name || "Unknown Field"}
+              {request.fieldId?.name || t("Unknown Field")}
             </Text>
           </View>
         </View>
@@ -193,7 +192,9 @@ export default function QualityCertificatesScreen() {
               { backgroundColor: getGradeColor(request.grade) },
             ]}
           >
-            <Text style={styles.gradeText}>Grade: {request.grade}</Text>
+            <Text style={styles.gradeText}>
+              {t("Grade")}: {request.grade}
+            </Text>
           </View>
           {request.certificateNumber && (
             <Text style={styles.certNumber}>{request.certificateNumber}</Text>
@@ -208,7 +209,7 @@ export default function QualityCertificatesScreen() {
             size={20}
             color="#F4A261"
           />
-          <Text style={styles.statusInfoText}>Inspection in progress</Text>
+          <Text style={styles.statusInfoText}>{t("Inspection in progress")}</Text>
         </View>
       )}
 
@@ -219,12 +220,12 @@ export default function QualityCertificatesScreen() {
             size={20}
             color="#457B9D"
           />
-          <Text style={styles.statusInfoText}>Awaiting assignment</Text>
+          <Text style={styles.statusInfoText}>{t("Awaiting assignment")}</Text>
         </View>
       )}
 
       <View style={styles.cardFooter}>
-        <Text style={styles.lotId}>ID: {request._id.slice(-8)}</Text>
+        <Text style={styles.lotId}>{t("ID")}: {request._id.slice(-8)}</Text>
         <MaterialCommunityIcons name="chevron-right" size={20} color="#888" />
       </View>
     </TouchableOpacity>
@@ -241,7 +242,7 @@ export default function QualityCertificatesScreen() {
       <Text
         style={[styles.filterText, filter === value && styles.filterTextActive]}
       >
-        {label}
+        {t(label)}
       </Text>
     </TouchableOpacity>
   );
@@ -251,7 +252,7 @@ export default function QualityCertificatesScreen() {
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2A9D8F" />
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={styles.loadingText}>{t("Loading...")}</Text>
         </View>
       </ScreenWrapper>
     );
@@ -260,7 +261,7 @@ export default function QualityCertificatesScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Quality Certificates</Text>
+        <Text style={styles.headerTitle}>{t("Quality Certificates")}</Text>
         <TouchableOpacity
           style={styles.infoButton}
           onPress={() => router.push("/my-harvest")}
@@ -282,25 +283,25 @@ export default function QualityCertificatesScreen() {
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>{requests.length}</Text>
-            <Text style={styles.statLabel}>Total</Text>
+            <Text style={styles.statLabel}>{t("Total")}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statValue, { color: "#4CAF50" }]}>
               {requests.filter((r) => r.status === "approved").length}
             </Text>
-            <Text style={styles.statLabel}>Approved</Text>
+            <Text style={styles.statLabel}>{t("Approved")}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statValue, { color: "#457B9D" }]}>
               {requests.filter((r) => r.status === "pending").length}
             </Text>
-            <Text style={styles.statLabel}>Pending</Text>
+            <Text style={styles.statLabel}>{t("Pending")}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statValue, { color: "#F4A261" }]}>
               {requests.filter((r) => r.status === "in-progress").length}
             </Text>
-            <Text style={styles.statLabel}>In Progress</Text>
+            <Text style={styles.statLabel}>{t("In Progress")}</Text>
           </View>
         </View>
 
@@ -315,17 +316,17 @@ export default function QualityCertificatesScreen() {
               />
               <Text style={styles.emptyText}>
                 {filter === "all"
-                  ? "No quality requests yet"
-                  : `No ${filter} requests`}
+                  ? t("No quality requests yet")
+                  : `${t("No")} ${t(filter)} ${t("requests")}`}
               </Text>
               <Text style={styles.emptySubtext}>
-                Go to My Harvest to request quality inspection
+                {t("Go to My Harvest to request quality inspection")}
               </Text>
               <TouchableOpacity
                 style={styles.emptyButton}
                 onPress={() => router.push("/my-harvest")}
               >
-                <Text style={styles.emptyButtonText}>View My Harvest</Text>
+                <Text style={styles.emptyButtonText}>{t("View My Harvest")}</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -344,7 +345,7 @@ export default function QualityCertificatesScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Certificate Details</Text>
+              <Text style={styles.modalTitle}>{t("Certificate Details")}</Text>
               <TouchableOpacity onPress={() => setShowDetailsModal(false)}>
                 <MaterialCommunityIcons name="close" size={24} color="#666" />
               </TouchableOpacity>
@@ -374,7 +375,7 @@ export default function QualityCertificatesScreen() {
                         ]}
                       >
                         <Text style={styles.largeGradeText}>
-                          Grade: {selectedRequest.grade}
+                          {t("Grade")}: {selectedRequest.grade}
                         </Text>
                       </View>
                     </View>
@@ -382,32 +383,32 @@ export default function QualityCertificatesScreen() {
 
                 {/* Request Details */}
                 <View style={styles.detailsSection}>
-                  <Text style={styles.sectionTitle}>Request Information</Text>
+                  <Text style={styles.sectionTitle}>{t("Request Information")}</Text>
                   <DetailRow
-                    label="Crop"
-                    value={selectedRequest.cropId?.cropName || "N/A"}
+                    label={t("Crop")}
+                    value={selectedRequest.cropId?.cropName || t("N/A")}
                   />
                   <DetailRow
-                    label="Quantity"
+                    label={t("Quantity")}
                     value={`${selectedRequest.quantity} ${selectedRequest.unit}`}
                   />
                   <DetailRow
-                    label="Field"
-                    value={selectedRequest.fieldId?.name || "N/A"}
+                    label={t("Field")}
+                    value={selectedRequest.fieldId?.name || t("N/A")}
                   />
                   <DetailRow
-                    label="Harvest Date"
+                    label={t("Harvest Date")}
                     value={new Date(
                       selectedRequest.harvestDate
                     ).toLocaleDateString()}
                   />
                   <DetailRow
-                    label="Status"
+                    label={t("Status")}
                     value={selectedRequest.status.toUpperCase()}
                   />
                   {selectedRequest.storageLocation && (
                     <DetailRow
-                      label="Storage"
+                      label={t("Storage")}
                       value={selectedRequest.storageLocation}
                     />
                   )}
@@ -416,20 +417,20 @@ export default function QualityCertificatesScreen() {
                 {/* Lab Information */}
                 {selectedRequest.labName && (
                   <View style={styles.detailsSection}>
-                    <Text style={styles.sectionTitle}>Laboratory Details</Text>
+                    <Text style={styles.sectionTitle}>{t("Laboratory Details")}</Text>
                     <DetailRow
-                      label="Lab Name"
+                      label={t("Lab Name")}
                       value={selectedRequest.labName}
                     />
                     {selectedRequest.labLocation && (
                       <DetailRow
-                        label="Location"
+                        label={t("Location")}
                         value={selectedRequest.labLocation}
                       />
                     )}
                     {selectedRequest.labCertificationNumber && (
                       <DetailRow
-                        label="Cert Number"
+                        label={t("Cert Number")}
                         value={selectedRequest.labCertificationNumber}
                       />
                     )}
@@ -439,20 +440,20 @@ export default function QualityCertificatesScreen() {
                 {/* Inspector Info */}
                 {selectedRequest.assignedOfficer && (
                   <View style={styles.detailsSection}>
-                    <Text style={styles.sectionTitle}>Inspector Details</Text>
+                    <Text style={styles.sectionTitle}>{t("Inspector Details")}</Text>
                     <DetailRow
-                      label="Name"
-                      value={selectedRequest.assignedOfficer.name || "N/A"}
+                      label={t("Name")}
+                      value={selectedRequest.assignedOfficer.name || t("N/A")}
                     />
                     {selectedRequest.assignedOfficer.employeeId && (
                       <DetailRow
-                        label="Employee ID"
+                        label={t("Employee ID")}
                         value={selectedRequest.assignedOfficer.employeeId}
                       />
                     )}
                     {selectedRequest.inspectionDate && (
                       <DetailRow
-                        label="Inspection Date"
+                        label={t("Inspection Date")}
                         value={new Date(
                           selectedRequest.inspectionDate
                         ).toLocaleDateString()}
@@ -464,34 +465,34 @@ export default function QualityCertificatesScreen() {
                 {/* Quality Parameters */}
                 {selectedRequest.qualityParams && (
                   <View style={styles.qualitySection}>
-                    <Text style={styles.sectionTitle}>Quality Parameters</Text>
+                    <Text style={styles.sectionTitle}>{t("Quality Parameters")}</Text>
                     {selectedRequest.qualityParams.moisture && (
                       <DetailRow
-                        label="Moisture"
+                        label={t("Moisture")}
                         value={`${selectedRequest.qualityParams.moisture}%`}
                       />
                     )}
                     {selectedRequest.qualityParams.foreignMatter && (
                       <DetailRow
-                        label="Foreign Matter"
+                        label={t("Foreign Matter")}
                         value={`${selectedRequest.qualityParams.foreignMatter}%`}
                       />
                     )}
                     {selectedRequest.qualityParams.damagedGrains && (
                       <DetailRow
-                        label="Damaged Grains"
+                        label={t("Damaged Grains")}
                         value={`${selectedRequest.qualityParams.damagedGrains}%`}
                       />
                     )}
                     {selectedRequest.qualityParams.discoloredGrains && (
                       <DetailRow
-                        label="Discolored Grains"
+                        label={t("Discolored Grains")}
                         value={`${selectedRequest.qualityParams.discoloredGrains}%`}
                       />
                     )}
                     {selectedRequest.qualityParams.weevilDamage && (
                       <DetailRow
-                        label="Weevil Damage"
+                        label={t("Weevil Damage")}
                         value={`${selectedRequest.qualityParams.weevilDamage}%`}
                       />
                     )}
@@ -501,7 +502,7 @@ export default function QualityCertificatesScreen() {
                 {/* Notes */}
                 {selectedRequest.gradingNotes && (
                   <View style={styles.notesSection}>
-                    <Text style={styles.sectionTitle}>Inspector Notes</Text>
+                    <Text style={styles.sectionTitle}>{t("Inspector Notes")}</Text>
                     <Text style={styles.notesText}>
                       {selectedRequest.gradingNotes}
                     </Text>
@@ -511,7 +512,7 @@ export default function QualityCertificatesScreen() {
                 {/* Rejection Reason */}
                 {selectedRequest.rejectionReason && (
                   <View style={styles.rejectionSection}>
-                    <Text style={styles.sectionTitle}>Rejection Reason</Text>
+                    <Text style={styles.sectionTitle}>{t("Rejection Reason")}</Text>
                     <Text style={styles.rejectionText}>
                       {selectedRequest.rejectionReason}
                     </Text>

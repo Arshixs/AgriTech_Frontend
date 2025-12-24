@@ -17,6 +17,7 @@ import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 
@@ -24,6 +25,7 @@ export default function RegistrationScreen() {
   const { signInFarmer, user } = useAuth();
   const router = useRouter();
   const authToken = user?.token;
+  const { t } = useTranslation();
 
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
@@ -33,12 +35,11 @@ export default function RegistrationScreen() {
 
   // Map & Location State
   const mapRef = useRef(null);
-  const previewMapRef = useRef(null); // Separate ref for preview map
-  const [location, setLocation] = useState(null); // { lat, lng }
+  const previewMapRef = useRef(null);
+  const [location, setLocation] = useState(null);
   const [isMapModalVisible, setMapModalVisible] = useState(false);
   const [tempLocation, setTempLocation] = useState(null);
 
-  // Store region for preview map
   const [previewRegion, setPreviewRegion] = useState({
     latitude: 20.5937,
     longitude: 78.9629,
@@ -51,7 +52,6 @@ export default function RegistrationScreen() {
    */
   const handleMapPress = useCallback((e) => {
     const coords = e.nativeEvent.coordinate;
-    // Update temporary state, NOT main state
     setTempLocation({ lat: coords.latitude, lng: coords.longitude });
   }, []);
 
@@ -63,7 +63,7 @@ export default function RegistrationScreen() {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        alert("Location permission is required");
+        alert(t("Location permission is required"));
         return;
       }
 
@@ -111,7 +111,7 @@ export default function RegistrationScreen() {
       }
     } catch (error) {
       console.error("GPS Error:", error);
-      alert("Failed to get location");
+      alert(t("Failed to get location"));
     } finally {
       setFetchingGps(false);
     }
@@ -123,7 +123,7 @@ export default function RegistrationScreen() {
   const handleConfirmLocation = () => {
     // If no location selected but we have GPS location, use that
     if (!tempLocation) {
-      alert("Please select a location on the map");
+      alert(t("Please select a location on the map"));
       return;
     }
     setLocation(tempLocation);
@@ -141,7 +141,7 @@ export default function RegistrationScreen() {
 
   const handleCompleteProfile = async () => {
     if (!name || !address || !adharNumber || !location) {
-      alert("Please fill all fields and select location");
+      alert(t("Please fill all fields and select location"));
       return;
     }
 
@@ -162,13 +162,13 @@ export default function RegistrationScreen() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Update failed");
+      if (!res.ok) throw new Error(data.message || t("Update failed"));
 
       await signInFarmer({ ...data.farmer, token: authToken });
       router.replace("/(tabs)");
     } catch (err) {
       console.error("Registration Error:", err.message);
-      alert(err.message || "Registration failed");
+      alert(err.message || t("Registration failed"));
     } finally {
       setLoading(false);
     }
@@ -177,30 +177,30 @@ export default function RegistrationScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.formContainer}>
-        <Text style={styles.title}>Complete Your Profile</Text>
+        <Text style={styles.title}>{t("Complete Your Profile")}</Text>
 
         <Input
-          label="Full Name"
+          label={t("Full Name")}
           value={name}
           onChangeText={setName}
-          placeholder="Enter your full name"
+          placeholder={t("Enter your full name")}
         />
         <Input
-          label="Adhar Number"
+          label={t("Adhar Number")}
           value={adharNumber}
           onChangeText={setAdharNumber}
           keyboardType="number-pad"
-          placeholder="12-digit number"
+          placeholder={t("12-digit number")}
           maxLength={12}
         />
         <Input
-          label="Farm Address"
+          label={t("Farm Address")}
           value={address}
           onChangeText={setAddress}
-          placeholder="Village, Tehsil, District"
+          placeholder={t("Village, Tehsil, District")}
         />
 
-        <Text style={styles.label}>Farm Location on Map</Text>
+        <Text style={styles.label}>{t("Farm Location on Map")}</Text>
 
         {/* Preview Map */}
         <TouchableOpacity
@@ -240,14 +240,14 @@ export default function RegistrationScreen() {
                 color="#2A9D8F"
               />
               <Text style={styles.placeholderText}>
-                Tap to set location on Map
+                {t("Tap to set location on Map")}
               </Text>
             </View>
           )}
         </TouchableOpacity>
 
         <Button
-          title="Complete Registration"
+          title={t("Complete Registration")}
           onPress={handleCompleteProfile}
           loading={loading}
         />
@@ -291,13 +291,13 @@ export default function RegistrationScreen() {
                 <MaterialCommunityIcons name="close" size={24} color="#333" />
               </TouchableOpacity>
               <Text style={styles.modalTitle}>
-                {location ? "Location Selected" : "Pin your Farm"}
+                {location ? t("Location Selected") : t("Pin your Farm")}
               </Text>
               <TouchableOpacity
                 onPress={handleConfirmLocation}
                 style={styles.confirmBtn}
               >
-                <Text style={styles.confirmBtnText}>Confirm</Text>
+                <Text style={styles.confirmBtnText}>{t("Confirm")}</Text>
               </TouchableOpacity>
             </View>
 
@@ -322,11 +322,11 @@ export default function RegistrationScreen() {
             {tempLocation && (
               <View style={styles.coordsInfo}>
                 <Text style={styles.coordsText}>
-                  Lat: {tempLocation.lat.toFixed(6)}, Lng:{" "}
+                  {t("Lat")}: {tempLocation.lat.toFixed(6)}, {t("Lng")}:{" "}
                   {tempLocation.lng.toFixed(6)}
                 </Text>
                 <Text style={styles.coordsHint}>
-                  Tap on map or drag marker to adjust
+                  {t("Tap on map or drag marker to adjust")}
                 </Text>
               </View>
             )}
