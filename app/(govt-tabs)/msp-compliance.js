@@ -1,41 +1,45 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
-  TouchableOpacity, 
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
   Alert,
-  RefreshControl 
-} from 'react-native';
-import ScreenWrapper from '../../src/components/common/ScreenWrapper';
-import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAuth } from '../../src/context/AuthContext';
-import axios from 'axios';
-import { API_BASE_URL } from '../../secret';
+  RefreshControl,
+} from "react-native";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useRouter } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useAuth } from "../../src/context/AuthContext";
+import axios from "axios";
+import { API_BASE_URL } from "../../secret";
+import { useTranslation } from "react-i18next";
+
 const API_URL = API_BASE_URL;
 
 export default function MspComplianceScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  
+  const { t } = useTranslation();
+
   const [mspData, setMspData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState('all'); //  kharif, rabi, year-round
+  const [filter, setFilter] = useState("all"); //  kharif, rabi, year-round
 
   const fetchMSPData = async () => {
     try {
-      const endpoint = filter === 'all' 
-        ? `${API_URL}/api/msp`
-        : `${API_URL}/api/msp?season=${filter}`;
-      
+      const endpoint =
+        filter === "all"
+          ? `${API_URL}/api/msp`
+          : `${API_URL}/api/msp?season=${filter}`;
+
       const response = await axios.get(endpoint);
       setMspData(response.data.data);
     } catch (error) {
-      console.error('Fetch MSP Error:', error);
-      Alert.alert('Error', 'Failed to fetch MSP data');
+      console.error("Fetch MSP Error:", error);
+      Alert.alert(t("Error"), t("Failed to fetch MSP data"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -53,56 +57,65 @@ export default function MspComplianceScreen() {
 
   const handleEdit = (item) => {
     router.push({
-      pathname: '/edit-msp',
-      params: { 
+      pathname: "/edit-msp",
+      params: {
         id: item._id,
         cropName: item.cropName,
         price: item.price.toString(),
         unit: item.unit,
         season: item.season,
-      }
+      },
     });
   };
 
   const getSeasonColor = (season) => {
     switch (season) {
-      case 'kharif': return '#2A9D8F';
-      case 'rabi': return '#E76F51';
-      case 'year-round': return '#457B9D';
-      default: return '#666';
+      case "kharif":
+        return "#2A9D8F";
+      case "rabi":
+        return "#E76F51";
+      case "year-round":
+        return "#457B9D";
+      default:
+        return "#666";
     }
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.card}
       onPress={() => handleEdit(item)}
       activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>
         <View style={styles.cardTitle}>
-          <MaterialCommunityIcons 
-            name="leaf" 
-            size={24} 
-            color="#606C38" 
-          />
+          <MaterialCommunityIcons name="leaf" size={24} color="#606C38" />
           <Text style={styles.cropName}>{item.cropName}</Text>
         </View>
-        <View style={[styles.seasonBadge, { backgroundColor: getSeasonColor(item.season) }]}>
+        <View
+          style={[
+            styles.seasonBadge,
+            { backgroundColor: getSeasonColor(item.season) },
+          ]}
+        >
           <Text style={styles.seasonText}>
-            {item.season === 'year-round' ? 'All Year' : item.season.toUpperCase()}
+            {item.season === "year-round"
+              ? t("All Year")
+              : item.season.toUpperCase()}
           </Text>
         </View>
       </View>
-      
+
       <View style={styles.cardBody}>
         <View style={styles.priceContainer}>
-          <Text style={styles.priceLabel}>MSP Price</Text>
+          <Text style={styles.priceLabel}>{t("MSP Price")}</Text>
           <Text style={styles.priceValue}>₹{item.price}</Text>
-          <Text style={styles.unitText}>per {item.unit}</Text>
+          <Text style={styles.unitText}>
+            {t("per")} {item.unit}
+          </Text>
         </View>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.editButton}
           onPress={() => handleEdit(item)}
         >
@@ -112,7 +125,8 @@ export default function MspComplianceScreen() {
 
       {item.effectiveFrom && (
         <Text style={styles.effectiveText}>
-          Effective from: {new Date(item.effectiveFrom).toLocaleDateString('en-IN')}
+          {t("Effective from")}:{" "}
+          {new Date(item.effectiveFrom).toLocaleDateString("en-IN")}
         </Text>
       )}
     </TouchableOpacity>
@@ -120,10 +134,15 @@ export default function MspComplianceScreen() {
 
   const FilterButton = ({ label, value }) => (
     <TouchableOpacity
-      style={[styles.filterButton, filter === value && styles.filterButtonActive]}
+      style={[
+        styles.filterButton,
+        filter === value && styles.filterButtonActive,
+      ]}
       onPress={() => setFilter(value)}
     >
-      <Text style={[styles.filterText, filter === value && styles.filterTextActive]}>
+      <Text
+        style={[styles.filterText, filter === value && styles.filterTextActive]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -133,7 +152,7 @@ export default function MspComplianceScreen() {
     <ScreenWrapper>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>
-          MSP {filter === "rabi" ? "(2026-2027)" : "(2025-2026)"}
+          {t("MSP")} {filter === "rabi" ? "(2026-2027)" : "(2025-2026)"}
         </Text>
         <TouchableOpacity
           style={styles.addButton}
@@ -144,10 +163,10 @@ export default function MspComplianceScreen() {
       </View>
 
       <View style={styles.filterContainer}>
-        {/* <FilterButton label="All" value="all" /> */}
-        <FilterButton label="Kharif" value="kharif" />
-        <FilterButton label="Rabi" value="rabi" />
-        <FilterButton label="Year-Round" value="year-round" />
+        {/* <FilterButton label={t("All")} value="all" /> */}
+        <FilterButton label={t("Kharif")} value="kharif" />
+        <FilterButton label={t("Rabi")} value="rabi" />
+        <FilterButton label={t("Year-Round")} value="year-round" />
       </View>
 
       <FlatList
@@ -160,8 +179,12 @@ export default function MspComplianceScreen() {
         }
         ListHeaderComponent={
           <View style={styles.mspListSubheaderView}>
-            <Text style={styles.listHeader}>{mspData.length} crops listed</Text>
-            <Text style={styles.listRefresh} onPress={onRefresh}>Refresh</Text>
+            <Text style={styles.listHeader}>
+              {mspData.length} {t("crops listed")}
+            </Text>
+            <Text style={styles.listRefresh} onPress={onRefresh}>
+              {t("Refresh")}
+            </Text>
           </View>
         }
         ListEmptyComponent={
@@ -171,7 +194,7 @@ export default function MspComplianceScreen() {
               size={48}
               color="#CCC"
             />
-            <Text style={styles.emptyText}>No MSP data available</Text>
+            <Text style={styles.emptyText}>{t("No MSP data available")}</Text>
           </View>
         }
       />
