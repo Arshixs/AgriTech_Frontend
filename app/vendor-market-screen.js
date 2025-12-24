@@ -295,7 +295,7 @@ export default function VendorMarketScreen() {
                   value={orderQuantity}
                   onChangeText={setOrderQuantity}
                   keyboardType="numeric"
-                  placeholder={t("1")}
+                  placeholder="1"
                   placeholderTextColor="#888"
                 />
               </View>
@@ -340,7 +340,7 @@ export default function VendorMarketScreen() {
               {/* Instead of the Button, use conditional rendering */}
               {!orderSuccess && (
                 <Button
-                  title={t(`Confirm ${isRental ? "Rental" : "Purchase"}`)}
+                  title={isRental ? t("Confirm Rental") : t("Confirm Purchase")}
                   onPress={handlePlaceOrder}
                   loading={isPlacingOrder}
                   style={{ backgroundColor: cardColor, marginTop: 15 }}
