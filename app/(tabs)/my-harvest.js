@@ -1,28 +1,30 @@
 // app/(tabs)/my-harvest.js - COMPLETE UPDATED VERSION WITH SEPARATE STATUS FIELDS
 
-import React, { useState, useEffect } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
   ActivityIndicator,
   Alert,
   Modal,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { API_BASE_URL } from "../../secret";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
-import { API_BASE_URL } from "../../secret";
 
 export default function MyHarvestScreen() {
   const { user } = useAuth();
   const authToken = user?.token;
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -117,13 +119,13 @@ export default function MyHarvestScreen() {
   const getQualityStatusText = (qualityStatus) => {
     switch (qualityStatus) {
       case "not-requested":
-        return "No Check";
+        return t("No Check");
       case "pending":
-        return "Pending";
+        return t("Pending");
       case "approved":
-        return "Certified";
+        return t("Certified");
       case "rejected":
-        return "Rejected";
+        return t("Rejected");
       default:
         return qualityStatus;
     }
@@ -132,13 +134,13 @@ export default function MyHarvestScreen() {
   const getSaleStatusText = (status) => {
     switch (status) {
       case "available":
-        return "Available";
+        return t("Available");
       case "listed-for-sale":
-        return "Listed";
+        return t("Listed");
       case "sold":
-        return "Sold";
+        return t("Sold");
       case "reserved":
-        return "Reserved";
+        return t("Reserved");
       default:
         return status;
     }
@@ -146,15 +148,22 @@ export default function MyHarvestScreen() {
 
   const handleRequestQuality = async (output) => {
     Alert.alert(
-      "Request Quality Check",
-      `Submit quality inspection request for ${output.quantity} ${output.unit} of ${output.cropId?.cropName}?`,
+      t("Request Quality Check"),
+      t(
+        "Submit quality inspection request for {{quantity}} {{unit}} of {{crop}}?",
+        {
+          quantity: output.quantity,
+          unit: output.unit,
+          crop: output.cropId?.cropName,
+        }
+      ),
       [
         {
-          text: "Cancel",
+          text: t("Cancel"),
           style: "cancel",
         },
         {
-          text: "Submit",
+          text: t("Submit"),
           onPress: async () => {
             try {
               const res = await fetch(
@@ -167,7 +176,8 @@ export default function MyHarvestScreen() {
                   },
                   body: JSON.stringify({
                     cropOutputId: output._id,
-                    storageLocation: output.storageLocation || "Farm Storage",
+                    storageLocation:
+                      output.storageLocation || t("Farm Storage"),
                   }),
                 }
               );
@@ -176,28 +186,28 @@ export default function MyHarvestScreen() {
 
               if (res.ok) {
                 Alert.alert(
-                  "Success",
-                  "Quality inspection request submitted successfully!",
+                  t("Success"),
+                  t("Quality inspection request submitted successfully!"),
                   [
                     {
-                      text: "View Requests",
+                      text: t("View Requests"),
                       onPress: () => router.push("/(tabs)/quality"),
                     },
                     {
-                      text: "OK",
+                      text: t("OK"),
                       onPress: () => fetchOutputs(),
                     },
                   ]
                 );
               } else {
                 Alert.alert(
-                  "Error",
-                  data.message || "Failed to create request"
+                  t("Error"),
+                  data.message || t("Failed to create request")
                 );
               }
             } catch (error) {
               console.error("Submit Request Error:", error);
-              Alert.alert("Error", "Network error occurred");
+              Alert.alert(t("Error"), t("Network error occurred"));
             }
           },
         },
@@ -261,7 +271,7 @@ export default function MyHarvestScreen() {
   // List for marketplace
   const handleListForMarketplace = async () => {
     if (!minimumPrice || parseFloat(minimumPrice) <= 0) {
-      Alert.alert("Error", "Please enter a valid minimum price");
+      Alert.alert(t("Error"), t("Please enter a valid minimum price"));
       return;
     }
 
@@ -282,11 +292,11 @@ export default function MyHarvestScreen() {
 
       if (res.ok) {
         Alert.alert(
-          "Success",
-          "Your crop has been listed on the marketplace!",
+          t("Success"),
+          t("Your crop has been listed on the marketplace!"),
           [
             {
-              text: "OK",
+              text: t("OK"),
               onPress: () => {
                 closeSaleModal();
                 fetchOutputs();
@@ -295,34 +305,39 @@ export default function MyHarvestScreen() {
           ]
         );
       } else {
-        Alert.alert("Error", data.message || "Failed to list crop");
+        Alert.alert(t("Error"), data.message || t("Failed to list crop"));
       }
     } catch (error) {
       console.error("List Marketplace Error:", error);
-      Alert.alert("Error", "Network error occurred");
+      Alert.alert(t("Error"), t("Network error occurred"));
     }
   };
 
   // List for government MSP
   const handleListForMSP = async () => {
     if (!mspData) {
-      Alert.alert("Error", "MSP data not available");
+      Alert.alert(t("Error"), t("MSP data not available"));
       return;
     }
 
     const totalAmount = mspData.price * selectedOutput.quantity;
 
     Alert.alert(
-      "Confirm Government Sale",
-      `Sell ${selectedOutput.quantity} ${selectedOutput.unit} of ${
-        selectedOutput.cropId?.cropName
-      } to government at MSP?\n\nMSP Rate: ₹${mspData.price}/${
-        mspData.unit
-      }\nTotal Amount: ₹${totalAmount.toLocaleString()}\n\nNote: This will not be listed on marketplace.`,
-      [
-        { text: "Cancel", style: "cancel" },
+      t("Confirm Government Sale"),
+      t(
+        "Sell {{quantity}} {{unit}} of {{crop}} to government at MSP?\n\nMSP Rate: ₹{{price}}/{{unit}}\nTotal Amount: ₹{{total}}\n\nNote: This will not be listed on marketplace.",
         {
-          text: "Confirm",
+          quantity: selectedOutput.quantity,
+          unit: selectedOutput.unit,
+          crop: selectedOutput.cropId?.cropName,
+          price: mspData.price,
+          total: totalAmount.toLocaleString(),
+        }
+      ),
+      [
+        { text: t("Cancel"), style: "cancel" },
+        {
+          text: t("Confirm"),
           onPress: async () => {
             try {
               const res = await fetch(
@@ -343,11 +358,13 @@ export default function MyHarvestScreen() {
 
               if (res.ok) {
                 Alert.alert(
-                  "Success",
-                  "Government procurement request submitted successfully!",
+                  t("Success"),
+                  t(
+                    "Government procurement request submitted successfully!"
+                  ),
                   [
                     {
-                      text: "OK",
+                      text: t("OK"),
                       onPress: () => {
                         closeSaleModal();
                         fetchOutputs();
@@ -357,13 +374,13 @@ export default function MyHarvestScreen() {
                 );
               } else {
                 Alert.alert(
-                  "Error",
-                  data.message || "Failed to submit request"
+                  t("Error"),
+                  data.message || t("Failed to submit request")
                 );
               }
             } catch (error) {
               console.error("List MSP Error:", error);
-              Alert.alert("Error", "Network error occurred");
+              Alert.alert(t("Error"), t("Network error occurred"));
             }
           },
         },
@@ -383,7 +400,7 @@ export default function MyHarvestScreen() {
           <View style={styles.titleText}>
             <Text style={styles.cropName}>{output.cropId?.cropName}</Text>
             <Text style={styles.fieldName}>
-              Field: {output.fieldId?.name || "Unknown"}
+              {t("Field")}: {output.fieldId?.name || t("Unknown")}
             </Text>
           </View>
         </View>
@@ -435,7 +452,8 @@ export default function MyHarvestScreen() {
         <View style={styles.detailRow}>
           <MaterialCommunityIcons name="calendar" size={16} color="#666" />
           <Text style={styles.detailText}>
-            Harvested: {new Date(output.harvestDate).toLocaleDateString()}
+            {t("Harvested")}:{" "}
+            {new Date(output.harvestDate).toLocaleDateString()}
           </Text>
         </View>
         {output.storageLocation && (
@@ -448,8 +466,8 @@ export default function MyHarvestScreen() {
 
       {/* Actions based on BOTH statuses */}
       <View style={styles.cardActions}>
-        {/* Show quality request button if not requested yet and available */}
-        {(!output.qualityStatus || output.qualityStatus === "not-requested") &&
+        {(!output.qualityStatus ||
+          output.qualityStatus === "not-requested") &&
           output.status === "available" && (
             <TouchableOpacity
               style={[styles.actionButton, styles.primaryAction]}
@@ -460,7 +478,9 @@ export default function MyHarvestScreen() {
                 size={18}
                 color="#FFF"
               />
-              <Text style={styles.actionButtonText}>Request Quality Check</Text>
+              <Text style={styles.actionButtonText}>
+                {t("Request Quality Check")}
+              </Text>
             </TouchableOpacity>
           )}
 
@@ -471,7 +491,9 @@ export default function MyHarvestScreen() {
             onPress={() => handleViewCertificate(output)}
           >
             <MaterialCommunityIcons name="certificate" size={18} color="#FFF" />
-            <Text style={styles.actionButtonText}>View Certificate</Text>
+            <Text style={styles.actionButtonText}>
+              {t("View Certificate")}
+            </Text>
           </TouchableOpacity>
         )}
 
@@ -491,7 +513,9 @@ export default function MyHarvestScreen() {
                 size={18}
                 color="#2A9D8F"
               />
-              <Text style={styles.secondaryActionText}>List on Market</Text>
+              <Text style={styles.secondaryActionText}>
+                {t("List on Market")}
+              </Text>
             </TouchableOpacity>
 
             {output.cropId?.hasMSP && (
@@ -500,7 +524,9 @@ export default function MyHarvestScreen() {
                 onPress={() => openSaleModal(output, "msp")}
               >
                 <MaterialCommunityIcons name="bank" size={18} color="#E76F51" />
-                <Text style={styles.mspActionText}>Sell at MSP</Text>
+                <Text style={styles.mspActionText}>
+                  {t("Sell at MSP")}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -516,13 +542,15 @@ export default function MyHarvestScreen() {
             />
             <View style={{ flex: 1 }}>
               <Text style={styles.pendingText}>
-                Quality inspection in progress...
+                {t("Quality inspection in progress...")}
               </Text>
               <TouchableOpacity
                 onPress={() => handleViewCertificate(output)}
                 style={{ marginTop: 4 }}
               >
-                <Text style={styles.trackLink}>Track status →</Text>
+                <Text style={styles.trackLink}>
+                  {t("Track status")} →
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -537,12 +565,16 @@ export default function MyHarvestScreen() {
               color="#E76F51"
             />
             <View style={{ flex: 1 }}>
-              <Text style={styles.rejectedText}>Quality inspection failed</Text>
+              <Text style={styles.rejectedText}>
+                {t("Quality inspection failed")}
+              </Text>
               <TouchableOpacity
                 onPress={() => handleViewCertificate(output)}
                 style={{ marginTop: 4 }}
               >
-                <Text style={styles.detailsLink}>View details →</Text>
+                <Text style={styles.detailsLink}>
+                  {t("View details")} →
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -556,7 +588,9 @@ export default function MyHarvestScreen() {
               size={20}
               color="#457B9D"
             />
-            <Text style={styles.listedText}>Listed for sale</Text>
+            <Text style={styles.listedText}>
+              {t("Listed for sale")}
+            </Text>
           </View>
         )}
       </View>
@@ -574,7 +608,7 @@ export default function MyHarvestScreen() {
       <Text
         style={[styles.filterText, filter === value && styles.filterTextActive]}
       >
-        {label}
+        {t(label)}
       </Text>
     </TouchableOpacity>
   );
@@ -592,7 +626,7 @@ export default function MyHarvestScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Harvest</Text>
+        <Text style={styles.headerTitle}>{t("My Harvest")}</Text>
         <TouchableOpacity
           style={styles.infoButton}
           onPress={() => router.push("/quality")}
@@ -630,30 +664,36 @@ export default function MyHarvestScreen() {
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{cropOutputs.length}</Text>
-            <Text style={styles.statLabel}>Total Harvests</Text>
+            <Text style={styles.statLabel}>
+              {t("Total Harvests")}
+            </Text>
           </View>
           <View style={styles.statCard}>
             <Text style={[styles.statValue, { color: "#2A9D8F" }]}>
               {cropOutputs.filter((o) => o.status === "available").length}
             </Text>
-            <Text style={styles.statLabel}>Available</Text>
+            <Text style={styles.statLabel}>{t("Available")}</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={[styles.statValue, { color: "#4CAF50" }]}>
               {cropOutputs.filter((o) => o.qualityStatus === "approved").length}
             </Text>
-            <Text style={styles.statLabel}>Certified</Text>
+            <Text style={styles.statLabel}>{t("Certified")}</Text>
           </View>
         </View>
 
         {cropOutputs.length === 0 ? (
           <View style={styles.emptyState}>
             <MaterialCommunityIcons name="tray-remove" size={64} color="#CCC" />
-            <Text style={styles.emptyText}>No crop outputs yet</Text>
+            <Text style={styles.emptyText}>
+              {t("No crop outputs yet")}
+            </Text>
             <Text style={styles.emptySubtext}>
               {filter === "all"
-                ? "Harvest crops from your fields to see them here"
-                : `No ${filter.replace("-", " ")} harvests found`}
+                ? t("Harvest crops from your fields to see them here")
+                : t("No {{filter}} harvests found", {
+                    filter: filter.replace("-", " "),
+                  })}
             </Text>
           </View>
         ) : (
@@ -675,8 +715,8 @@ export default function MyHarvestScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
                 {saleType === "marketplace"
-                  ? "List on Marketplace"
-                  : "Sell to Government"}
+                  ? t("List on Marketplace")
+                  : t("Sell to Government")}
               </Text>
               <TouchableOpacity onPress={closeSaleModal}>
                 <MaterialCommunityIcons name="close" size={24} color="#666" />
@@ -703,12 +743,14 @@ export default function MyHarvestScreen() {
 
                 {saleType === "marketplace" ? (
                   <>
-                    <Text style={styles.modalLabel}>Set Minimum Price</Text>
+                    <Text style={styles.modalLabel}>
+                      {t("Set Minimum Price")}
+                    </Text>
                     <View style={styles.priceInputContainer}>
                       <Text style={styles.currencySymbol}>₹</Text>
                       <TextInput
                         style={styles.priceInput}
-                        placeholder="Enter minimum price"
+                        placeholder={t("Enter minimum price")}
                         keyboardType="numeric"
                         value={minimumPrice}
                         onChangeText={setMinimumPrice}
@@ -718,8 +760,10 @@ export default function MyHarvestScreen() {
                       </Text>
                     </View>
                     <Text style={styles.modalHint}>
-                      Set the lowest price you're willing to accept per{" "}
-                      {selectedOutput.unit}
+                      {t(
+                        "Set the lowest price you're willing to accept per {{unit}}",
+                        { unit: selectedOutput.unit }
+                      )}
                     </Text>
 
                     <TouchableOpacity
@@ -727,7 +771,7 @@ export default function MyHarvestScreen() {
                       onPress={handleListForMarketplace}
                     >
                       <Text style={styles.modalButtonText}>
-                        List on Marketplace
+                        {t("List on Marketplace")}
                       </Text>
                     </TouchableOpacity>
                   </>
@@ -738,12 +782,14 @@ export default function MyHarvestScreen() {
                     ) : mspData ? (
                       <>
                         <View style={styles.mspInfoCard}>
-                          <Text style={styles.mspLabel}>MSP Rate</Text>
+                          <Text style={styles.mspLabel}>{t("MSP Rate")}</Text>
                           <Text style={styles.mspPrice}>
                             ₹{mspData.price}/{mspData.unit}
                           </Text>
                           <View style={styles.mspDivider} />
-                          <Text style={styles.mspLabel}>Total Amount</Text>
+                          <Text style={styles.mspLabel}>
+                            {t("Total Amount")}
+                          </Text>
                           <Text style={styles.mspTotal}>
                             ₹
                             {(
@@ -759,8 +805,9 @@ export default function MyHarvestScreen() {
                             color="#E76F51"
                           />
                           <Text style={styles.mspNoteText}>
-                            This crop will be sold to the government and will
-                            not appear on the marketplace
+                            {t(
+                              "This crop will be sold to the government and will not appear on the marketplace"
+                            )}
                           </Text>
                         </View>
 
@@ -769,7 +816,7 @@ export default function MyHarvestScreen() {
                           onPress={handleListForMSP}
                         >
                           <Text style={styles.modalButtonText}>
-                            Submit to Government
+                            {t("Submit to Government")}
                           </Text>
                         </TouchableOpacity>
                       </>
@@ -781,7 +828,7 @@ export default function MyHarvestScreen() {
                           color="#CCC"
                         />
                         <Text style={styles.noMspText}>
-                          MSP not available for this crop
+                          {t("MSP not available for this crop")}
                         </Text>
                       </View>
                     )}

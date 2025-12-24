@@ -1,25 +1,25 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  TextInput,
-  RefreshControl,
-  Modal,
-  Alert as RNAlert,
-} from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // Added MapView
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import * as Location from 'expo-location';
+import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  ActivityIndicator,
+  Modal,
+  RefreshControl,
+  Alert as RNAlert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps"; // Added MapView
+import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
-import { API_BASE_URL } from "../../secret"
-import { useTranslation } from 'react-i18next';
 
 export default function FarmerProfileScreen() {
   const { user, signOut } = useAuth();
@@ -42,7 +42,7 @@ export default function FarmerProfileScreen() {
     phone: "",
     adharNumber: "",
     address: "",
-    coordinates: { lat: null, lng: null }
+    coordinates: { lat: null, lng: null },
   });
 
   // Map region state
@@ -58,7 +58,7 @@ export default function FarmerProfileScreen() {
     setRefreshing(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/farmer-auth/profile`, {
-        headers: { "Authorization": `Bearer ${authToken}` },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
       const data = await res.json();
       if (res.ok) {
@@ -103,27 +103,35 @@ export default function FarmerProfileScreen() {
     setFetchingGps(true);
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        RNAlert.alert('Permission Denied', t('Location permission is required'));
+      if (status !== "granted") {
+        RNAlert.alert(
+          "Permission Denied",
+          t("Location permission is required")
+        );
         return;
       }
 
-      let loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      let loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
       const { latitude, longitude } = loc.coords;
 
       // Update ONLY temp state
       setTempCoords({ lat: latitude, lng: longitude });
 
       if (mapRef.current) {
-        mapRef.current.animateToRegion({
-          latitude,
-          longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        }, 500);
+        mapRef.current.animateToRegion(
+          {
+            latitude,
+            longitude,
+            latitudeDelta: 0.005,
+            longitudeDelta: 0.005,
+          },
+          500
+        );
       }
     } catch (error) {
-      RNAlert.alert('Error', t('Failed to get location'));
+      RNAlert.alert("Error", t("Failed to get location"));
     } finally {
       setFetchingGps(false);
     }
@@ -131,13 +139,13 @@ export default function FarmerProfileScreen() {
 
   const handleConfirmLocation = () => {
     if (!tempCoords.lat) {
-      RNAlert.alert('Alert', t('Please select a location on the map'));
+      RNAlert.alert("Alert", t("Please select a location on the map"));
       return;
     }
-    
+
     // Save temp to profile
-    setProfile(prev => ({ ...prev, coordinates: tempCoords }));
-    
+    setProfile((prev) => ({ ...prev, coordinates: tempCoords }));
+
     // Sync the small preview map
     setPreviewRegion({
       latitude: tempCoords.lat,
@@ -156,14 +164,14 @@ export default function FarmerProfileScreen() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           name: profile.name,
           address: profile.address,
           adharNumber: profile.adharNumber,
-          coordinates: profile.coordinates
-        })
+          coordinates: profile.coordinates,
+        }),
       });
 
       if (res.ok) {
@@ -193,10 +201,11 @@ export default function FarmerProfileScreen() {
     <ScreenWrapper>
       <ScrollView
         style={styles.scrollView}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <View style={styles.container}>
-
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.avatarContainer}>
@@ -213,7 +222,7 @@ export default function FarmerProfileScreen() {
             style={styles.mapPreview}
             onPress={() => {
               // Initialize tempCoords with existing profile coords when opening
-              setTempCoords(profile.coordinates); 
+              setTempCoords(profile.coordinates);
               setMapModalVisible(true);
             }}
           >
@@ -231,7 +240,7 @@ export default function FarmerProfileScreen() {
                 <Marker
                   coordinate={{
                     latitude: profile.coordinates.lat,
-                    longitude: profile.coordinates.lng
+                    longitude: profile.coordinates.lng,
                   }}
                   pinColor="#2A9D8F"
                 />
@@ -240,8 +249,14 @@ export default function FarmerProfileScreen() {
 
             {!profile.coordinates?.lat && (
               <View style={styles.placeholderOverlay}>
-                <MaterialCommunityIcons name="map-marker-plus" size={40} color="#2A9D8F" />
-                <Text style={styles.placeholderText}>{t("Tap to set location on Map")}</Text>
+                <MaterialCommunityIcons
+                  name="map-marker-plus"
+                  size={40}
+                  color="#2A9D8F"
+                />
+                <Text style={styles.placeholderText}>
+                  {t("Tap to set location on Map")}
+                </Text>
               </View>
             )}
           </TouchableOpacity>
@@ -275,7 +290,7 @@ export default function FarmerProfileScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t("Farm Address")}</Text>
               <TextInput
-                style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
+                style={[styles.input, { height: 80, textAlignVertical: "top" }]}
                 value={profile.address}
                 onChangeText={(t) => setProfile({ ...profile, address: t })}
                 placeholder={t("Enter complete address")}
@@ -290,7 +305,7 @@ export default function FarmerProfileScreen() {
               title="Save Profile Changes"
               onPress={handleSaveChanges}
               loading={saving}
-              style={{ backgroundColor: '#2A9D8F' }}
+              style={{ backgroundColor: "#2A9D8F" }}
             />
 
             <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
@@ -320,7 +335,7 @@ export default function FarmerProfileScreen() {
                   <Marker
                     coordinate={{
                       latitude: tempCoords.lat,
-                      longitude: tempCoords.lng
+                      longitude: tempCoords.lng,
                     }}
                     draggable
                     onDragEnd={handleMapPress}
@@ -330,13 +345,21 @@ export default function FarmerProfileScreen() {
               </MapView>
 
               <View style={styles.modalHeader}>
-                <TouchableOpacity onPress={() => setMapModalVisible(false)} style={styles.iconBtn}>
+                <TouchableOpacity
+                  onPress={() => setMapModalVisible(false)}
+                  style={styles.iconBtn}
+                >
                   <MaterialCommunityIcons name="close" size={24} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.modalTitle}>
-                  {tempCoords?.lat ? t('Location Selected') : t('Pin your Farm')}
+                  {tempCoords?.lat
+                    ? t("Location Selected")
+                    : t("Pin your Farm")}
                 </Text>
-                <TouchableOpacity onPress={handleConfirmLocation} style={styles.confirmBtn}>
+                <TouchableOpacity
+                  onPress={handleConfirmLocation}
+                  style={styles.confirmBtn}
+                >
                   <Text style={styles.confirmBtnText}>{t("Confirm")}</Text>
                 </TouchableOpacity>
               </View>
@@ -349,12 +372,15 @@ export default function FarmerProfileScreen() {
                 {fetchingGps ? (
                   <ActivityIndicator color="#2A9D8F" size="small" />
                 ) : (
-                  <MaterialCommunityIcons name="crosshairs-gps" size={28} color="#2A9D8F" />
+                  <MaterialCommunityIcons
+                    name="crosshairs-gps"
+                    size={28}
+                    color="#2A9D8F"
+                  />
                 )}
               </TouchableOpacity>
             </View>
           </Modal>
-
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -364,104 +390,141 @@ export default function FarmerProfileScreen() {
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   container: { padding: 20, paddingBottom: 40 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', height: 400 },
-  header: { alignItems: 'center', marginBottom: 30, marginTop: 10 },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 400,
+  },
+  header: { alignItems: "center", marginBottom: 30, marginTop: 10 },
   avatarContainer: { marginBottom: 15 },
-  userName: { fontSize: 24, fontWeight: 'bold', color: '#264653' },
-  userPhone: { fontSize: 16, color: '#666', marginTop: 4 },
+  userName: { fontSize: 24, fontWeight: "bold", color: "#264653" },
+  userPhone: { fontSize: 16, color: "#666", marginTop: 4 },
 
   // Map Preview (Style from Register)
   mapPreview: {
     height: 180,
-    backgroundColor: '#e8f4f8',
+    backgroundColor: "#e8f4f8",
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 25,
     borderWidth: 2,
-    borderColor: '#2A9D8F',
-    borderStyle: 'dashed',
-    position: 'relative',
+    borderColor: "#2A9D8F",
+    borderStyle: "dashed",
+    position: "relative",
   },
   placeholderOverlay: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(248, 249, 250, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(248, 249, 250, 0.9)",
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 1,
   },
   placeholderText: {
-    color: '#2A9D8F',
+    color: "#2A9D8F",
     marginTop: 12,
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 15,
   },
 
   // Form
   infoSection: { marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#264653', marginBottom: 15 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#264653",
+    marginBottom: 15,
+  },
   inputGroup: { marginBottom: 15 },
-  inputLabel: { fontSize: 14, color: '#666', marginBottom: 6, fontWeight: '500' },
+  inputLabel: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 6,
+    fontWeight: "500",
+  },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: "#DDD",
     borderRadius: 10,
     paddingHorizontal: 15,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#264653'
+    color: "#264653",
   },
   disabledInput: {
-    backgroundColor: '#F0F0F0', // Greyed out background
-    color: '#888',             // Muted text color
-    borderColor: '#E0E0E0',
+    backgroundColor: "#F0F0F0", // Greyed out background
+    color: "#888", // Muted text color
+    borderColor: "#E0E0E0",
   },
   helperText: {
     fontSize: 11,
-    color: '#999',
+    color: "#999",
     marginTop: 4,
-    fontStyle: 'italic'
+    fontStyle: "italic",
   },
 
   // Modal Styles (From Register)
-  modalBody: { flex: 1, backgroundColor: '#000' },
+  modalBody: { flex: 1, backgroundColor: "#000" },
   fullMap: { flex: 1 },
   modalHeader: {
-    position: 'absolute',
-    top: 50, left: 20, right: 20,
-    flexDirection: 'row',
-    backgroundColor: 'white',
+    position: "absolute",
+    top: 50,
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    backgroundColor: "white",
     borderRadius: 10,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     elevation: 15,
   },
   iconBtn: { padding: 6 },
-  modalTitle: { flex: 1, textAlign: 'center', fontWeight: 'bold', color: '#264653', fontSize: 17 },
-  confirmBtn: { backgroundColor: '#2A9D8F', paddingHorizontal: 22, paddingVertical: 9, borderRadius: 10 },
-  confirmBtnText: { color: 'white', fontWeight: 'bold', fontSize: 15 },
+  modalTitle: {
+    flex: 1,
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "#264653",
+    fontSize: 17,
+  },
+  confirmBtn: {
+    backgroundColor: "#2A9D8F",
+    paddingHorizontal: 22,
+    paddingVertical: 9,
+    borderRadius: 10,
+  },
+  confirmBtnText: { color: "white", fontWeight: "bold", fontSize: 15 },
   gpsFab: {
-    position: 'absolute',
-    bottom: 50, right: 20,
-    backgroundColor: 'white',
-    width: 60, height: 60,
+    position: "absolute",
+    bottom: 50,
+    right: 20,
+    backgroundColor: "white",
+    width: 60,
+    height: 60,
     borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 12,
   },
 
-  
   // Footer Actions
   actions: { marginTop: 10 },
   signOutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 25,
-    padding: 10
+    padding: 10,
   },
-  signOutText: { color: '#E76F51', fontWeight: 'bold', marginLeft: 8, fontSize: 16 }
+  signOutText: {
+    color: "#E76F51",
+    fontWeight: "bold",
+    marginLeft: 8,
+    fontSize: 16,
+  },
 });

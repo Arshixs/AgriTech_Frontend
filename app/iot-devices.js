@@ -10,20 +10,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
+import { API_BASE_URL } from "../secret";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
 import { useAuth } from "../src/context/AuthContext";
-import {API_BASE_URL} from "../secret"
 
 const { width } = Dimensions.get("window");
 
 export default function IoTDashboardScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [loading, setLoading] = useState(true);
-  
+
   const { user } = useAuth();
   const authToken = user?.token;
 
@@ -33,25 +35,24 @@ export default function IoTDashboardScreen() {
       setLoading(false);
       return;
     }
-    
+
     if (!refreshing) setLoading(true);
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/data/iot/devices`, {
         headers: {
-          "Authorization": `Bearer ${authToken}`,
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch IoT devices.');
-      }
-      
-      const data = await res.json();
-      
-      setDevices(data.devices || []); 
-      setLastUpdated(new Date());
 
+      if (!res.ok) {
+        throw new Error(t("Failed to fetch IoT devices."));
+      }
+
+      const data = await res.json();
+
+      setDevices(data.devices || []);
+      setLastUpdated(new Date());
     } catch (error) {
       console.error("IoT Fetch Error:", error.message);
       setDevices([]);
@@ -146,18 +147,18 @@ export default function IoTDashboardScreen() {
   };
 
   const renderReadings = (device) => {
-  const readings = device.readings ? Object.entries(device.readings) : [];
-  return (
-    <View style={styles.readingsGrid}>
-      {readings.map(([key, value], index) => (
-        <View key={`${device._id}-${key}`} style={styles.readingItem}>
-          <Text style={styles.readingLabel}>{formatLabel(key)}</Text>
-          <Text style={styles.readingValue}>{formatValue(key, value)}</Text>
-        </View>
-      ))}
-    </View>
-  );
-};
+    const readings = device.readings ? Object.entries(device.readings) : [];
+    return (
+      <View style={styles.readingsGrid}>
+        {readings.map(([key, value], index) => (
+          <View key={`${device._id}-${key}`} style={styles.readingItem}>
+            <Text style={styles.readingLabel}>{formatLabel(key)}</Text>
+            <Text style={styles.readingValue}>{formatValue(key, value)}</Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   const renderDeviceCard = (device) => (
     <TouchableOpacity
@@ -234,7 +235,7 @@ export default function IoTDashboardScreen() {
           {renderReadings(device)}
           {device.alerts.length > 0 && (
             <View style={styles.alertsSection}>
-              <Text style={styles.alertsTitle}>Alerts:</Text>
+              <Text style={styles.alertsTitle}>{t("Alerts")}:</Text>
               {device.alerts.map((alert, index) => (
                 <View key={index} style={styles.alertItem}>
                   <FontAwesome name="warning" size={14} color="#E76F51" />
@@ -275,9 +276,9 @@ export default function IoTDashboardScreen() {
               <FontAwesome name="arrow-left" size={20} color="#264653" />
             </TouchableOpacity>
             <View style={styles.headerTextContainer}>
-              <Text style={styles.headerTitle}>IoT Devices</Text>
+              <Text style={styles.headerTitle}>{t("IoT Devices")}</Text>
               <Text style={styles.subtitle}>
-                Real-time monitoring of your farm sensors
+                {t("Real-time monitoring of your farm sensors")}
               </Text>
             </View>
           </View>
@@ -293,7 +294,7 @@ export default function IoTDashboardScreen() {
               <Text style={styles.statValue}>
                 {activeDevices}/{devices.length}
               </Text>
-              <Text style={styles.statLabel}>Active</Text>
+              <Text style={styles.statLabel}>{t("Active")}</Text>
             </View>
             <View style={styles.statCard}>
               <MaterialCommunityIcons
@@ -302,12 +303,12 @@ export default function IoTDashboardScreen() {
                 color="#606C38"
               />
               <Text style={styles.statValue}>{avgBattery}%</Text>
-              <Text style={styles.statLabel}>Avg Battery</Text>
+              <Text style={styles.statLabel}>{t("Avg Battery")}</Text>
             </View>
             <View style={styles.statCard}>
               <MaterialCommunityIcons name="alert" size={24} color="#E76F51" />
               <Text style={styles.statValue}>{devicesWithAlerts}</Text>
-              <Text style={styles.statLabel}>Alerts</Text>
+              <Text style={styles.statLabel}>{t("Alerts")}</Text>
             </View>
           </View>
 
@@ -319,12 +320,12 @@ export default function IoTDashboardScreen() {
               color="#666"
             />
             <Text style={styles.lastUpdatedText}>
-              Last updated: {lastUpdated.toLocaleTimeString()}
+              {t("Last updated")}: {lastUpdated.toLocaleTimeString()}
             </Text>
           </View>
 
           {/* Devices List */}
-          <Text style={styles.sectionTitle}>All Devices</Text>
+          <Text style={styles.sectionTitle}>{t("All Devices")}</Text>
           {devices.map((device) => renderDeviceCard(device))}
 
           {/* Quick Tips */}
@@ -334,15 +335,15 @@ export default function IoTDashboardScreen() {
               size={24}
               color="#F4A261"
             />
-            <Text style={styles.tipsTitle}>Quick Tips</Text>
+            <Text style={styles.tipsTitle}>{t("Quick Tips")}</Text>
             <Text style={styles.tipText}>
-              • Tap on any device card to view detailed readings
+              {t("• Tap on any device card to view detailed readings")}
             </Text>
             <Text style={styles.tipText}>
-              • Check devices with alerts for optimal farm management
+              {t("• Check devices with alerts for optimal farm management")}
             </Text>
             <Text style={styles.tipText}>
-              • Pull down to refresh all sensor data
+              {t("• Pull down to refresh all sensor data")}
             </Text>
           </View>
         </View>
