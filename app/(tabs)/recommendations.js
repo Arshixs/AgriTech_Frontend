@@ -85,6 +85,7 @@ export default function RecommendationsScreen() {
   };
 
   const onRefresh = () => {
+    fetchFields();
     if (selectedField) fetchFieldSpecificData(selectedField._id);
   };
 
