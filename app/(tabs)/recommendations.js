@@ -1,70 +1,91 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  ActivityIndicator
-} from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { API_BASE_URL } from "../../secret";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
-import {API_BASE_URL} from "../../secret"
 
 export default function RecommendationsScreen() {
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [fields, setFields] = useState([]);
+  const [selectedField, setSelectedField] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [soilData, setSoilData] = useState(null);
   const authToken = user?.token;
 
-  const fetchData = async () => {
-    if (!authToken) return;
-    setRefreshing(true);
+  // 1. Fetch Fields on Mount
+  useEffect(() => {
+    if (authToken) {
+      fetchFields();
+    }
+  }, [authToken]);
 
+  const fetchFields = async () => {
     try {
-      const headers = { "Authorization": `Bearer ${authToken}` };
+      const res = await fetch(`${API_BASE_URL}/api/farm/fields`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+      setFields(data.fields || []);
 
-      // 1. Fetch Latest Soil Data
-      const soilRes = await fetch(`${API_BASE_URL}/api/data/soil/latest`, { headers });
-      if (soilRes.ok) {
-        const soilJson = await soilRes.json();
-        setSoilData(soilJson.soilData);
+      // Auto-select first field if available
+      if (data.fields && data.fields.length > 0) {
+        handleFieldChange(data.fields[0]);
       } else {
-        console.error("Failed to fetch soil data");
-        setSoilData(null);
+        setLoading(false);
       }
+    } catch (err) {
+      console.error("Field Fetch Error:", err);
+      setLoading(false);
+    }
+  };
 
-      // 2. Fetch Crop Recommendations
-      const recRes = await fetch(`${API_BASE_URL}/api/data/recommendations`, { headers });
-      if (recRes.ok) {
-        const recJson = await recRes.json();
-        // Backend returns a 'recommendations' array
-        setRecommendations(recJson.recommendations || []);
-      } else {
-        console.error("Failed to fetch recommendations");
-        setRecommendations([]);
-      }
+  const handleFieldChange = (field) => {
+    setSelectedField(field);
+    fetchFieldSpecificData(field._id);
+  };
 
+  const fetchFieldSpecificData = async (fieldId) => {
+    setRefreshing(true);
+    try {
+      const headers = { Authorization: `Bearer ${authToken}` };
+
+      // 2. Fetch Latest Soil Data for THIS Field
+      const soilRes = await fetch(
+        `${API_BASE_URL}/api/data/soil/latest?fieldId=${fieldId}`,
+        { headers }
+      );
+      const soilJson = await soilRes.json();
+      setSoilData(soilJson.soilData);
+
+      // 3. Fetch Crop Recommendations (Logic now uses field-specific soil)
+      // Note: You may want to update this endpoint to take fieldId as well
+      const recRes = await fetch(
+        `${API_BASE_URL}/api/data/recommendations?fieldId=${fieldId}`,
+        { headers }
+      );
+      const recJson = await recRes.json();
+      setRecommendations(recJson.recommendations || []);
     } catch (error) {
-      console.error("Recommendations Fetch Error:", error.message);
+      console.error("Fetch Error:", error.message);
     } finally {
       setRefreshing(false);
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (authToken) {
-      fetchData();
-    }
-  }, [authToken]);
-
   const onRefresh = () => {
-    fetchData();
+    if (selectedField) fetchFieldSpecificData(selectedField._id);
   };
 
   const getSuitabilityColor = (score) => {
@@ -82,9 +103,6 @@ export default function RecommendationsScreen() {
       </ScreenWrapper>
     );
   }
-  
-  // Helper to ensure data structure safety
-  const getSoilValue = (key) => soilData?.[key] || 'N/A';
 
   return (
     <ScreenWrapper>
@@ -95,10 +113,39 @@ export default function RecommendationsScreen() {
         }
       >
         <View style={styles.container}>
-          <Text style={styles.header}>Crop Recommendations</Text>
+          <Text style={styles.header}>Recommendations</Text>
+
+          {/* Field Selection Horizontal List */}
+          <Text style={styles.sectionLabel}>Select a Field</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.fieldSelector}
+          >
+            {fields.map((field) => (
+              <TouchableOpacity
+                key={field._id}
+                onPress={() => handleFieldChange(field)}
+                style={[
+                  styles.fieldChip,
+                  selectedField?._id === field._id && styles.fieldChipActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.fieldChipText,
+                    selectedField?._id === field._id &&
+                      styles.fieldChipTextActive,
+                  ]}
+                >
+                  {field.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
           {/* Soil Analysis Card */}
-          {soilData && (
+          {soilData ? (
             <View style={styles.soilCard}>
               <View style={styles.soilHeader}>
                 <MaterialCommunityIcons
@@ -106,7 +153,9 @@ export default function RecommendationsScreen() {
                   size={28}
                   color="#606C38"
                 />
-                <Text style={styles.soilTitle}>Soil Analysis</Text>
+                <Text style={styles.soilTitle}>
+                  Soil Analysis: {selectedField?.name}
+                </Text>
               </View>
 
               <View style={styles.soilGrid}>
@@ -128,109 +177,94 @@ export default function RecommendationsScreen() {
                 </View>
               </View>
             </View>
+          ) : (
+            <View style={styles.noDataCard}>
+              <MaterialCommunityIcons
+                name="flask-empty-off-outline"
+                size={40}
+                color="#CCC"
+              />
+              <Text style={styles.noDataText}>
+                No soil analysis found for this field.
+              </Text>
+            </View>
           )}
 
           {/* Recommendations List */}
-          <Text style={styles.sectionTitle}>Recommended Crops</Text>
-          <Text style={styles.sectionSubtitle}>
-            Based on your soil conditions, location, and season
-          </Text>
+          {recommendations.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>Recommended Crops</Text>
+              <Text style={styles.sectionSubtitle}>
+                Best suited for {selectedField?.name}
+              </Text>
 
-          {recommendations.map((crop) => (
-            <TouchableOpacity
-              key={crop._id}
-              style={styles.cropCard}
-              activeOpacity={0.7}
-            >
-              <View style={styles.cropHeader}>
-                <View style={styles.cropTitleRow}>
-                  <MaterialCommunityIcons
-                    name={crop.icon}
-                    size={32}
-                    color="#2A9D8F"
-                  />
-                  <View style={styles.cropTitleContainer}>
-                    <Text style={styles.cropName}>{crop.cropName}</Text>
-                    <Text style={styles.cropSeason}>{crop.season} Season</Text>
-                  </View>
-                </View>
-                <View
-                  style={[
-                    styles.suitabilityBadge,
-                    { backgroundColor: getSuitabilityColor(crop.suitability) },
-                  ]}
+              {recommendations.map((crop) => (
+                <TouchableOpacity
+                  key={crop._id}
+                  style={styles.cropCard}
+                  activeOpacity={0.7}
                 >
-                  <Text style={styles.suitabilityText}>
-                    {crop.suitability}%
-                  </Text>
-                  <Text style={styles.suitabilityLabel}>Match</Text>
-                </View>
-              </View>
-
-              {/* Crop Details Grid */}
-              <View style={styles.detailsGrid}>
-                <View style={styles.detailItem}>
-                  <FontAwesome name="calendar" size={16} color="#666" />
-                  <Text style={styles.detailText}>{crop.duration}</Text>
-                </View>
-                <View style={styles.detailItem}>
-                  <MaterialCommunityIcons name="water" size={16} color="#666" />
-                  <Text style={styles.detailText}>
-                    {crop.waterRequirement} Water
-                  </Text>
-                </View>
-                <View style={styles.detailItem}>
-                  <MaterialCommunityIcons
-                    name="chart-line"
-                    size={16}
-                    color="#666"
-                  />
-                  <Text style={styles.detailText}>{crop.expectedYield}</Text>
-                </View>
-              </View>
-
-              {/* Benefits */}
-              <View style={styles.benefitsSection}>
-                <Text style={styles.benefitsTitle}>Why this crop?</Text>
-                {crop.benefits.map((benefit, index) => (
-                  <View key={index} style={styles.benefitItem}>
-                    <FontAwesome
-                      name="check-circle"
-                      size={14}
-                      color="#2A9D8F"
-                    />
-                    <Text style={styles.benefitText}>{benefit}</Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* Considerations */}
-              {crop.considerations.length > 0 && (
-                <View style={styles.considerationsSection}>
-                  <Text style={styles.considerationsTitle}>
-                    Things to consider:
-                  </Text>
-                  {crop.considerations.map((consideration, index) => (
-                    <View key={index} style={styles.considerationItem}>
-                      <FontAwesome
-                        name="info-circle"
-                        size={14}
-                        color="#F4A261"
+                  <View style={styles.cropHeader}>
+                    <View style={styles.cropTitleRow}>
+                      <MaterialCommunityIcons
+                        name={crop.icon}
+                        size={32}
+                        color="#2A9D8F"
                       />
-                      <Text style={styles.considerationText}>
-                        {consideration}
+                      <View style={styles.cropTitleContainer}>
+                        <Text style={styles.cropName}>{crop.cropName}</Text>
+                        <Text style={styles.cropSeason}>
+                          {crop.season} Season
+                        </Text>
+                      </View>
+                    </View>
+                    <View
+                      style={[
+                        styles.suitabilityBadge,
+                        {
+                          backgroundColor: getSuitabilityColor(
+                            crop.suitability
+                          ),
+                        },
+                      ]}
+                    >
+                      <Text style={styles.suitabilityText}>
+                        {crop.suitability}%
+                      </Text>
+                      <Text style={styles.suitabilityLabel}>Match</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.detailsGrid}>
+                    <View style={styles.detailItem}>
+                      <FontAwesome name="calendar" size={16} color="#666" />
+                      <Text style={styles.detailText}>{crop.duration}</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <MaterialCommunityIcons
+                        name="water"
+                        size={16}
+                        color="#666"
+                      />
+                      <Text style={styles.detailText}>
+                        {crop.waterRequirement}
                       </Text>
                     </View>
-                  ))}
-                </View>
-              )}
-
-              {/* <TouchableOpacity style={styles.viewDetailsButton}>
-                <Text style={styles.viewDetailsText}>View Full Details</Text>
-                <FontAwesome name="chevron-right" size={14} color="#2A9D8F" />
-              </TouchableOpacity> */}
-            </TouchableOpacity>
-          ))}
+                    <View style={styles.detailItem}>
+                      <MaterialCommunityIcons
+                        name="chart-line"
+                        size={16}
+                        color="#666"
+                      />
+                      <Text style={styles.detailText}>
+                        {crop.expectedYield}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </>
+          )}
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -238,38 +272,45 @@ export default function RecommendationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  container: {
-    padding: 20,
-    paddingBottom: 40,
-  },
+  scrollView: { flex: 1 },
+  container: { padding: 20, paddingBottom: 40 },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "bold",
     color: "#264653",
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 5,
   },
+  sectionLabel: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 10,
+    fontWeight: "600",
+  },
+  fieldSelector: { marginBottom: 20, flexDirection: "row" },
+  fieldChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#F0F0F0",
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#DDD",
+  },
+  fieldChipActive: { backgroundColor: "#264653", borderColor: "#264653" },
+  fieldChipText: { color: "#666", fontWeight: "600" },
+  fieldChipTextActive: { color: "#FFF" },
   soilCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    elevation: 20,
   },
-  soilHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
+  soilHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
   soilTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#264653",
     marginLeft: 12,
@@ -286,155 +327,51 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
   },
-  soilLabel: {
-    fontSize: 13,
-    color: "#666",
-    marginBottom: 4,
+  soilLabel: { fontSize: 12, color: "#666", marginBottom: 4 },
+  soilValue: { fontSize: 15, fontWeight: "bold", color: "#264653" },
+  noDataCard: {
+    backgroundColor: "#F9F9F9",
+    borderRadius: 16,
+    padding: 30,
+    alignItems: "center",
+    marginBottom: 24,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    borderColor: "#CCC",
   },
-  soilValue: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#264653",
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#264653",
-    marginBottom: 8,
-  },
-  sectionSubtitle: {
-    fontSize: 15,
-    color: "#666",
-    marginBottom: 20,
-  },
+  noDataText: { marginTop: 10, color: "#999", fontSize: 14 },
+  sectionTitle: { fontSize: 22, fontWeight: "bold", color: "#264653" },
+  sectionSubtitle: { fontSize: 14, color: "#666", marginBottom: 15 },
   cropCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 20,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    marginBottom: 15,
+    elevation: 2,
   },
   cropHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
+    marginBottom: 15,
   },
-  cropTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  cropTitleContainer: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  cropName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#264653",
-  },
-  cropSeason: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 2,
-  },
+  cropTitleRow: { flexDirection: "row", alignItems: "center", flex: 1 },
+  cropTitleContainer: { marginLeft: 12 },
+  cropName: { fontSize: 18, fontWeight: "bold", color: "#264653" },
+  cropSeason: { fontSize: 13, color: "#666" },
   suitabilityBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    padding: 8,
+    borderRadius: 10,
     alignItems: "center",
-    minWidth: 60,
+    minWidth: 55,
   },
-  suitabilityText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-  },
-  suitabilityLabel: {
-    fontSize: 10,
-    color: "#FFFFFF",
-    marginTop: 2,
-  },
+  suitabilityText: { fontSize: 16, fontWeight: "bold", color: "#FFF" },
+  suitabilityLabel: { fontSize: 9, color: "#FFF" },
   detailsGrid: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 16,
-    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#E8E8E8",
+    borderTopColor: "#EEE",
+    paddingTop: 10,
   },
-  detailItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 20,
-    marginBottom: 8,
-  },
-  detailText: {
-    fontSize: 13,
-    color: "#666",
-    marginLeft: 6,
-  },
-  benefitsSection: {
-    marginBottom: 12,
-  },
-  benefitsTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#264653",
-    marginBottom: 8,
-  },
-  benefitItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 6,
-  },
-  benefitText: {
-    fontSize: 14,
-    color: "#555",
-    marginLeft: 8,
-    flex: 1,
-  },
-  considerationsSection: {
-    marginBottom: 12,
-    backgroundColor: "#FFF8F0",
-    padding: 12,
-    borderRadius: 8,
-  },
-  considerationsTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#264653",
-    marginBottom: 8,
-  },
-  considerationItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 4,
-  },
-  considerationText: {
-    fontSize: 13,
-    color: "#666",
-    marginLeft: 8,
-    flex: 1,
-  },
-  viewDetailsButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 12,
-    marginTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#E8E8E8",
-  },
-  viewDetailsText: {
-    fontSize: 15,
-    color: "#2A9D8F",
-    fontWeight: "600",
-    marginRight: 6,
-  },
+  detailItem: { flexDirection: "row", alignItems: "center", marginRight: 15 },
+  detailText: { fontSize: 12, color: "#666", marginLeft: 5 },
 });
