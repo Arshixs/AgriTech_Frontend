@@ -1,22 +1,22 @@
 // File: app/(tabs)/quality.js - UPDATED VERSION
 
-import React, { useState, useEffect } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  Alert,
   ActivityIndicator,
+  Alert,
   Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { API_BASE_URL } from "../secret";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
 import { useAuth } from "../src/context/AuthContext";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { API_BASE_URL } from "../secret";
-import { useRouter } from "expo-router";
 
 export default function QualityCertificatesScreen() {
   const { user } = useAuth();
@@ -77,17 +77,16 @@ export default function QualityCertificatesScreen() {
       );
       console.log("Request details:", request);
 
-    //   const cropRes = await fetch(
-    //     `${API_BASE_URL}/api/crops/crops`,
-    //     {
-    //       headers: { Authorization: `Bearer ${authToken}` },
-    //     }
-    //   );
+      //   const cropRes = await fetch(
+      //     `${API_BASE_URL}/api/crops/crops`,
+      //     {
+      //       headers: { Authorization: `Bearer ${authToken}` },
+      //     }
+      //   );
 
-    //   const cropsData = await res.json();
-    //   data.request
+      //   const cropsData = await res.json();
+      //   data.request
 
-      
       if (res.ok) {
         const data = await res.json();
         setSelectedRequest(data.request);

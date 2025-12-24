@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { API_BASE_URL } from "../../secret";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
-import {API_BASE_URL} from "../../secret"
 
 const { width } = Dimensions.get("window");
 
@@ -38,21 +38,22 @@ export default function PriceForecastScreen() {
 
     try {
       const url = `${API_BASE_URL}/api/data/market/forecast?crop=${selectedCrop}&timeframe=${timeframe}`;
-      
+
       const res = await fetch(url, {
-        headers: { 
-          "Authorization": `Bearer ${authToken}` 
-        }
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       if (!res.ok) {
         const errorJson = await res.json();
-        throw new Error(errorJson.message || `Failed to fetch forecast for ${selectedCrop}`);
+        throw new Error(
+          errorJson.message || `Failed to fetch forecast for ${selectedCrop}`
+        );
       }
-      
+
       const data = await res.json();
       setForecast(data.forecast);
-      
     } catch (error) {
       console.error("Forecast Fetch Error:", error.message);
       setForecast(null);
@@ -67,9 +68,8 @@ export default function PriceForecastScreen() {
     }
   }, [authToken, selectedCrop, timeframe]);
 
-
   const formatCurrency = (amount) => {
-    if (amount === null || isNaN(amount)) return 'N/A';
+    if (amount === null || isNaN(amount)) return "N/A";
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
@@ -78,7 +78,8 @@ export default function PriceForecastScreen() {
   };
 
   const renderSimpleChart = () => {
-    if (!forecast || !forecast.chartData || forecast.chartData.length === 0) return null;
+    if (!forecast || !forecast.chartData || forecast.chartData.length === 0)
+      return null;
 
     const chartData = forecast.chartData;
     const prices = chartData.map((d) => d.price);

@@ -10,9 +10,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { API_BASE_URL } from "../secret";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
 import { useAuth } from "../src/context/AuthContext";
-import {API_BASE_URL} from "../secret"
 
 const { width } = Dimensions.get("window");
 
@@ -23,7 +23,7 @@ export default function IoTDashboardScreen() {
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [loading, setLoading] = useState(true);
-  
+
   const { user } = useAuth();
   const authToken = user?.token;
 
@@ -33,25 +33,24 @@ export default function IoTDashboardScreen() {
       setLoading(false);
       return;
     }
-    
+
     if (!refreshing) setLoading(true);
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/data/iot/devices`, {
         headers: {
-          "Authorization": `Bearer ${authToken}`,
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch IoT devices.');
-      }
-      
-      const data = await res.json();
-      
-      setDevices(data.devices || []); 
-      setLastUpdated(new Date());
 
+      if (!res.ok) {
+        throw new Error("Failed to fetch IoT devices.");
+      }
+
+      const data = await res.json();
+
+      setDevices(data.devices || []);
+      setLastUpdated(new Date());
     } catch (error) {
       console.error("IoT Fetch Error:", error.message);
       setDevices([]);
@@ -146,18 +145,18 @@ export default function IoTDashboardScreen() {
   };
 
   const renderReadings = (device) => {
-  const readings = device.readings ? Object.entries(device.readings) : [];
-  return (
-    <View style={styles.readingsGrid}>
-      {readings.map(([key, value], index) => (
-        <View key={`${device._id}-${key}`} style={styles.readingItem}>
-          <Text style={styles.readingLabel}>{formatLabel(key)}</Text>
-          <Text style={styles.readingValue}>{formatValue(key, value)}</Text>
-        </View>
-      ))}
-    </View>
-  );
-};
+    const readings = device.readings ? Object.entries(device.readings) : [];
+    return (
+      <View style={styles.readingsGrid}>
+        {readings.map(([key, value], index) => (
+          <View key={`${device._id}-${key}`} style={styles.readingItem}>
+            <Text style={styles.readingLabel}>{formatLabel(key)}</Text>
+            <Text style={styles.readingValue}>{formatValue(key, value)}</Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   const renderDeviceCard = (device) => (
     <TouchableOpacity

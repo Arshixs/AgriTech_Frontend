@@ -69,20 +69,23 @@ export default function ExpensePredictionScreen() {
     setSelectedField(field);
     setLandArea(field.area.toString());
     setUseSoilData(false); // Reset toggle when field changes
-    
+
     // Check if this specific field has soil data
     try {
-        const res = await fetch(`${API_BASE_URL}/api/data/soil/latest?fieldId=${field._id}`, {
-            headers: { Authorization: `Bearer ${authToken}` },
-        });
-        const data = await res.json();
-        
-        // Enable or disable Soil-Sync based on this specific field's data
-        setHasSoilData(!!data.soilData); 
+      const res = await fetch(
+        `${API_BASE_URL}/api/data/soil/latest?fieldId=${field._id}`,
+        {
+          headers: { Authorization: `Bearer ${authToken}` },
+        }
+      );
+      const data = await res.json();
+
+      // Enable or disable Soil-Sync based on this specific field's data
+      setHasSoilData(!!data.soilData);
     } catch (err) {
-        setHasSoilData(false);
+      setHasSoilData(false);
     }
-};
+  };
 
   const handlePredictExpense = async () => {
     setError(null);
