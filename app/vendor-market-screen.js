@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../secret";
 import Button from "../src/components/common/Button";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
@@ -30,6 +31,7 @@ const formatCurrency = (amount) => {
 };
 
 export default function VendorMarketScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const authToken = user?.token;
 
@@ -52,7 +54,6 @@ export default function VendorMarketScreen() {
   // --- Data Fetching ---
 
   const fetchProducts = async () => {
-    // console.log(authToken)
     if (!authToken) return;
     setRefreshing(true);
     setError(null);
@@ -63,7 +64,7 @@ export default function VendorMarketScreen() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to fetch product list.");
+        throw new Error(t("Failed to fetch product list."));
       }
 
       const data = await res.json();
@@ -107,9 +108,9 @@ export default function VendorMarketScreen() {
 
   const handlePlaceOrder = async () => {
     if (!selectedProduct || !orderQuantity)
-      return setOrderError("Missing product or quantity.");
+      return setOrderError(t("Missing product or quantity."));
     if (selectedProduct.category === "rentals" && (!startDate || !endDate)) {
-      return setOrderError("Rental requires both start and end dates.");
+      return setOrderError(t("Rental requires both start and end dates."));
     }
 
     setIsPlacingOrder(true);
@@ -140,20 +141,19 @@ export default function VendorMarketScreen() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to place order.");
+        throw new Error(errorData.message || t("Failed to place order."));
       }
 
       const data = await res.json();
       setOrderSuccess(
-        `Order placed successfully! Total: ${formatCurrency(
-          data.order.totalAmount
-        )}`
+        t("Order placed successfully! Total: {{total}}", {
+          total: formatCurrency(data.order.totalAmount),
+        })
       );
 
-      // Minor delay to show success message before closing
       setTimeout(() => {
         closeOrderModal();
-        fetchProducts(); // Refresh products list (e.g., stock update)
+        fetchProducts();
       }, 2000);
     } catch (err) {
       console.error("Order Error:", err.message);
@@ -210,7 +210,7 @@ export default function VendorMarketScreen() {
           <View style={styles.productDetails}>
             <Text style={styles.productName}>{product.name}</Text>
             <Text style={styles.vendorName}>
-              Vendor: {product.vendor?.organizationName || product.vendor?.name || "Unknown Vendor"}
+              {t("Vendor")}: {product.vendor?.organizationName || product.vendor?.name || t("Unknown Vendor")}
             </Text>
           </View>
         </View>
@@ -222,7 +222,7 @@ export default function VendorMarketScreen() {
         <View style={styles.cardFooter}>
           <View style={styles.priceContainer}>
             <Text style={styles.priceLabel}>
-              {isRental ? "Price/Day" : "Price/Unit"}
+              {isRental ? t("Price/Day") : t("Price/Unit")}
             </Text>
             <Text style={styles.priceValue}>
               {formatCurrency(product.price)} / {product.unit}
@@ -234,7 +234,7 @@ export default function VendorMarketScreen() {
             onPress={() => openOrderModal(product)}
           >
             <Text style={styles.buyButtonText}>
-              {isRental ? "Rent Now" : "Buy Now"}
+              {isRental ? t("Rent Now") : t("Buy Now")}
             </Text>
             <MaterialCommunityIcons
               name="chevron-right"
@@ -263,7 +263,7 @@ export default function VendorMarketScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {isRental ? "Place Rental Order" : "Place Purchase Order"}
+                {isRental ? t("Place Rental Order") : t("Place Purchase Order")}
               </Text>
               <TouchableOpacity onPress={closeOrderModal}>
                 <FontAwesome name="times" size={24} color="#666" />
@@ -279,41 +279,37 @@ export default function VendorMarketScreen() {
                   {selectedProduct.vendor.organizationName}
                 </Text>
                 <Text style={styles.modalProductPrice}>
-                  {formatCurrency(selectedProduct.price)} /{" "}
-                  {selectedProduct.unit}
+                  {formatCurrency(selectedProduct.price)} / {selectedProduct.unit}
                 </Text>
                 <Text style={styles.modalStockText}>
-                  Stock Available: {selectedProduct.stock}{" "}
-                  {selectedProduct.unit}
+                  {t("Stock Available")}: {selectedProduct.stock} {selectedProduct.unit}
                 </Text>
               </View>
 
-              {/* Quantity Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>
-                  Quantity ({selectedProduct.unit})
+                  {t("Quantity")} ({selectedProduct.unit})
                 </Text>
                 <TextInput
                   style={styles.textInput}
                   value={orderQuantity}
                   onChangeText={setOrderQuantity}
                   keyboardType="numeric"
-                  placeholder="1"
+                  placeholder={t("1")}
                   placeholderTextColor="#888"
                 />
               </View>
 
-              {/* Rental Duration Inputs */}
               {isRental && (
                 <View style={styles.rentalContainer}>
                   <Text style={styles.inputLabel}>
-                    Rental Period (YYYY-MM-DD)
+                    {t("Rental Period (YYYY-MM-DD)")}
                   </Text>
                   <TextInput
                     style={styles.textInput}
                     value={startDate}
                     onChangeText={setStartDate}
-                    placeholder="Start Date (e.g., 2025-12-15)"
+                    placeholder={t("Start Date (e.g., 2025-12-15)")}
                     placeholderTextColor="#888"
                     keyboardType="numbers-and-punctuation"
                   />
@@ -321,7 +317,7 @@ export default function VendorMarketScreen() {
                     style={styles.textInput}
                     value={endDate}
                     onChangeText={setEndDate}
-                    placeholder="End Date (e.g., 2025-12-20)"
+                    placeholder={t("End Date (e.g., 2025-12-20)")}
                     placeholderTextColor="#888"
                     keyboardType="numbers-and-punctuation"
                   />
@@ -344,7 +340,7 @@ export default function VendorMarketScreen() {
               {/* Instead of the Button, use conditional rendering */}
               {!orderSuccess && (
                 <Button
-                  title={`Confirm ${isRental ? "Rental" : "Purchase"}`}
+                  title={t(`Confirm ${isRental ? "Rental" : "Purchase"}`)}
                   onPress={handlePlaceOrder}
                   loading={isPlacingOrder}
                   style={{ backgroundColor: cardColor, marginTop: 15 }}
@@ -365,7 +361,7 @@ export default function VendorMarketScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2A9D8F" />
           <Text style={{ marginTop: 10, color: "#666" }}>
-            Fetching Vendor Products...
+            {t("Fetching Vendor Products...")}
           </Text>
         </View>
       </ScreenWrapper>
@@ -383,15 +379,19 @@ export default function VendorMarketScreen() {
         }
       >
         <View style={styles.container}>
-          <Text style={styles.header}>Vendor Marketplace</Text>
+          <Text style={styles.header}>{t("Vendor Marketplace")}</Text>
           <Text style={styles.subtitle}>
-            Browse farm supplies and rental machinery from verified vendors (
-            {products.length} items)
+            {t(
+              "Browse farm supplies and rental machinery from verified vendors ({{count}} items)",
+              { count: products.length }
+            )}
           </Text>
 
           {error && (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>Connection Error: {error}</Text>
+              <Text style={styles.errorText}>
+                {t("Connection Error")}: {error}
+              </Text>
             </View>
           )}
 
@@ -399,7 +399,7 @@ export default function VendorMarketScreen() {
             <View style={styles.noProductsCard}>
               <MaterialCommunityIcons name="store-off" size={30} color="#888" />
               <Text style={styles.noProductsText}>
-                No products found in the marketplace.
+                {t("No products found in the marketplace.")}
               </Text>
             </View>
           ) : (
