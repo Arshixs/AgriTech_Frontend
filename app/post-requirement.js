@@ -1,6 +1,8 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+// 1. Add Import
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   ScrollView,
@@ -11,13 +13,13 @@ import {
 } from "react-native";
 
 // Ensure these paths match your project structure
-// Assuming 'app/' is at the root level alongside 'src/'
 import { API_BASE_URL } from "../secret";
 import Button from "../src/components/common/Button";
 import Input from "../src/components/common/Input";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
 import { useAuth } from "../src/context/AuthContext";
 
+// Keep values in English for Backend
 const CATEGORIES = [
   "crops",
   "grains",
@@ -30,6 +32,17 @@ const CATEGORIES = [
 export default function PostRequirementScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  // 2. Initialize Hook
+  const { t } = useTranslation();
+  const getCategory = (key) => {
+    if (key === "CROPS") return t("CROPS");
+    if (key === "GRAINS") return t("GRAINS");
+    if (key === "VEGETABLES") return t("VEGETABLES");
+    if (key === "FRUITS") return t("FRUITS");
+    if (key === "FLOWERS") return t("FLOWERS");
+    if (key === "SPICES") return t("SPICES");
+    return key;
+  };
 
   const [loading, setLoading] = useState(false);
 
@@ -44,8 +57,8 @@ export default function PostRequirementScreen() {
   const handleSubmit = async () => {
     if (!title || !quantity || !unit) {
       return Alert.alert(
-        "Missing Fields",
-        "Please fill Title, Quantity and Unit."
+        t("Missing Fields"),
+        t("Please fill Title, Quantity and Unit.")
       );
     }
 
@@ -71,14 +84,14 @@ export default function PostRequirementScreen() {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert("Success", "Requirement posted successfully!");
+        Alert.alert(t("Success"), t("Requirement posted successfully!"));
         router.back();
       } else {
-        Alert.alert("Error", data.message || "Failed to post");
+        Alert.alert(t("Error"), data.message || t("Failed to post"));
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Network error");
+      Alert.alert(t("Error"), t("Network error"));
     } finally {
       setLoading(false);
     }
@@ -93,18 +106,18 @@ export default function PostRequirementScreen() {
         >
           <FontAwesome name="arrow-left" size={20} color="#264653" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Requirement</Text>
+        <Text style={styles.headerTitle}>{t("New Requirement")}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
         <Input
-          label="Requirement Title"
+          label={t("Requirement Title")}
           value={title}
           onChangeText={setTitle}
-          placeholder="e.g. 50 Tons of Basmati Rice"
+          placeholder={t("e.g. 50 Tons of Basmati Rice")}
         />
 
-        <Text style={styles.label}>Category</Text>
+        <Text style={styles.label}>{t("Category")}</Text>
         <View style={styles.categoryContainer}>
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
@@ -121,7 +134,8 @@ export default function PostRequirementScreen() {
                   category === cat && styles.categoryTextActive,
                 ]}
               >
-                {cat.toUpperCase()}
+                {/* Translate category label */}
+                {getCategory(cat.toUpperCase())}
               </Text>
             </TouchableOpacity>
           ))}
@@ -130,42 +144,42 @@ export default function PostRequirementScreen() {
         <View style={styles.row}>
           <View style={{ flex: 1, marginRight: 10 }}>
             <Input
-              label="Quantity"
+              label={t("Quantity")}
               value={quantity}
               onChangeText={setQuantity}
               keyboardType="numeric"
-              placeholder="e.g. 100"
+              placeholder={t("e.g. 100")}
             />
           </View>
           <View style={{ flex: 1 }}>
             <Input
-              label="Unit"
+              label={t("Unit")}
               value={unit}
               onChangeText={setUnit}
-              placeholder="e.g. Tons"
+              placeholder={t("e.g. Tons")}
             />
           </View>
         </View>
 
         <Input
-          label="Target Price (Optional)"
+          label={t("Target Price (Optional)")}
           value={targetPrice}
           onChangeText={setTargetPrice}
           keyboardType="numeric"
-          placeholder="₹ per unit"
+          placeholder={t("₹ per unit")}
         />
 
         <Input
-          label="Description / Specifics"
+          label={t("Description / Specifics")}
           value={description}
           onChangeText={setDescription}
           multiline
           numberOfLines={4}
-          placeholder="Describe quality, delivery location etc."
+          placeholder={t("Describe quality, delivery location etc.")}
         />
 
         <Button
-          title="Post Requirement"
+          title={t("Post Requirement")}
           onPress={handleSubmit}
           loading={loading}
           style={{ marginTop: 20, backgroundColor: "#E76F51" }}

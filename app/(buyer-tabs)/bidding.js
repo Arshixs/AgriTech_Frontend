@@ -1,7 +1,6 @@
-// File: app/(buyer-tabs)/bidding.js
-
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   StyleSheet,
@@ -13,15 +12,18 @@ import { API_BASE_URL } from "../../secret";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 
-// import axios from '../../src/utils/axios'; // use your axios instance
+// 1. Define stable keys outside the component (In English)
+const TABS = ["All", "Winning", "Outbid", "Closed"];
 
 export default function BiddingScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const [bids, setBids] = useState([]);
-  const [activeTab, setActiveTab] = useState("All");
 
-  // 🔹 Fetch unique latest bids
+  // 2. State always holds the English key, e.g., "All"
+  const [activeTab, setActiveTab] = useState("All");
+  const { t } = useTranslation();
+
   useFocusEffect(
     useCallback(() => {
       if (user?.token) {
@@ -29,6 +31,7 @@ export default function BiddingScreen() {
       }
     }, [user])
   );
+
   const fetchBids = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/bids/my/unique`, {
@@ -36,18 +39,15 @@ export default function BiddingScreen() {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       const data = await res.json();
-      setBids(data.bids);
-
-      // TEMP: assume API response already matches the structure you shared
-      // setBids(apiResponse.bids);
+      setBids(data.bids || []);
     } catch (err) {
       console.log("Error fetching bids", err);
     }
   };
 
-  // 🔹 Map backend status → tab
+  // 3. Filter logic compares English State against English Strings
   const filterByTab = (bid) => {
-    if (activeTab === "All") return true;
+    if (activeTab === "All") return true; // "All" matches "All" regardless of language
 
     if (activeTab === "Winning") return bid.status === "active";
     if (activeTab === "Outbid") return bid.status === "outbid";
@@ -59,20 +59,18 @@ export default function BiddingScreen() {
 
   const filteredBids = bids.filter(filterByTab);
 
-  // 🔹 Status color
   const getStatusColor = (status) => {
-    if (status === "active") return "#2A9D8F"; // Winning
+    if (status === "active") return "#2A9D8F";
     if (status === "outbid") return "#E76F51";
     if (status === "won") return "#457B9D";
-    return "#666"; // lost
+    return "#666";
   };
 
-  // 🔹 Human readable status
   const getStatusLabel = (status) => {
-    if (status === "active") return "Winning";
-    if (status === "outbid") return "Outbid";
-    if (status === "won") return "Won";
-    return "Lost";
+    if (status === "active") return t("Winning");
+    if (status === "outbid") return t("Outbid");
+    if (status === "won") return t("Won");
+    return t("Lost");
   };
 
   const renderBidItem = ({ item }) => {
@@ -90,7 +88,7 @@ export default function BiddingScreen() {
         }
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.bidType}>Bid Placed</Text>
+          <Text style={styles.bidType}>{t("Bid Placed")}</Text>
           <Text
             style={[styles.statusText, { color: getStatusColor(item.status) }]}
           >
@@ -99,17 +97,17 @@ export default function BiddingScreen() {
         </View>
 
         <Text style={styles.bidTitle}>
-          {crop.cropName} ({sale.quantity} {sale.unit})
+          {crop?.cropName || t("Unknown Crop")} ({sale?.quantity} {sale?.unit})
         </Text>
 
         <View style={styles.priceRow}>
           <View style={styles.priceItem}>
-            <Text style={styles.priceLabel}>Current Bid</Text>
-            <Text style={styles.priceValue}>₹{sale.currentHighestBid}</Text>
+            <Text style={styles.priceLabel}>{t("Current Bid")}</Text>
+            <Text style={styles.priceValue}>₹{sale?.currentHighestBid}</Text>
           </View>
 
           <View style={styles.priceItem}>
-            <Text style={styles.priceLabel}>My Bid</Text>
+            <Text style={styles.priceLabel}>{t("My Bid")}</Text>
             <Text
               style={[
                 styles.priceValue,
@@ -127,34 +125,31 @@ export default function BiddingScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Bids</Text>
+        <Text style={styles.headerTitle}>{t("My Bids")}</Text>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabContainer}>
-        {["All", "Winning", "Outbid", "Closed"].map((tab) => (
+        {/* 4. Loop over English keys */}
+        {TABS.map((tabKey) => (
           <TouchableOpacity
-            key={tab}
-            style={[styles.tab, activeTab === tab && styles.tabActive]}
-            onPress={() => setActiveTab(tab)}
+            key={tabKey}
+            // Compare English key to English state
+            style={[styles.tab, activeTab === tabKey && styles.tabActive]}
+            // Set English key to state
+            onPress={() => setActiveTab(tabKey)}
           >
             <Text
               style={[
                 styles.tabText,
-                activeTab === tab && styles.tabTextActive,
+                activeTab === tabKey && styles.tabTextActive,
               ]}
             >
-              {tab}
+              {/* 5. ONLY Translate for display */}
+              {t(tabKey)}
             </Text>
           </TouchableOpacity>
         ))}
-
-        {/* ❌ Live tab removed */}
-        {/*
-        <TouchableOpacity>
-          <Text>Live</Text>
-        </TouchableOpacity>
-        */}
       </View>
 
       <FlatList
@@ -164,7 +159,8 @@ export default function BiddingScreen() {
         contentContainerStyle={styles.listContainer}
         ListEmptyComponent={
           <Text style={styles.emptyText}>
-            No {activeTab.toLowerCase()} bids found.
+            {/* 6. Clean up the empty message translation */}
+            {t("No bids found for")} "{t(activeTab)}"
           </Text>
         }
       />
@@ -172,6 +168,7 @@ export default function BiddingScreen() {
   );
 }
 
+// ... styles remain exactly the same
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,

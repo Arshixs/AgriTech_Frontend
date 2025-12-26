@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   FlatList,
@@ -20,6 +21,7 @@ import { useAuth } from "../../src/context/AuthContext";
 export default function RequirementsScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [requirements, setRequirements] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -61,7 +63,7 @@ export default function RequirementsScreen() {
   };
 
   const formatStatus = (status) => {
-    if (status === "active") return "Sourcing Open";
+    if (status === "active") return t("Sourcing Open");
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
@@ -119,7 +121,7 @@ export default function RequirementsScreen() {
           <View style={styles.detailItem}>
             <MaterialCommunityIcons name="cash" size={16} color="#666" />
             <Text style={styles.detailText}>
-              Target: ₹{item.targetPrice}/{item.unit}
+              {t("Target")}: ₹{item.targetPrice}/{item.unit}
             </Text>
           </View>
         )}
@@ -137,11 +139,11 @@ export default function RequirementsScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Crop Requirements</Text>
+        <Text style={styles.headerTitle}>{t("My Crop Requirements")}</Text>
       </View>
 
       <Button
-        title="Post New Requirement"
+        title={t("Post New Requirement")}
         onPress={() => router.push("/post-requirement")}
         style={styles.postButton}
         icon={() => (
@@ -160,7 +162,7 @@ export default function RequirementsScreen() {
         ListEmptyComponent={
           !loading && (
             <Text style={styles.emptyText}>
-              You have not posted any requirements yet.
+              {t("You have not posted any requirements yet.")}
             </Text>
           )
         }

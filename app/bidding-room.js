@@ -2,6 +2,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ScrollView } from "react-native";
+// 1. Import hook
+import { useTranslation } from "react-i18next";
 
 import {
   ActivityIndicator,
@@ -27,6 +29,8 @@ export default function BiddingRoom() {
   const { saleId } = useLocalSearchParams();
   const router = useRouter();
   const { user } = useAuth();
+  // 2. Initialize hook
+  const { t } = useTranslation();
 
   const [saleInfo, setSaleInfo] = useState(null);
   const [saleLoading, setSaleLoading] = useState(true);
@@ -41,7 +45,11 @@ export default function BiddingRoom() {
   const [bidAmount, setBidAmount] = useState("");
   const [loading, setLoading] = useState(true);
   const [placingBid, setPlacingBid] = useState(false);
+
   const [timeLeft, setTimeLeft] = useState("");
+  // New state to track ended status independent of language string
+  const [isAuctionEnded, setIsAuctionEnded] = useState(false);
+
   const [highestBidder, setHighestBidder] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
 
@@ -74,11 +82,11 @@ export default function BiddingRoom() {
         setAuctionEndDate(data.bids.auctionEndDate);
         setHighestBidder(data.bids.highestBidder);
       } else {
-        Alert.alert("Error", data.message || "Failed to load bids");
+        Alert.alert(t("Error"), data.message || t("Failed to load bids"));
       }
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Network error");
+      Alert.alert(t("Error"), t("Network error"));
     } finally {
       setLoading(false);
     }
@@ -98,7 +106,7 @@ export default function BiddingRoom() {
       const data = await res.json();
 
       if (!res.ok) {
-        Alert.alert("Error", data.message || "Failed to load sale info");
+        Alert.alert(t("Error"), data.message || t("Failed to load sale info"));
         return;
       }
 
@@ -111,7 +119,7 @@ export default function BiddingRoom() {
       setHighestBidder(sale.highestBidder);
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Failed to load sale details");
+      Alert.alert(t("Error"), t("Failed to load sale details"));
     } finally {
       setSaleLoading(false);
     }
@@ -151,12 +159,13 @@ export default function BiddingRoom() {
     });
 
     socketRef.current.on("auction-ended", (data) => {
+      setIsAuctionEnded(true); // Ensure state updates on socket event too
       Alert.alert(
-        "Auction Ended",
+        t("Auction Ended"),
         data.status === "sold"
-          ? `Sold for ₹${data.finalPrice}!`
-          : "No bids received",
-        [{ text: "OK", onPress: () => router.back() }]
+          ? `${t("Sold for")} ₹${data.finalPrice}!`
+          : t("No bids received"),
+        [{ text: t("OK"), onPress: () => router.back() }]
       );
     });
 
@@ -185,7 +194,8 @@ export default function BiddingRoom() {
       const diff = end - now;
 
       if (diff <= 0) {
-        setTimeLeft("Auction Ended");
+        setTimeLeft(t("Auction Ended"));
+        setIsAuctionEnded(true); // Set boolean logic flag
         clearInterval(timer);
         return;
       }
@@ -208,8 +218,8 @@ export default function BiddingRoom() {
 
     if (isNaN(amount) || amount <= currentHighest) {
       return Alert.alert(
-        "Invalid Bid",
-        `Bid must be higher than ₹${currentHighest}`
+        t("Invalid Bid"),
+        `${t("Bid must be higher than")} ₹${currentHighest}`
       );
     }
 
@@ -231,14 +241,14 @@ export default function BiddingRoom() {
       const data = await res.json();
 
       if (!res.ok) {
-        Alert.alert("Error", data.message || "Bid failed");
+        Alert.alert(t("Error"), data.message || t("Bid failed"));
       } else {
         setBidAmount("");
-        Alert.alert("Success", "Your bid has been placed!");
+        Alert.alert(t("Success"), t("Your bid has been placed!"));
       }
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Network error");
+      Alert.alert(t("Error"), t("Network error"));
     } finally {
       setPlacingBid(false);
       fetchBids();
@@ -253,10 +263,7 @@ export default function BiddingRoom() {
   useEffect(() => {
     const initializeAuction = async () => {
       try {
-        // Step 1: Fetch sale info first
         await fetchSaleInfo();
-
-        // Step 2: Then fetch bids (after sale info is loaded)
         await fetchBids();
       } catch (error) {
         console.error("Failed to initialize auction:", error);
@@ -265,15 +272,11 @@ export default function BiddingRoom() {
 
     initializeAuction();
   }, []);
-  console.log(`highestBidder: ${highestBidder}`);
-  console.log(`user: ${user?._id}`);
 
   const isWinning =
     highestBidder &&
     user?._id &&
     highestBidder.toString() === user._id.toString();
-
-  const auctionEnded = timeLeft === "Auction Ended";
 
   // =========================
   // UI
@@ -283,15 +286,11 @@ export default function BiddingRoom() {
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#E76F51" />
-          <Text style={styles.loadingText}>Loading auction...</Text>
+          <Text style={styles.loadingText}>{t("Loading auction...")}</Text>
         </View>
       </ScreenWrapper>
     );
   }
-
-  console.log(`Bids: ${bids}`);
-  console.log(`isWinning: ${isWinning}`);
-  console.log(`highestBidder: ${highestBidder}`);
 
   return (
     <ScreenWrapper>
@@ -312,7 +311,7 @@ export default function BiddingRoom() {
                 color="#264653"
               />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Live Auction</Text>
+            <Text style={styles.headerTitle}>{t("Live Auction")}</Text>
             <View style={styles.connectionIndicator}>
               <View
                 style={[
@@ -322,6 +321,7 @@ export default function BiddingRoom() {
               />
             </View>
           </View>
+
           {/* CROP INFO CARD */}
           {saleInfo && (
             <View style={styles.cropCard}>
@@ -331,26 +331,26 @@ export default function BiddingRoom() {
               </View>
 
               <View style={styles.cropRow}>
-                <Text style={styles.cropLabel}>Quantity</Text>
+                <Text style={styles.cropLabel}>{t("Quantity")}</Text>
                 <Text style={styles.cropValue}>
                   {saleInfo.quantity} {saleInfo.unit}
                 </Text>
               </View>
 
               <View style={styles.cropRow}>
-                <Text style={styles.cropLabel}>Minimum Price</Text>
+                <Text style={styles.cropLabel}>{t("Minimum Price")}</Text>
                 <Text style={styles.cropValue}>
                   ₹{saleInfo.minimumPrice.toLocaleString()}
                 </Text>
               </View>
 
               <View style={styles.cropRow}>
-                <Text style={styles.cropLabel}>Farmer</Text>
+                <Text style={styles.cropLabel}>{t("Farmer")}</Text>
                 {/* <Text style={styles.cropValue}>{saleInfo.farmerId.name}</Text> */}
               </View>
 
               <View style={styles.cropRow}>
-                <Text style={styles.cropLabel}>Location</Text>
+                <Text style={styles.cropLabel}>{t("Location")}</Text>
                 <Text style={styles.cropValue}>
                   {/* {saleInfo.farmerId.address} */}
                 </Text>
@@ -358,7 +358,7 @@ export default function BiddingRoom() {
 
               {saleInfo.storageLocation && (
                 <View style={styles.cropRow}>
-                  <Text style={styles.cropLabel}>Storage</Text>
+                  <Text style={styles.cropLabel}>{t("Storage")}</Text>
                   <Text style={styles.cropValue}>
                     {saleInfo.storageLocation}
                   </Text>
@@ -366,6 +366,7 @@ export default function BiddingRoom() {
               )}
             </View>
           )}
+
           {/* AUCTION STATUS CARD */}
           <Animated.View
             style={[
@@ -383,12 +384,12 @@ export default function BiddingRoom() {
               <MaterialCommunityIcons
                 name="timer-sand"
                 size={24}
-                color={auctionEnded ? "#E76F51" : "#2A9D8F"}
+                color={isAuctionEnded ? "#E76F51" : "#2A9D8F"}
               />
               <Text
                 style={[
                   styles.timerText,
-                  { color: auctionEnded ? "#E76F51" : "#2A9D8F" },
+                  { color: isAuctionEnded ? "#E76F51" : "#2A9D8F" },
                 ]}
               >
                 {timeLeft}
@@ -397,26 +398,32 @@ export default function BiddingRoom() {
 
             {/* CURRENT BID */}
             <View style={styles.currentBidContainer}>
-              <Text style={styles.currentBidLabel}>Current Highest Bid</Text>
+              <Text style={styles.currentBidLabel}>
+                {t("Current Highest Bid")}
+              </Text>
               <Text style={styles.currentBidAmount}>
                 ₹{currentHighest.toLocaleString()}
               </Text>
               <Text style={styles.totalBidsText}>
-                {bids.length} {bids.length === 1 ? "bid" : "bids"} placed
+                {bids.length} {bids.length === 1 ? t("bid") : t("bids")}{" "}
+                {t("placed")}
               </Text>
             </View>
 
             {/* WINNING STATUS */}
-            {isWinning && !auctionEnded && (
+            {isWinning && !isAuctionEnded && (
               <View style={{ alignItems: "center" }}>
-                <Text style={styles.winningText}>🏆 You're Winning!</Text>
+                <Text style={styles.winningText}>
+                  {t("🏆 You're Winning!")}
+                </Text>
               </View>
             )}
           </Animated.View>
+
           {/* BID INPUT SECTION */}
-          {!auctionEnded && (
+          {!isAuctionEnded && (
             <View style={styles.bidInputSection}>
-              <Text style={styles.sectionTitle}>Place Your Bid</Text>
+              <Text style={styles.sectionTitle}>{t("Place Your Bid")}</Text>
 
               {/* Quick Bid Buttons */}
               <View style={styles.quickBidContainer}>
@@ -445,7 +452,7 @@ export default function BiddingRoom() {
                 <View style={styles.inputWrapper}>
                   <Text style={styles.currencySymbol}>₹</Text>
                   <TextInput
-                    placeholder="Enter amount"
+                    placeholder={t("Enter amount")}
                     keyboardType="numeric"
                     value={bidAmount}
                     onChangeText={setBidAmount}
@@ -470,28 +477,29 @@ export default function BiddingRoom() {
                         size={20}
                         color="#FFF"
                       />
-                      <Text style={styles.bidButtonText}>Place Bid</Text>
+                      <Text style={styles.bidButtonText}>{t("Place Bid")}</Text>
                     </>
                   )}
                 </TouchableOpacity>
               </View>
             </View>
           )}
+
           {/* BID HISTORY */}
-          {/* Replace the FlatList and the maxHeight View with this */}
           <View style={styles.historySection}>
-            <Text style={styles.sectionTitle}>Bid History ({bids.length})</Text>
+            <Text style={styles.sectionTitle}>
+              {t("Bid History")} ({bids.length})
+            </Text>
 
             {bids.length === 0 ? (
               <View style={styles.emptyState}>
                 <MaterialCommunityIcons name="gavel" size={60} color="#CCC" />
-                <Text style={styles.emptyStateText}>No bids yet</Text>
+                <Text style={styles.emptyStateText}>{t("No bids yet")}</Text>
                 <Text style={styles.emptyStateSubtext}>
-                  Be the first to place a bid!
+                  {t("Be the first to place a bid!")}
                 </Text>
               </View>
             ) : (
-              /* ✅ Add ScrollView with constrained height */
               <ScrollView
                 style={styles.bidScrollContainer}
                 nestedScrollEnabled={true}
@@ -523,7 +531,7 @@ export default function BiddingRoom() {
                         </View>
                         <View style={styles.bidInfo}>
                           <Text style={styles.bidderName}>
-                            {item.buyerId?.companyName || "Anonymous"}
+                            {item.buyerId?.companyName || t("Anonymous")}
                           </Text>
                           <Text style={styles.bidTime}>
                             {new Date(item.bidTime).toLocaleTimeString()}
@@ -545,9 +553,7 @@ export default function BiddingRoom() {
   );
 }
 
-// =========================
-// STYLES
-// =========================
+// ... styles remain unchanged
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -872,6 +878,6 @@ const styles = StyleSheet.create({
     color: "#264653",
   },
   bidScrollContainer: {
-    maxHeight: 350, // ✅ Constrain height to enable scrolling
+    maxHeight: 350,
   },
 });

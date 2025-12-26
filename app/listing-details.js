@@ -1,6 +1,8 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
+// 1. Add Import
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -21,6 +23,8 @@ export default function ListingDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { user } = useAuth();
+  // 2. Initialize Hook
+  const { t } = useTranslation();
 
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,11 +46,11 @@ export default function ListingDetailsScreen() {
       if (res.ok) {
         setListing(data.marketplaceSale);
       } else {
-        Alert.alert("Error", data.message || "Failed to load listing");
+        Alert.alert(t("Error"), data.message || t("Failed to load listing"));
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Network error");
+      Alert.alert(t("Error"), t("Network error"));
     } finally {
       setLoading(false);
     }
@@ -75,7 +79,7 @@ export default function ListingDetailsScreen() {
     return (
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
-          <Text>Listing not found.</Text>
+          <Text>{t("Listing not found.")}</Text>
         </View>
       </ScreenWrapper>
     );
@@ -84,9 +88,10 @@ export default function ListingDetailsScreen() {
   // =========================
   // DATA FORMATTING
   // =========================
-  const cropName = listing.cropId?.cropName || "Unknown Crop";
-  const farmerName = listing.farmerId?.name || "Unknown Farmer";
-  const farmerLocation = listing.farmerId?.address || "Location N/A";
+  // Wrap fallbacks in t()
+  const cropName = listing.cropId?.cropName || t("Unknown Crop");
+  const farmerName = listing.farmerId?.name || t("Unknown Farmer");
+  const farmerLocation = listing.farmerId?.address || t("Location N/A");
   const quantity = `${listing.quantity} ${listing.unit}`;
 
   const isAuctionActive = listing.status === "active";
@@ -112,7 +117,7 @@ export default function ListingDetailsScreen() {
         >
           <FontAwesome name="arrow-left" size={20} color="#264653" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Listing Details</Text>
+        <Text style={styles.headerTitle}>{t("Listing Details")}</Text>
       </View>
 
       {/* REFRESH BUTTON */}
@@ -121,7 +126,7 @@ export default function ListingDetailsScreen() {
         onPress={fetchListingDetails}
       >
         <MaterialCommunityIcons name="refresh" size={20} color="#264653" />
-        <Text style={styles.refreshText}>Refresh</Text>
+        <Text style={styles.refreshText}>{t("Refresh")}</Text>
       </TouchableOpacity>
 
       <ScrollView
@@ -157,14 +162,14 @@ export default function ListingDetailsScreen() {
           {/* DETAILS */}
           <View style={styles.detailsGrid}>
             <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Quantity</Text>
+              <Text style={styles.detailLabel}>{t("Quantity")}</Text>
               <Text style={styles.detailValue}>{quantity}</Text>
             </View>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>
                 {listing.totalBids > 0
-                  ? "Current Highest Bid"
-                  : "Starting Price"}
+                  ? t("Current Highest Bid")
+                  : t("Starting Price")}
               </Text>
               <Text style={[styles.detailValue, { color: "#E76F51" }]}>
                 ₹{currentPrice}
@@ -181,7 +186,7 @@ export default function ListingDetailsScreen() {
                 color="#E9C46A"
               />
               <Text style={styles.certText}>
-                Quality Certified: Grade {listing.qualityGrade}
+                {t("Quality Certified: Grade")} {listing.qualityGrade}
               </Text>
             </View>
           )}
@@ -198,13 +203,13 @@ export default function ListingDetailsScreen() {
                       color="#2A9D8F"
                     />
                     <Text style={styles.winningText}>
-                      You are currently winning this auction
+                      {t("You are currently winning this auction")}
                     </Text>
                   </View>
                 )}
 
                 <Button
-                  title="Go to Bidding Room"
+                  title={t("Go to Bidding Room")}
                   onPress={() =>
                     router.push({
                       pathname: "/bidding-room",
@@ -216,31 +221,32 @@ export default function ListingDetailsScreen() {
               </>
             ) : (
               <View style={styles.statusContainer}>
+                {/* Translate both the Label and the dynamic Status */}
                 <Text style={styles.statusTitle}>
-                  Status: {listing.status.toUpperCase()}
+                  {t("Status:")} {t(listing.status).toUpperCase()}
                 </Text>
 
                 {listing.status === "sold" && (
                   <Text style={styles.statusMessage}>
-                    This listing has been sold.
+                    {t("This listing has been sold.")}
                   </Text>
                 )}
 
                 {listing.status === "unsold" && (
                   <Text style={styles.statusMessage}>
-                    Auction ended with no bids.
+                    {t("Auction ended with no bids.")}
                   </Text>
                 )}
 
                 {listing.status === "cancelled" && (
                   <Text style={styles.statusMessage}>
-                    Listing was cancelled by the seller.
+                    {t("Listing was cancelled by the seller.")}
                   </Text>
                 )}
 
                 {listing.status === "pending" && (
                   <Text style={styles.statusMessage}>
-                    Auction has not started yet.
+                    {t("Auction has not started yet.")}
                   </Text>
                 )}
               </View>
@@ -252,9 +258,7 @@ export default function ListingDetailsScreen() {
   );
 }
 
-// =========================
-// STYLES
-// =========================
+// Styles remain unchanged
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
