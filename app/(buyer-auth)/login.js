@@ -5,16 +5,21 @@ import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useTranslation } from "react-i18next";
 
 export default function BuyerLoginScreen() {
   const router = useRouter();
   const [mobileNumber, setMobileNumber] = useState("");
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleContinue = async () => {
     // 1. Basic Validation
     if (mobileNumber.length !== 10) {
-      return Alert.alert("Invalid Input", "Enter a valid 10-digit number.");
+      return Alert.alert(
+        t("Invalid Input"),
+        t("Enter a valid 10-digit number.")
+      );
     }
 
     setLoading(true);
@@ -44,7 +49,10 @@ export default function BuyerLoginScreen() {
         // CASE B: RETURNING BUYER -> Send OTP immediately
         await sendOtpAndNavigate(fullPhoneNumber);
       } else {
-        Alert.alert("Error", checkData.message || "Something went wrong.");
+        Alert.alert(
+          t("Error"),
+          checkData.message || t("Something went wrong.")
+        );
       }
     } catch (err) {
       console.error(err);
@@ -69,36 +77,41 @@ export default function BuyerLoginScreen() {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert("Welcome Back", "OTP sent to your registered number.");
+        Alert.alert(
+          t("Welcome Back"),
+          t("OTP sent to your registered number.")
+        );
         router.push({
           pathname: "/(buyer-auth)/otp",
           params: { mobileNumber: phone, role: "buyer" },
         });
       } else {
-        Alert.alert("Error", data.message || "Failed to send OTP");
+        Alert.alert(t("Error"), data.message || t("Failed to send OTP"));
       }
     } catch (err) {
-      Alert.alert("Error", "Failed to send OTP request.");
+      Alert.alert(t("Error"), t("Failed to send OTP request."));
     }
   };
 
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <Text style={styles.title}>Buyer Login</Text>
-        <Text style={styles.subtitle}>Access the post-harvest marketplace</Text>
+        <Text style={styles.title}>{t("Buyer Login")}</Text>
+        <Text style={styles.subtitle}>
+          {t("Access the post-harvest marketplace")}
+        </Text>
 
         <Input
-          label="Mobile Number"
+          label={t("Mobile Number")}
           value={mobileNumber}
           onChangeText={setMobileNumber}
-          placeholder="e.g., 9876543210"
+          placeholder={t("e.g., 9876543210")}
           keyboardType="phone-pad"
           maxLength={10}
         />
 
         <Button
-          title="Continue"
+          title={t("Continue")}
           onPress={handleContinue}
           loading={loading}
           style={{ backgroundColor: "#E76F51" }}
