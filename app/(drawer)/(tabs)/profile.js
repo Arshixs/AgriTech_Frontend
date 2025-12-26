@@ -16,10 +16,10 @@ import {
   View,
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps"; // Added MapView
-import { API_BASE_URL } from "../../secret";
-import Button from "../../src/components/common/Button";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../src/context/AuthContext";
+import { API_BASE_URL } from "../../../secret";
+import Button from "../../../src/components/common/Button";
+import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../../src/context/AuthContext";
 
 export default function FarmerProfileScreen() {
   const { user, signOut } = useAuth();
@@ -175,7 +175,7 @@ export default function FarmerProfileScreen() {
       });
 
       if (res.ok) {
-        RNAlert.alert("Success", t("Profile updated successfully."));
+        RNAlert.alert(t("Success"), t("Profile updated successfully."));
         fetchProfile();
       } else {
         throw new Error("Update failed.");

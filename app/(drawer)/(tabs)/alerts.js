@@ -10,9 +10,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../../secret";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../src/context/AuthContext";
+import { API_BASE_URL } from "../../../secret";
+import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../../src/context/AuthContext";
 
 export default function AlertsScreen() {
   const { user } = useAuth();
@@ -234,7 +234,7 @@ export default function AlertsScreen() {
                 <View style={styles.fieldInfoText}>
                   <Text style={styles.fieldName}>{selectedField.name}</Text>
                   <Text style={styles.fieldDetails}>
-                    {selectedField.cropType || "No crop"} • {selectedField.area}{" "}
+                    {selectedField.area}{" "}
                     acres
                   </Text>
                 </View>
