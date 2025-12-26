@@ -1,23 +1,25 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useTranslation } from "react-i18next";
+import { API_BASE_URL } from "../../secret";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
-import {API_BASE_URL} from "../../secret"
 
 const { width } = Dimensions.get("window");
 
 export default function PriceForecastScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const { crop: initialCrop } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [selectedCrop, setSelectedCrop] = useState(initialCrop || "Wheat");
@@ -27,9 +29,9 @@ export default function PriceForecastScreen() {
 
   const crops = ["Rice", "Wheat", "Tomato", "Cotton", "Sugarcane", "Potato"];
   const timeframes = [
-    { value: "1month", label: "1 Month" },
-    { value: "3months", label: "3 Months" },
-    { value: "6months", label: "6 Months" },
+    { value: "1month", label: t("1 Month") },
+    { value: "3months", label: t("3 Months") },
+    { value: "6months", label: t("6 Months") },
   ];
 
   const fetchForecast = async () => {
@@ -38,21 +40,25 @@ export default function PriceForecastScreen() {
 
     try {
       const url = `${API_BASE_URL}/api/data/market/forecast?crop=${selectedCrop}&timeframe=${timeframe}`;
-      
+
       const res = await fetch(url, {
-        headers: { 
-          "Authorization": `Bearer ${authToken}` 
-        }
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       if (!res.ok) {
         const errorJson = await res.json();
-        throw new Error(errorJson.message || `Failed to fetch forecast for ${selectedCrop}`);
+        throw new Error(
+          errorJson.message ||
+            t("Failed to fetch forecast for {{crop}}", {
+              crop: selectedCrop,
+            })
+        );
       }
-      
+
       const data = await res.json();
       setForecast(data.forecast);
-      
     } catch (error) {
       console.error("Forecast Fetch Error:", error.message);
       setForecast(null);
@@ -67,9 +73,8 @@ export default function PriceForecastScreen() {
     }
   }, [authToken, selectedCrop, timeframe]);
 
-
   const formatCurrency = (amount) => {
-    if (amount === null || isNaN(amount)) return 'N/A';
+    if (amount === null || isNaN(amount)) return t("N/A");
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
@@ -78,7 +83,8 @@ export default function PriceForecastScreen() {
   };
 
   const renderSimpleChart = () => {
-    if (!forecast || !forecast.chartData || forecast.chartData.length === 0) return null;
+    if (!forecast || !forecast.chartData || forecast.chartData.length === 0)
+      return null;
 
     const chartData = forecast.chartData;
     const prices = chartData.map((d) => d.price);
@@ -88,7 +94,7 @@ export default function PriceForecastScreen() {
 
     return (
       <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Price Trend</Text>
+        <Text style={styles.chartTitle}>{t("Price Trend")}</Text>
         <View style={styles.chart}>
           <View style={styles.yAxis}>
             <Text style={styles.axisLabel}>{formatCurrency(maxPrice)}</Text>
@@ -120,11 +126,11 @@ export default function PriceForecastScreen() {
         <View style={styles.chartLegend}>
           <View style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: "#2A9D8F" }]} />
-            <Text style={styles.legendText}>Historical</Text>
+            <Text style={styles.legendText}>{t("Historical")}</Text>
           </View>
           <View style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: "#F4A261" }]} />
-            <Text style={styles.legendText}>Forecast</Text>
+            <Text style={styles.legendText}>{t("Forecast")}</Text>
           </View>
         </View>
       </View>
@@ -143,11 +149,11 @@ export default function PriceForecastScreen() {
             >
               <FontAwesome name="arrow-left" size={20} color="#264653" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Price Forecast</Text>
+            <Text style={styles.headerTitle}>{t("Price Forecast")}</Text>
           </View>
 
           <Text style={styles.subtitle}>
-            AI-powered price predictions for your crops
+            {t("AI-powered price predictions for your crops")}
           </Text>
 
           {/* Crop Selection */}
@@ -171,7 +177,7 @@ export default function PriceForecastScreen() {
                     selectedCrop === cropName && styles.cropPillTextSelected,
                   ]}
                 >
-                  {cropName}
+                  {t(cropName)}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -206,11 +212,11 @@ export default function PriceForecastScreen() {
               {/* Current vs Predicted Price */}
               <View style={styles.priceComparisonCard}>
                 <View style={styles.priceSection}>
-                  <Text style={styles.priceLabel}>Current Price</Text>
+                  <Text style={styles.priceLabel}>{t("Current Price")}</Text>
                   <Text style={styles.currentPrice}>
                     {formatCurrency(forecast.currentPrice)}
                   </Text>
-                  <Text style={styles.perUnit}>per quintal</Text>
+                  <Text style={styles.perUnit}>{t("per quintal")}</Text>
                 </View>
 
                 <MaterialCommunityIcons
@@ -220,7 +226,7 @@ export default function PriceForecastScreen() {
                 />
 
                 <View style={styles.priceSection}>
-                  <Text style={styles.priceLabel}>Predicted Price</Text>
+                  <Text style={styles.priceLabel}>{t("Predicted Price")}</Text>
                   <Text style={styles.predictedPrice}>
                     {formatCurrency(forecast.predictedPrice)}
                   </Text>
@@ -235,7 +241,10 @@ export default function PriceForecastScreen() {
                     <Text
                       style={[
                         styles.changeText,
-                        { color: forecast.change >= 0 ? "#2A9D8F" : "#E76F51" },
+                        {
+                          color:
+                            forecast.change >= 0 ? "#2A9D8F" : "#E76F51",
+                        },
                       ]}
                     >
                       {forecast.change >= 0 ? "+" : ""}
@@ -257,7 +266,7 @@ export default function PriceForecastScreen() {
                     color="#2A9D8F"
                   />
                   <Text style={styles.confidenceTitle}>
-                    Prediction Confidence
+                    {t("Prediction Confidence")}
                   </Text>
                 </View>
                 <View style={styles.confidenceBarContainer}>
@@ -269,7 +278,7 @@ export default function PriceForecastScreen() {
                   />
                 </View>
                 <Text style={styles.confidenceText}>
-                  {forecast.confidence}% Accurate
+                  {forecast.confidence}% {t("Accurate")}
                 </Text>
               </View>
 
@@ -278,7 +287,9 @@ export default function PriceForecastScreen() {
 
               {/* Market Factors */}
               <View style={styles.factorsCard}>
-                <Text style={styles.factorsTitle}>Key Market Factors</Text>
+                <Text style={styles.factorsTitle}>
+                  {t("Key Market Factors")}
+                </Text>
                 {forecast.factors.map((factor, index) => (
                   <View key={index} style={styles.factorItem}>
                     <View style={styles.factorLeft}>
@@ -295,7 +306,7 @@ export default function PriceForecastScreen() {
                           },
                         ]}
                       />
-                      <Text style={styles.factorName}>{factor.name}</Text>
+                      <Text style={styles.factorName}>{t(factor.name)}</Text>
                     </View>
                     <View style={styles.factorRight}>
                       <MaterialCommunityIcons
@@ -316,7 +327,7 @@ export default function PriceForecastScreen() {
                         }
                       />
                       <Text style={styles.impactText}>
-                        {factor.impact} impact
+                        {t("{{impact}} impact", { impact: factor.impact })}
                       </Text>
                     </View>
                   </View>
@@ -330,20 +341,27 @@ export default function PriceForecastScreen() {
                   size={24}
                   color="#F4A261"
                 />
-                <Text style={styles.insightsTitle}>Market Insights</Text>
-                <Text style={styles.insightsText}>
-                  • {selectedCrop} prices are showing a {forecast.seasonalTrend}{" "}
-                  seasonal trend
+                <Text style={styles.insightsTitle}>
+                  {t("Market Insights")}
                 </Text>
                 <Text style={styles.insightsText}>
-                  • Historical average: {formatCurrency(forecast.historicalAvg)}{" "}
-                  per quintal
+                  •{" "}
+                  {t("{{crop}} prices are showing a {{trend}} seasonal trend", {
+                    crop: selectedCrop,
+                    trend: forecast.seasonalTrend,
+                  })}
                 </Text>
                 <Text style={styles.insightsText}>
-                  • Best time to sell:{" "}
+                  •{" "}
+                  {t("Historical average: {{price}} per quintal", {
+                    price: formatCurrency(forecast.historicalAvg),
+                  })}
+                </Text>
+                <Text style={styles.insightsText}>
+                  •{" "}
                   {timeframe === "1month"
-                    ? "End of this month"
-                    : "Within next 2-3 months"}
+                    ? t("Best time to sell: End of this month")
+                    : t("Best time to sell: Within next 2-3 months")}
                 </Text>
               </View>
 
@@ -354,7 +372,9 @@ export default function PriceForecastScreen() {
                   size={20}
                   color="#FFFFFF"
                 />
-                <Text style={styles.actionButtonText}>Set Price Alert</Text>
+                <Text style={styles.actionButtonText}>
+                  {t("Set Price Alert")}
+                </Text>
               </TouchableOpacity>
             </>
           )}

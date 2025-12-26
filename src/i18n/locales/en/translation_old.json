@@ -27,6 +27,7 @@
   "Marital Status": "Marital Status",
   "Account Number": "Account Number",
   "IFSC Code": "IFSC Code",
+  "Edit Profile": "Edit Profile",
   "Name is required": "Name is required",
   "Please enter a valid email address": "Please enter a valid email address",
   "Authentication token not found": "Authentication token not found",
@@ -52,6 +53,7 @@
   "Failed to search": "Failed to search",
   "Inspection assigned to you": "Inspection assigned to you",
   "Failed to assign": "Failed to assign",
+  "Network error": "Network error",
   "Please select a grade": "Please select a grade",
   "Please provide a rejection reason": "Please provide a rejection reason",
   "Please provide lab information": "Please provide lab information",
@@ -85,8 +87,8 @@
   "Moisture": "Moisture",
   "Foreign Matter": "Foreign Matter",
   "Damaged Grains": "Damaged Grains",
-  "Discolored": "Discolored",
   "Weevil Damage": "Weevil Damage",
+  "Discolored": "Discolored",
   "Other Defects": "Other Defects",
   "Describe any other defects": "Describe any other defects",
   "Grading Notes": "Grading Notes",
@@ -127,7 +129,6 @@
   "MSP Price (₹)": "MSP Price (₹)",
   "Enter price": "Enter price",
   "Season": "Season",
-  "Add MSP": "Add MSP",
   "Please fill all fields and select location": "Please fill all fields and select location",
   "Update failed": "Update failed",
   "Registration failed": "Registration failed",
@@ -332,5 +333,6 @@
   "Tools": "Tools",
   "Machines": "Machines",
   "Agri Inputs": "Agri Inputs",
-  "Rentals": "Rentals"
+  "Rentals": "Rentals",
+  "Add MSP": "Add MSP"
 }

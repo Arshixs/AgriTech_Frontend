@@ -465,7 +465,6 @@
   "Connection Error": "Connection Error",
   "No products found in the marketplace.": "No products found in the marketplace.",
   "Confirm Rental": "Confirm Rental",
-  "Confirm Purchase": "Confirm Purchase",
   "Failed to send OTP request.": "Failed to send OTP request.",
   "Enter your mobile number to manage your shop": "Enter your mobile number to manage your shop",
   "Vendor Login": "Vendor Login",
@@ -591,5 +590,6 @@
   "Tools": "Tools",
   "Machines": "Machines",
   "Agri Inputs": "Agri Inputs",
-  "Rentals": "Rentals"
+  "Rentals": "Rentals",
+  "Confirm Purchase": "Confirm Purchase"
 }

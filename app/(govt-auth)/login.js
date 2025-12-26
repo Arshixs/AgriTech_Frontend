@@ -9,13 +9,14 @@ import Button from "../../src/components/common/Button";
 import { useAuth } from "../../src/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
-
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../../secret";
 const API_URL = API_BASE_URL;
+
 export default function GovtLoginScreen() {
   const router = useRouter();
   const { signInGovt } = useAuth();
-
+  const { t } = useTranslation();
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -23,7 +24,10 @@ export default function GovtLoginScreen() {
 
   const handleSendOtp = async () => {
     if (!phone || phone.length < 10) {
-      return Alert.alert("Error", "Please enter a valid 10-digit phone number");
+      return Alert.alert(
+        t("Error"),
+        t("Please enter a valid 10 digit phone number")
+      );
     }
 
     setLoading(true);
@@ -32,13 +36,13 @@ export default function GovtLoginScreen() {
         phone: phone.startsWith("+91") ? phone : `+91${phone}`,
       });
 
-      Alert.alert("Success", response.data.message);
+      Alert.alert(t("Success"), response.data.message);
       setOtpSent(true);
     } catch (error) {
       console.error("Send OTP Error:", error);
       Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to send OTP"
+        t("Error"),
+        error.response?.data?.message || t("Failed to send OTP")
       );
     } finally {
       setLoading(false);
@@ -47,7 +51,7 @@ export default function GovtLoginScreen() {
 
   const handleVerifyOtp = async () => {
     if (!otp || otp.length !== 6) {
-      return Alert.alert("Error", "Please enter a valid 6-digit OTP");
+      return Alert.alert(t("Error"), t("Please enter a valid 6 digit OTP"));
     }
 
     setLoading(true);
@@ -67,8 +71,8 @@ export default function GovtLoginScreen() {
     } catch (error) {
       console.error("Verify OTP Error:", error);
       Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to verify OTP"
+        t("Error"),
+        error.response?.data?.message || t("Failed to verify OTP")
       );
     } finally {
       setLoading(false);
@@ -89,14 +93,14 @@ export default function GovtLoginScreen() {
           <MaterialCommunityIcons name="bank" size={60} color="#606C38" />
         </View>
 
-        <Text style={styles.title}>Government Portal</Text>
-        <Text style={styles.subtitle}>Authorized Personnel Only</Text>
+        <Text style={styles.title}>{t("Government Portal")}</Text>
+        <Text style={styles.subtitle}>{t("Authorized Personnel Only")}</Text>
 
         <Input
-          label="Mobile Number"
+          label={t("Mobile Number")}
           value={phone}
           onChangeText={setPhone}
-          placeholder="Enter 10-digit mobile number"
+          placeholder={t("Enter 10 digit mobile number")}
           keyboardType="phone-pad"
           maxLength={13}
           editable={!otpSent}
@@ -104,10 +108,10 @@ export default function GovtLoginScreen() {
 
         {otpSent && (
           <Input
-            label="OTP"
+            label={t("OTP")}
             value={otp}
             onChangeText={setOtp}
-            placeholder="Enter 6-digit OTP"
+            placeholder={t("Enter 6 digit OTP")}
             keyboardType="number-pad"
             maxLength={6}
           />
@@ -115,7 +119,7 @@ export default function GovtLoginScreen() {
 
         {!otpSent ? (
           <Button
-            title="Send OTP"
+            title={t("Send OTP")}
             onPress={handleSendOtp}
             loading={loading}
             style={{ backgroundColor: "#606C38" }}
@@ -123,7 +127,7 @@ export default function GovtLoginScreen() {
         ) : (
           <>
             <Button
-              title="Verify & Login"
+              title={t("Verify and Login")}
               onPress={handleVerifyOtp}
               loading={loading}
               style={{ backgroundColor: "#606C38" }}
@@ -135,7 +139,7 @@ export default function GovtLoginScreen() {
                 setOtp("");
               }}
             >
-              <Text style={styles.resendText}>Change Number</Text>
+              <Text style={styles.resendText}>{t("Change Number")}</Text>
             </TouchableOpacity>
           </>
         )}

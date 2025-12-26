@@ -1,6 +1,6 @@
-import React from "react";
-import { Tabs } from "expo-router";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import React from "react";
 
 export default function TabsLayout() {
   return (
@@ -66,7 +66,11 @@ export default function TabsLayout() {
         options={{
           title: "Harvest",
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="check-decagram" size={24} color={color} />
+            <MaterialCommunityIcons
+              name="check-decagram"
+              size={24}
+              color={color}
+            />
           ),
         }}
       />

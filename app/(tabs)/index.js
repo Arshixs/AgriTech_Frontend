@@ -212,9 +212,7 @@ export default function HomeScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.greeting}>
-                {t("Welcome back,")}
-              </Text>
+              <Text style={styles.greeting}>{t("Welcome back,")}</Text>
               <Text style={styles.userName}>
                 {user ? user.name : t("Farmer")}!
               </Text>
@@ -271,9 +269,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {/* Quick Actions */}
-          <Text style={styles.sectionTitle}>
-            {t("Quick Actions")}
-          </Text>
+          <Text style={styles.sectionTitle}>{t("Quick Actions")}</Text>
           <View style={styles.actionsGrid}>
             {quickActions.map((action) => (
               <TouchableOpacity
@@ -330,9 +326,7 @@ export default function HomeScreen() {
                       <Text style={styles.taskTitle}>{task.title}</Text>
                       <Text style={styles.taskTime}>
                         {task.fieldId?.name
-                          ? `${t("Field")}: ${
-                              task.fieldId.name
-                            }`
+                          ? `${t("Field")}: ${task.fieldId.name}`
                           : `${t("Type")}: ${task.type}`}
                       </Text>
                     </View>
