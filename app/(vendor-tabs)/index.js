@@ -21,29 +21,41 @@ export default function VendorDashboard() {
   const [pendingOrders, setPendingOrders] = useState(NaN);
 
   const fetchProfile = async () => {
-    const res = await fetch(`${API_BASE_URL}/api/vendor/auth/my`, {
-      method: "GET",
-      headers: {
-        "Content-type": "appication/json",
-        Authorization: `Bearer ${user.token}`,
-      },
-    });
+    // Add null check for user and token
+    if (!user?.token) {
+      console.log("No user token available");
+      return;
+    }
 
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/vendor/auth/my`, {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
 
-    if (res.ok) {
-      console.log(data);
-      setRecentOrders(data.recentOrders);
-      setTotalRevenue(data.stats.monthlyRevenue);
-      setPendingOrders(data.stats.pendingOrders);
-      setActiveOrders(data.stats.activeOrders);
-    } else {
+      const data = await res.json();
+
+      if (res.ok) {
+        console.log(data);
+        setRecentOrders(data.recentOrders);
+        setTotalRevenue(data.stats.monthlyRevenue);
+        setPendingOrders(data.stats.pendingOrders);
+        setActiveOrders(data.stats.activeOrders);
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile:", error);
     }
   };
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    // Only fetch if user and token exist
+    if (user?.token) {
+      fetchProfile();
+    }
+  }, [user]);
 
   // Helper function to get status color
   const getStatusColor = (status) => {
