@@ -1,5 +1,7 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+// 1. Add Import
+import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   StyleSheet,
@@ -14,11 +16,10 @@ import { useAuth } from "../../src/context/AuthContext";
 export default function VendorProfileScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  // 2. Initialize Hook
+  const { t } = useTranslation();
 
-  // Function to handle sign out
   const handleSignOut = () => {
-    // The signOut function from context will clear the user
-    // and app/_layout.js will auto-redirect to '/'
     signOut();
   };
 
@@ -26,7 +27,8 @@ export default function VendorProfileScreen() {
     <ScreenWrapper style={styles.wrapper}>
       <ScrollView>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile & Settings</Text>
+          {/* 3. Wrap Static Strings */}
+          <Text style={styles.headerTitle}>{t("Profile & Settings")}</Text>
         </View>
 
         <View style={styles.container}>
@@ -36,25 +38,26 @@ export default function VendorProfileScreen() {
               <FontAwesome name="user-circle" size={50} color="#457B9D" />
               <View style={styles.profileInfo}>
                 <Text style={styles.profileorganizationName}>
-                  {user?.organizationName || "Vendor Organisation"}
+                  {/* Translate fallback text */}
+                  {user?.organizationName || t("Vendor Organisation")}
                 </Text>
                 <Text style={styles.profileName}>
-                  {user?.name || "Vendor Name"}
+                  {user?.name || t("Vendor Name")}
                 </Text>
               </View>
             </View>
             <View style={styles.gstInfo}>
-              <Text style={styles.gstLabel}>GST Number:</Text>
-              <Text style={styles.gstValue}>{user?.gstNumber || "N/A"}</Text>
+              <Text style={styles.gstLabel}>{t("GST Number:")}</Text>
+              <Text style={styles.gstValue}>{user?.gstNumber || t("N/A")}</Text>
             </View>
             <TouchableOpacity style={styles.editButton}>
-              <Text style={styles.editButtonText}>Edit Profile</Text>
+              <Text style={styles.editButtonText}>{t("Edit Profile")}</Text>
               <MaterialCommunityIcons name="pencil" size={14} color="#2A9D8F" />
             </TouchableOpacity>
           </View>
 
           {/* Finance Tools Section */}
-          <Text style={styles.sectionTitle}>Finance Tools</Text>
+          <Text style={styles.sectionTitle}>{t("Finance Tools")}</Text>
           <View style={styles.menuContainer}>
             <TouchableOpacity
               style={styles.menuItem}
@@ -66,7 +69,7 @@ export default function VendorProfileScreen() {
                 color="#2A9D8F"
               />
               <Text style={styles.menuItemText}>
-                Track Transactions & Payments
+                {t("Track Transactions & Payments")}
               </Text>
               <MaterialCommunityIcons
                 name="chevron-right"
@@ -84,7 +87,7 @@ export default function VendorProfileScreen() {
                 size={24}
                 color="#F4A261"
               />
-              <Text style={styles.menuItemText}>Expense Tracking</Text>
+              <Text style={styles.menuItemText}>{t("Expense Tracking")}</Text>
               <MaterialCommunityIcons
                 name="chevron-right"
                 size={24}
@@ -92,6 +95,7 @@ export default function VendorProfileScreen() {
               />
             </TouchableOpacity>
 
+            {/* Commented out sections left as-is, remember to add t() if you uncomment them */}
             {/* <TouchableOpacity
               style={styles.menuItem}
               onPress={() => router.push("/expense-calculator")}
@@ -110,35 +114,16 @@ export default function VendorProfileScreen() {
             </TouchableOpacity> */}
           </View>
 
-          {/* Settings Section */}
+          {/* Settings Section - Commented Out */}
           {/* <Text style={styles.sectionTitle}>Settings</Text> */}
-          {/* <View style={styles.menuContainer}>
-            <TouchableOpacity style={styles.menuItem}>
-              <MaterialCommunityIcons name="bank" size={24} color="#457B9D" />
-              <Text style={styles.menuItemText}>Payment Details</Text>
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
-                color="#CCC"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
-              <MaterialCommunityIcons name="bell" size={24} color="#606C38" />
-              <Text style={styles.menuItemText}>Notifications</Text>
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
-                color="#CCC"
-              />
-            </TouchableOpacity>
-          </View> */}
+          {/* ... */}
 
           {/* Sign Out */}
           <View style={styles.signOutContainer}>
             <Button
-              title="Sign Out"
+              title={t("Sign Out")}
               onPress={handleSignOut}
-              style={{ backgroundColor: "#E76F51" }} // Red-ish color for sign out
+              style={{ backgroundColor: "#E76F51" }}
             />
           </View>
         </View>
@@ -149,7 +134,7 @@ export default function VendorProfileScreen() {
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: "#F8F9FA", // Light grey background
+    backgroundColor: "#F8F9FA",
   },
   header: {
     paddingHorizontal: 20,

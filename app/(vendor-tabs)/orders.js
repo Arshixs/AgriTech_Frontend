@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../../secret";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
@@ -23,9 +24,13 @@ export default function VendorOrdersScreen() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
+  const { t } = useTranslation();
 
-  // Design State: Active Tab
+  // FIX 1: Initialize with English key, NOT translated string
   const [activeTab, setActiveTab] = useState("Pending");
+
+  // Define tab keys here to loop over later
+  const TABS = ["Pending", "Active", "Completed", "Declined"];
 
   // 1. Fetch Orders from Backend
   const fetchOrders = async () => {
@@ -42,7 +47,7 @@ export default function VendorOrdersScreen() {
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not fetch orders");
+      Alert.alert(t("Error"), t("Could not fetch orders"));
     } finally {
       setLoading(false);
     }
@@ -73,13 +78,13 @@ export default function VendorOrdersScreen() {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert("Success", `Order ${newStatus}!`);
+        Alert.alert(t("Success"), `${t("Order")} ${getStatus(newStatus)}!`);
         fetchOrders(); // Refresh to move item to new tab
       } else {
-        Alert.alert("Failed", data.message || "Could not update status");
+        Alert.alert(t("Failed"), data.message || t("Could not update status"));
       }
     } catch (error) {
-      Alert.alert("Error", "Network error");
+      Alert.alert(t("Error"), t("Network error"));
     } finally {
       setActionLoading(null);
     }
@@ -111,6 +116,14 @@ export default function VendorOrdersScreen() {
     return "#E76F51"; // Red (Rejected)
   };
 
+  const getStatus = (status) => {
+    if (status === "pending") return t("Pending"); // Orange
+    if (status === "accepted") return t("Accepted"); // Teal
+    if (status === "completed") return t("Completed"); // Dark Blue
+    if (status === "rejected" || status === "cancelled") return t("Rejected"); // Dark Blue
+    return status || t("Unknown"); // FIX 5: Fallback to raw status or "Unknown" instead of empty string
+  };
+
   const renderOrderItem = ({ item }) => {
     const isRental = item.orderType === "rental";
     const isPending = item.status === "pending";
@@ -120,12 +133,15 @@ export default function VendorOrdersScreen() {
         {/* Header: Item Name & Status */}
         <View style={styles.cardHeader}>
           <Text style={styles.itemName}>
-            {item.productSnapshot?.name || item.product?.name || "Unknown Item"}
+            {item.productSnapshot?.name ||
+              item.product?.name ||
+              t("Unknown Item")}
           </Text>
           <Text
             style={[styles.statusText, { color: getStatusColor(item.status) }]}
           >
-            {item.status.toUpperCase()}
+            {/* FIX 4: Use helper to translate status, then uppercase */}
+            {getStatus(item.status).toUpperCase()}
           </Text>
         </View>
 
@@ -133,21 +149,25 @@ export default function VendorOrdersScreen() {
         <View style={styles.detailRow}>
           <MaterialCommunityIcons name="account" size={16} color="#666" />
           <Text style={styles.detailText}>
-            Buyer:{" "}
-            {item.buyer?.contactPerson || item.buyer?.companyName || "Unknown"}
+            {t("Buyer:")}{" "}
+            {item.buyer?.contactPerson ||
+              item.buyer?.companyName ||
+              t("Unknown")}
           </Text>
         </View>
         <View style={styles.detailRow}>
           <MaterialCommunityIcons name="phone" size={16} color="#666" />
           <Text
             onPress={() => {
+              // FIX 2: Do NOT translate 'tel:'. Protocol must remain English.
               Linking.openURL(`tel:${item.buyer?.phone}`);
             }}
             style={styles.detailText}
           >
-            Phone:{" "}
+            {/* FIX 3: Added t() to "Phone:" */}
+            {t("Phone:")}{" "}
             <Text style={[styles.phoneText, { fontWeight: "600" }]}>
-              {item.buyer?.phone || "Unknown"}
+              {item.buyer?.phone || t("Unknown")}
             </Text>
           </Text>
         </View>
@@ -165,9 +185,9 @@ export default function VendorOrdersScreen() {
                   "DD MMM"
                 )} - ${moment(item.rentalDuration?.endDate).format(
                   "DD MMM YYYY"
-                )} (${item.rentalDuration?.totalDays} Days)`
-              : `Quantity: ${item.quantity} ${
-                  item.productSnapshot?.unit || "units"
+                )} (${item.rentalDuration?.totalDays} ${t("Days")})`
+              : `${t("Quantity:")} ${item.quantity} ${
+                  item.productSnapshot?.unit || t("units")
                 }`}
           </Text>
         </View>
@@ -178,7 +198,7 @@ export default function VendorOrdersScreen() {
           <Text
             style={[styles.detailText, { fontWeight: "600", color: "#2A9D8F" }]}
           >
-            Total: ₹{item.totalAmount}
+            {t("Total")}: ₹{item.totalAmount}
           </Text>
         </View>
 
@@ -193,13 +213,13 @@ export default function VendorOrdersScreen() {
                   style={[styles.actionButton, styles.declineButton]}
                   onPress={() => handleUpdateStatus(item._id, "rejected")}
                 >
-                  <Text style={styles.declineButtonText}>Decline</Text>
+                  <Text style={styles.declineButtonText}>{t("Decline")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.actionButton, styles.acceptButton]}
                   onPress={() => handleUpdateStatus(item._id, "accepted")}
                 >
-                  <Text style={styles.acceptButtonText}>Accept</Text>
+                  <Text style={styles.acceptButtonText}>{t("Accept")}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -213,7 +233,7 @@ export default function VendorOrdersScreen() {
               style={[styles.actionButton, styles.completeButton]}
               onPress={() => handleUpdateStatus(item._id, "completed")}
             >
-              <Text style={styles.acceptButtonText}>Mark Completed</Text>
+              <Text style={styles.acceptButtonText}>{t("Mark Completed")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -224,12 +244,13 @@ export default function VendorOrdersScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Manage Orders</Text>
+        <Text style={styles.headerTitle}>{t("Manage Orders")}</Text>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabContainer}>
-        {["Pending", "Active", "Completed", "Declined"].map((tab) => (
+        {/* FIX 1: Iterate over English keys, translate in UI only */}
+        {TABS.map((tab) => (
           <TouchableOpacity
             key={tab}
             style={[styles.tab, activeTab === tab && styles.tabActive]}
@@ -241,7 +262,7 @@ export default function VendorOrdersScreen() {
                 activeTab === tab && styles.tabTextActive,
               ]}
             >
-              {tab}
+              {t(tab)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -257,9 +278,7 @@ export default function VendorOrdersScreen() {
         }
         ListEmptyComponent={
           !loading && (
-            <Text style={styles.emptyText}>
-              No {activeTab.toLowerCase()} orders found.
-            </Text>
+            <Text style={styles.emptyText}>{t("No orders found.")}</Text>
           )
         }
       />

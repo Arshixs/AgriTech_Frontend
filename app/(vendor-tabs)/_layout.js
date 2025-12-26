@@ -1,19 +1,20 @@
 // File: app/(vendor-tabs)/_layout.js
 
-import React from 'react';
-import { Tabs } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function VendorTabLayout() {
+  const { t } = useTranslation();
   return (
     <Tabs
       screenOptions={{
         headerShown: false, // We use custom headers in each screen
-        tabBarActiveTintColor: '#457B9D', // Vendor Blue
-        tabBarInactiveTintColor: '#888',
+        tabBarActiveTintColor: "#457B9D", // Vendor Blue
+        tabBarInactiveTintColor: "#888",
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '600',
+          fontWeight: "600",
         },
         tabBarStyle: {
           paddingTop: 4,
@@ -23,16 +24,20 @@ export default function VendorTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: t("Dashboard"),
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="view-dashboard" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="view-dashboard"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="products"
         options={{
-          title: 'Products',
+          title: t("Products"),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="store" color={color} size={size} />
           ),
@@ -51,10 +56,14 @@ export default function VendorTabLayout() {
       <Tabs.Screen
         name="orders"
         options={{
-          title: 'Orders',
+          title: t("Orders"),
           tabBarIcon: ({ color, size }) => (
             // Using a valid icon for rentals
-            <MaterialCommunityIcons name="key-variant" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="key-variant"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
@@ -70,9 +79,13 @@ export default function VendorTabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t("Profile"),
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-circle" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="account-circle"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />

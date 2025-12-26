@@ -1,6 +1,7 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   StyleSheet,
@@ -13,6 +14,7 @@ import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 
 export default function VendorDashboard() {
+  const { t } = useTranslation();
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [recentOrders, setRecentOrders] = useState([]);
@@ -21,29 +23,41 @@ export default function VendorDashboard() {
   const [pendingOrders, setPendingOrders] = useState(NaN);
 
   const fetchProfile = async () => {
-    const res = await fetch(`${API_BASE_URL}/api/vendor/auth/my`, {
-      method: "GET",
-      headers: {
-        "Content-type": "appication/json",
-        Authorization: `Bearer ${user.token}`,
-      },
-    });
+    // Add null check for user and token
+    if (!user?.token) {
+      console.log(t("No user token available"));
+      return;
+    }
 
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/vendor/auth/my`, {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
 
-    if (res.ok) {
-      console.log(data);
-      setRecentOrders(data.recentOrders);
-      setTotalRevenue(data.stats.monthlyRevenue);
-      setPendingOrders(data.stats.pendingOrders);
-      setActiveOrders(data.stats.activeOrders);
-    } else {
+      const data = await res.json();
+
+      if (res.ok) {
+        console.log(data);
+        setRecentOrders(data.recentOrders);
+        setTotalRevenue(data.stats.monthlyRevenue);
+        setPendingOrders(data.stats.pendingOrders);
+        setActiveOrders(data.stats.activeOrders);
+      }
+    } catch (error) {
+      console.error(t("Failed to fetch profile:"), error);
     }
   };
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    // Only fetch if user and token exist
+    if (user?.token) {
+      fetchProfile();
+    }
+  }, [user]);
 
   // Helper function to get status color
   const getStatusColor = (status) => {
@@ -59,6 +73,19 @@ export default function VendorDashboard() {
     }
   };
 
+  // Helper function to get status color
+  const getStatus = (status) => {
+    switch (status?.toLowerCase()) {
+      case "completed":
+        return t("Completed");
+      case "pending":
+        return t("Pending");
+      case "rejected":
+        return t("Rejected");
+      default:
+        return t();
+    }
+  };
   // Helper function to format order ID
   const formatOrderId = (id) => {
     return `#${id.slice(-6).toUpperCase()}`;
@@ -67,17 +94,17 @@ export default function VendorDashboard() {
   // Mock data for the dashboard
   const stats = [
     {
-      label: "Total Sales (Month)",
+      label: t("Total Sales (Month)"),
       value: `${totalRevenue}`,
       icon: "currency-inr",
     },
     {
-      label: "Pending Orders",
+      label: t("Pending Orders"),
       value: `${pendingOrders}`,
       icon: "package-variant-closed",
     },
     {
-      label: "Active Orders",
+      label: t("Active Orders"),
       value: `${activeOrders}`,
       icon: "run",
     },
@@ -85,25 +112,25 @@ export default function VendorDashboard() {
 
   const quickActions = [
     {
-      title: "My Products",
+      title: t("My Products"),
       icon: "store",
       color: "#2A9D8F",
       route: "/(vendor-tabs)/products",
     },
     {
-      title: "My Orders",
+      title: t("My Orders"),
       icon: "package",
       color: "#457B9D",
       route: "/(vendor-tabs)/orders",
     },
     {
-      title: "Transactions",
+      title: t("Transactions"),
       icon: "transfer",
       color: "#F4A261",
       route: "/transaction-history",
     },
     {
-      title: "Add New Product",
+      title: t("Add New Product"),
       icon: "plus-box",
       color: "#E76F51",
       route: "/add-edit-product",
@@ -117,9 +144,9 @@ export default function VendorDashboard() {
           {/* Header */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.greeting}>Welcome back,</Text>
+              <Text style={styles.greeting}>{t("Welcome back,")}</Text>
               <Text style={styles.userName}>
-                {user ? user.name : "Vendor"}!
+                {user ? user.name : t("Vendor")}!
               </Text>
             </View>
             <TouchableOpacity
@@ -146,7 +173,7 @@ export default function VendorDashboard() {
           </View>
 
           {/* Quick Actions */}
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={styles.sectionTitle}>{t("Quick Actions")}</Text>
           <View style={styles.actionsGrid}>
             {quickActions.map((action) => (
               <TouchableOpacity
@@ -173,19 +200,19 @@ export default function VendorDashboard() {
           </View>
 
           {/* Recent Orders List - Dynamic */}
-          <Text style={styles.sectionTitle}>Recent Orders</Text>
+          <Text style={styles.sectionTitle}>{t("Recent Orders")}</Text>
           {recentOrders.length > 0 ? (
             recentOrders.map((order) => (
               <View key={order._id} style={styles.taskCard}>
                 <View style={styles.taskLeft}>
                   <Text style={styles.taskTitle}>
-                    Order {formatOrderId(order._id)}
+                    {t("Order")} {formatOrderId(order._id)}
                   </Text>
                   <Text style={styles.taskTime}>
                     {order.productSnapshot.name}
                   </Text>
                   <Text style={styles.taskSubtitle}>
-                    Qty: {order.quantity} | ₹{order.totalAmount}
+                    {t("Qty:")} {order.quantity} | ₹{order.totalAmount}
                   </Text>
                 </View>
                 <Text
@@ -194,7 +221,7 @@ export default function VendorDashboard() {
                     { color: getStatusColor(order.status) },
                   ]}
                 >
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  {getStatus(order.status)}
                 </Text>
               </View>
             ))
@@ -205,7 +232,7 @@ export default function VendorDashboard() {
                 size={48}
                 color="#CCC"
               />
-              <Text style={styles.emptyStateText}>No recent orders</Text>
+              <Text style={styles.emptyStateText}>{t("No recent orders")}</Text>
             </View>
           )}
         </View>

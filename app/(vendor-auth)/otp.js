@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
@@ -12,6 +13,7 @@ import { useAuth } from "../../src/context/AuthContext";
 export default function VendorOtpScreen() {
   const router = useRouter();
   const { signInVendor } = useAuth(); // We use the context to manage session
+  const { t } = useTranslation();
 
   // Get params passed from Login or Register screen
   const { mobileNumber, pendingProfile } = useLocalSearchParams();
@@ -21,7 +23,10 @@ export default function VendorOtpScreen() {
 
   const handleVerify = async () => {
     if (!otp || otp.length !== 6) {
-      return Alert.alert("Invalid OTP", "Please enter a valid 6-digit code.");
+      return Alert.alert(
+        t("Invalid OTP"),
+        t("Please enter a valid 6-digit code.")
+      );
     }
 
     setLoading(true);
@@ -40,7 +45,7 @@ export default function VendorOtpScreen() {
       const verifyData = await verifyRes.json();
 
       if (!verifyRes.ok) {
-        throw new Error(verifyData.message || "Verification failed");
+        throw new Error(verifyData.message || t("Verification failed"));
       }
 
       // 2. Token & Vendor Data received
@@ -68,8 +73,10 @@ export default function VendorOtpScreen() {
 
         if (!updateRes.ok) {
           Alert.alert(
-            "Warning",
-            "OTP Verified but Profile Update failed. Please update profile in settings."
+            t("Warning"),
+            t(
+              "OTP Verified but Profile Update failed. Please update profile in settings."
+            )
           );
         } else {
           // Update our local vendor object with the new profile info
@@ -85,7 +92,7 @@ export default function VendorOtpScreen() {
       // router.replace('/(vendor-tabs)');
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", err.message || "Something went wrong");
+      Alert.alert(t("Error"), err.message || t("Something went wrong"));
     } finally {
       setLoading(false);
     }
@@ -101,16 +108,17 @@ export default function VendorOtpScreen() {
           <FontAwesome name="arrow-left" size={20} color="#264653" />
         </TouchableOpacity>
 
-        <Text style={styles.title}>Verification</Text>
+        <Text style={styles.title}>{t("Verification")}</Text>
         <Text style={styles.subtitle}>
-          Enter the 6-digit code sent to{"\n"}
+          {t("Enter the 6-digit code sent to")}
+          {"\n"}
           <Text style={{ fontWeight: "bold", color: "#264653" }}>
             {mobileNumber}
           </Text>
         </Text>
 
         <Input
-          label="OTP Code"
+          label={t("OTP Code")}
           value={otp}
           onChangeText={setOtp}
           placeholder="XXXXXX"
@@ -121,14 +129,16 @@ export default function VendorOtpScreen() {
         />
 
         <Button
-          title="Verify & Login"
+          title={t("Verify & Login")}
           onPress={handleVerify}
           loading={loading}
           style={{ marginTop: 20 }}
         />
 
         <TouchableOpacity style={styles.resendContainer}>
-          <Text style={styles.resendText}>Didn't receive code? Resend</Text>
+          <Text style={styles.resendText}>
+            {t("Didn't receive code? Resend")}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScreenWrapper>

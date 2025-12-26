@@ -1,6 +1,8 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+// 1. Add Import
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -18,6 +20,7 @@ import ScreenWrapper from "../src/components/common/ScreenWrapper";
 import { useAuth } from "../src/context/AuthContext";
 
 // Categories matching your Backend Model Enums
+// Keep values in English for Backend, Labels can be English here and translated in render
 const CATEGORIES = [
   { label: "Seeds", value: "seeds" },
   { label: "Tools", value: "tools" },
@@ -29,23 +32,25 @@ const CATEGORIES = [
 export default function AddEditProductScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { user } = useAuth(); // Need token for API calls
+  const { user } = useAuth();
+  // 2. Initialize Hook
+  const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [screenTitle, setScreenTitle] = useState("Add New Product");
+
+  // Removed screenTitle state. derived it in render instead for better reactivity.
 
   // Form State
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
-  const [unit, setUnit] = useState(""); // <--- ADDED UNIT STATE
+  const [unit, setUnit] = useState("");
   const [category, setCategory] = useState("");
 
   // 1. Fetch Details if Editing
   useEffect(() => {
     if (id) {
-      setScreenTitle("Edit Product");
       fetchProductDetails();
     }
   }, [id]);
@@ -64,15 +69,15 @@ export default function AddEditProductScreen() {
         setDescription(data.description);
         setPrice(data.price.toString());
         setStock(data.stock.toString());
-        setUnit(data.unit || ""); // Set Unit
+        setUnit(data.unit || "");
         setCategory(data.category);
       } else {
-        Alert.alert("Error", "Could not fetch product details");
+        Alert.alert(t("Error"), t("Could not fetch product details"));
         router.back();
       }
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Network error fetching details");
+      Alert.alert(t("Error"), t("Network error fetching details"));
     } finally {
       setIsLoading(false);
     }
@@ -83,8 +88,8 @@ export default function AddEditProductScreen() {
     // Basic Validation
     if (!name || !price || !category || !unit) {
       return Alert.alert(
-        "Missing Fields",
-        "Please fill in Name, Price, Unit, and Category."
+        t("Missing Fields"),
+        t("Please fill in Name, Price, Unit, and Category.")
       );
     }
 
@@ -94,7 +99,7 @@ export default function AddEditProductScreen() {
       description,
       price: Number(price),
       stock: Number(stock),
-      unit, // <--- Send Unit
+      unit,
       category,
     };
 
@@ -117,17 +122,19 @@ export default function AddEditProductScreen() {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert(
-          "Success",
-          `Product ${id ? "updated" : "created"} successfully!`
-        );
+        // FIX: Split messages so translation is grammatically correct
+        const successMsg = id
+          ? t("Product updated successfully!")
+          : t("Product created successfully!");
+
+        Alert.alert(t("Success"), successMsg);
         router.back();
       } else {
-        Alert.alert("Error", data.message || "Operation failed");
+        Alert.alert(t("Error"), data.message || t("Operation failed"));
       }
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Network request failed");
+      Alert.alert(t("Error"), t("Network request failed"));
     } finally {
       setIsLoading(false);
     }
@@ -136,12 +143,12 @@ export default function AddEditProductScreen() {
   // 3. Handle Delete
   const handleDelete = () => {
     Alert.alert(
-      "Delete Product",
-      "Are you sure you want to delete this product? This cannot be undone.",
+      t("Delete Product"),
+      t("Are you sure you want to delete this product? This cannot be undone."),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("Cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("Delete"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -154,13 +161,13 @@ export default function AddEditProductScreen() {
               );
 
               if (res.ok) {
-                Alert.alert("Deleted", "Product has been deleted.");
+                Alert.alert(t("Deleted"), t("Product has been deleted."));
                 router.back();
               } else {
-                Alert.alert("Error", "Failed to delete product");
+                Alert.alert(t("Error"), t("Failed to delete product"));
               }
             } catch (err) {
-              Alert.alert("Error", "Network error");
+              Alert.alert(t("Error"), t("Network error"));
             }
           },
         },
@@ -169,7 +176,6 @@ export default function AddEditProductScreen() {
   };
 
   if (isLoading && id && !name) {
-    // Show spinner only on initial fetch
     return (
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
@@ -188,14 +194,17 @@ export default function AddEditProductScreen() {
         >
           <FontAwesome name="arrow-left" size={20} color="#264653" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{screenTitle}</Text>
+        {/* Dynamic Title Translation */}
+        <Text style={styles.headerTitle}>
+          {id ? t("Edit Product") : t("Add New Product")}
+        </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
-        <Input label="Product Name" value={name} onChangeText={setName} />
+        <Input label={t("Product Name")} value={name} onChangeText={setName} />
 
         <Input
-          label="Description"
+          label={t("Description")}
           value={description}
           onChangeText={setDescription}
           multiline
@@ -206,7 +215,7 @@ export default function AddEditProductScreen() {
         <View style={styles.row}>
           <View style={{ flex: 1, marginRight: 10 }}>
             <Input
-              label="Price (₹)"
+              label={t("Price (₹)")}
               value={price}
               onChangeText={setPrice}
               keyboardType="numeric"
@@ -214,7 +223,7 @@ export default function AddEditProductScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Input
-              label="Stock"
+              label={t("Stock")}
               value={stock}
               onChangeText={setStock}
               keyboardType="numeric"
@@ -224,13 +233,13 @@ export default function AddEditProductScreen() {
 
         {/* NEW UNIT INPUT */}
         <Input
-          label="Unit (e.g., kg, ton, piece)"
+          label={t("Unit (e.g., kg, ton, piece)")}
           value={unit}
           onChangeText={setUnit}
-          placeholder="kg"
+          placeholder={t("kg")}
         />
 
-        <Text style={styles.categoryLabel}>Category</Text>
+        <Text style={styles.categoryLabel}>{t("Category")}</Text>
         <View style={styles.categoryContainer}>
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
@@ -247,14 +256,15 @@ export default function AddEditProductScreen() {
                   category === cat.value && styles.categoryTextActive,
                 ]}
               >
-                {cat.label}
+                {/* Translate the label here */}
+                {t(cat.label)}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
         <Button
-          title="Save Product"
+          title={t("Save Product")}
           onPress={handleSave}
           loading={isLoading}
           style={{ marginTop: 24 }}
@@ -262,7 +272,7 @@ export default function AddEditProductScreen() {
 
         {id && (
           <Button
-            title="Delete Product"
+            title={t("Delete Product")}
             onPress={handleDelete}
             style={styles.deleteButton}
             textStyle={styles.deleteButtonText}
