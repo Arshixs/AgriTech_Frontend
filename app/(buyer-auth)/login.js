@@ -48,7 +48,10 @@ export default function BuyerLoginScreen() {
       }
     } catch (err) {
       console.error(err);
-      Alert.alert("Network Error", "Check your connection and IP address.");
+      Alert.alert(
+        t("Network Error"),
+        t("Check your connection and IP address.")
+      );
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   ScrollView,
@@ -9,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
@@ -19,6 +19,7 @@ export default function VendorRegistrationScreen() {
   const router = useRouter();
   const { phone } = useLocalSearchParams(); // Get phone passed from Login Screen
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   // Form state (Matched with your Mongoose Vendor Model)
   // Removed Email/Password as they aren't in your updated schema
@@ -29,7 +30,7 @@ export default function VendorRegistrationScreen() {
 
   const handleRegister = async () => {
     if (!name || !organizationName || !gstNumber || !address) {
-      return Alert.alert("Missing Fields", "Please fill in all details.");
+      return Alert.alert(t("Missing Fields"), t("Please fill in all details."));
     }
 
     setLoading(true);
@@ -64,11 +65,11 @@ export default function VendorRegistrationScreen() {
           },
         });
       } else {
-        Alert.alert("Error", data.message || "Registration failed.");
+        Alert.alert(t("Error"), data.message || t("Registration failed."));
       }
     } catch (err) {
       console.error(err);
-      Alert.alert("Network Error", "Could not connect to server.");
+      Alert.alert(t("Network Error"), t("Could not connect to server."));
     } finally {
       setLoading(false);
     }
@@ -85,45 +86,48 @@ export default function VendorRegistrationScreen() {
             <FontAwesome name="arrow-left" size={20} color="#264653" />
           </TouchableOpacity>
 
-          <Text style={styles.title}>New Vendor Profile</Text>
+          <Text style={styles.title}>{t("New Vendor Profile")}</Text>
           <Text style={styles.subtitle}>
-            Registering for: <Text style={{ fontWeight: "bold" }}>{phone}</Text>
+            {t("Registering for:")}{" "}
+            <Text style={{ fontWeight: "bold" }}>{phone}</Text>
           </Text>
 
           {/* Personal Details */}
-          <Text style={styles.sectionTitle}>Owner Details</Text>
+          <Text style={styles.sectionTitle}>{t("Owner Details")}</Text>
           <Input
-            label="Full Name"
+            label={t("Full Name")}
             value={name}
             onChangeText={setName}
-            placeholder="e.g. Ramesh Kumar"
+            placeholder={t("e.g. Ramesh Kumar")}
           />
 
           {/* Organisation Details */}
-          <Text style={styles.sectionTitle}>Shop / Business Details</Text>
+          <Text style={styles.sectionTitle}>
+            {t("Shop / Business Details")}
+          </Text>
           <Input
-            label="Shop/Organization Name"
+            label={t("Shop/Organization Name")}
             value={organizationName}
             onChangeText={setorganizationName}
-            placeholder="e.g. Kisan Bhandar"
+            placeholder={t("e.g. Kisan Bhandar")}
           />
           <Input
-            label="GST Number"
+            label={t("GST Number")}
             value={gstNumber}
             onChangeText={setGstNumber}
             autoCapitalize="characters"
-            placeholder="e.g. 22AAAAA0000A1Z5"
+            placeholder={t("e.g. 22AAAAA0000A1Z5")}
           />
           <Input
-            label="Business Address"
+            label={t("Business Address")}
             value={address}
             onChangeText={setAddress}
-            placeholder="Shop No, Market, City"
+            placeholder={t("Shop No, Market, City")}
             multiline
           />
 
           <Button
-            title="Send OTP & Verify"
+            title={t("Send OTP & Verify")}
             onPress={handleRegister}
             loading={loading}
             style={{ marginTop: 24 }}
