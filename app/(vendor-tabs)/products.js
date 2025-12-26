@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
@@ -21,6 +22,7 @@ export default function ProductsScreen() {
   const { user } = useAuth(); // Get user token
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   // Fetch Products function
   const fetchProducts = async () => {
@@ -41,11 +43,11 @@ export default function ProductsScreen() {
         setProducts(data.products || []);
       } else {
         // Silent fail or minimal alert to not annoy user on refresh
-        console.log("Failed to fetch products:", data.message);
+        console.log(t("Failed to fetch products:"), data.message);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
-      Alert.alert("Error", "Could not load products");
+      console.error(t("Fetch error:"), error);
+      Alert.alert(t("Error"), t("Could not load products"));
     } finally {
       setLoading(false);
     }
@@ -73,7 +75,7 @@ export default function ProductsScreen() {
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.name}</Text>
         <Text style={styles.productCategory} numberOfLines={1}>
-          {item.category?.toUpperCase()} • {item.unit}
+          {t(item.category || "Unknown").toUpperCase()} • {item.unit}
         </Text>
         <View style={styles.productDetails}>
           <Text style={styles.productPrice}>₹{item.price}</Text>
@@ -83,7 +85,7 @@ export default function ProductsScreen() {
               { color: item.stock < 10 ? "#E76F51" : "#2A9D8F" },
             ]}
           >
-            Stock: {item.stock}
+            {t("Stock")}: {item.stock}
           </Text>
         </View>
       </View>
@@ -94,9 +96,9 @@ export default function ProductsScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Products</Text>
+        <Text style={styles.headerTitle}>{t("My Products")}</Text>
         <Button
-          title="Add New Product"
+          title={t("Add New Product")}
           onPress={() => router.push("/add-edit-product")}
           style={styles.addButton}
           icon={() => (
@@ -118,7 +120,9 @@ export default function ProductsScreen() {
           keyExtractor={(item) => item._id} // MongoDB uses _id
           contentContainerStyle={styles.listContainer}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No products found. Add one!</Text>
+            <Text style={styles.emptyText}>
+              {t("No products found. Add one!")}
+            </Text>
           }
           refreshing={loading}
           onRefresh={fetchProducts} // Pull to refresh
