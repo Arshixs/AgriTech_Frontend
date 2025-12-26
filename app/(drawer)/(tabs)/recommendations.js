@@ -10,9 +10,9 @@ import {
   View,
 } from "react-native";
 import { useTranslation } from "react-i18next";
-import { API_BASE_URL } from "../../secret";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../src/context/AuthContext";
+import { API_BASE_URL } from "../../../secret";
+import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../../src/context/AuthContext";
 
 export default function RecommendationsScreen() {
   const { user } = useAuth();
