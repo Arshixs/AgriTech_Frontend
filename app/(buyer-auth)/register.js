@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   ScrollView,
@@ -19,6 +20,9 @@ export default function BuyerRegistrationScreen() {
   const { phone } = useLocalSearchParams(); // Get phone from Login screen
   const [loading, setLoading] = useState(false);
 
+  // use translation
+  const { t } = useTranslation();
+
   // Form state
   const [companyName, setCompanyName] = useState("");
   const [contactPerson, setContactPerson] = useState("");
@@ -27,14 +31,14 @@ export default function BuyerRegistrationScreen() {
   const handleRegister = async () => {
     // 1. Validation
     if (!companyName || !contactPerson || !email) {
-      return Alert.alert("Missing Fields", "Please fill in all details.");
+      return Alert.alert(t("Missing Fields"), t("Please fill in all details."));
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return Alert.alert(
-        "Invalid Email",
-        "Please enter a valid email address."
+        t("Invalid Email"),
+        t("Please enter a valid email address.")
       );
     }
 
@@ -68,11 +72,11 @@ export default function BuyerRegistrationScreen() {
           },
         });
       } else {
-        Alert.alert("Error", data.message || "Registration failed.");
+        Alert.alert(t("Error"), data.message || t("Registration failed."));
       }
     } catch (err) {
       console.error(err);
-      Alert.alert("Network Error", "Could not connect to server.");
+      Alert.alert(t("Network Error"), t("Could not connect to server."));
     } finally {
       setLoading(false);
     }
@@ -89,34 +93,35 @@ export default function BuyerRegistrationScreen() {
             <FontAwesome name="arrow-left" size={20} color="#264653" />
           </TouchableOpacity>
 
-          <Text style={styles.title}>New Buyer Profile</Text>
+          <Text style={styles.title}>{t("New Buyer Profile")}</Text>
           <Text style={styles.subtitle}>
-            Registering for: <Text style={{ fontWeight: "bold" }}>{phone}</Text>
+            {t("Registering for:")}{" "}
+            <Text style={{ fontWeight: "bold" }}>{phone}</Text>
           </Text>
 
           <Input
-            label="Company Name"
+            label={t("Company Name")}
             value={companyName}
             onChangeText={setCompanyName}
-            placeholder="e.g., Fresh Foods Inc."
+            placeholder={t("e.g., Fresh Foods Inc.")}
           />
           <Input
-            label="Contact Person Name"
+            label={t("Contact Person Name")}
             value={contactPerson}
             onChangeText={setContactPerson}
-            placeholder="e.g., Rohan Gupta"
+            placeholder={t("e.g., Rohan Gupta")}
           />
           <Input
-            label="Business Email"
+            label={t("Business Email")}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-            placeholder="e.g., procurement@freshfoods.com"
+            placeholder={t("e.g., procurement@freshfoods.com")}
             autoCapitalize="none"
           />
 
           <Button
-            title="Send OTP & Verify"
+            title={t("Send OTP & Verify")}
             onPress={handleRegister}
             loading={loading}
             style={{ marginTop: 16, backgroundColor: "#E76F51" }}

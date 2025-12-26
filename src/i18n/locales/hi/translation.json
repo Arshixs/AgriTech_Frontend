@@ -591,5 +591,21 @@
   "Tools": "औजार",
   "Machines": "मशीनों",
   "Agri Inputs": "कृषि इनपुट",
-  "Rentals": "किराये"
+  "Rentals": "किराये",
+  "Declined": "अस्वीकृत",
+  "Welcome Back": "वापसी पर स्वागत है",
+  "OTP sent to your registered number.": "आपके पंजीकृत नंबर पर ओटीपी भेज दिया गया है।",
+  "Buyer Login": "खरीदार लॉगिन",
+  "Access the post-harvest marketplace": "फसल कटाई के बाद के बाज़ार तक पहुंचें",
+  "Enter the 6-digit OTP sent to +91": "#ERROR!",
+  "Invalid Email": "अमान्य ईमेल",
+  "Please enter a valid email address.": "कृपया एक मान्य ईमेल पता प्रविष्ट करें।",
+  "New Buyer Profile": "नए खरीदार की प्रोफ़ाइल",
+  "Company Name": "कंपनी का नाम",
+  "e.g., Fresh Foods Inc.": "उदाहरण के लिए, फ्रेश फूड्स इंक.",
+  "Contact Person Name": "संपर्क व्यक्ति का नाम",
+  "e.g., Rohan Gupta": "उदाहरण के लिए, रोहन गुप्ता",
+  "Business Email": "व्यावसायिक ईमेल",
+  "e.g., procurement@freshfoods.com": "उदाहरण के लिए, procurement@freshfoods.com",
+  "Enter the 6-digit OTP sent to": "भेजे गए 6 अंकों का ओटीपी दर्ज करें"
 }

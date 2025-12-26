@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
@@ -13,9 +14,15 @@ export default function BuyerOTPScreen() {
   const { signInBuyer } = useAuth();
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleVerifyOTP = async () => {
-    if (!otp || otp.length !== 6) return alert("Enter a valid 6-digit OTP.");
+    if (!otp || otp.length !== 6) {
+      return Alert.alert(
+        t("Invalid OTP"),
+        t("Please enter a valid 6-digit code.")
+      );
+    }
     setLoading(true);
     console.log(mobileNumber);
 
@@ -35,7 +42,7 @@ export default function BuyerOTPScreen() {
       const verifyData = await verifyRes.json();
 
       if (!verifyRes.ok) {
-        throw new Error(verifyData.message || "Verification failed");
+        throw new Error(verifyData.message || t("Verification failed"));
       }
 
       // 2. Token & Buyer Data received
@@ -63,8 +70,10 @@ export default function BuyerOTPScreen() {
 
         if (!updateRes.ok) {
           Alert.alert(
-            "Warning",
-            "OTP Verified but Profile Update failed. Please update profile in settings."
+            t("Warning"),
+            t(
+              "OTP Verified but Profile Update failed. Please update profile in settings."
+            )
           );
         } else {
           // Update our local buyer object with the new profile info
@@ -75,7 +84,7 @@ export default function BuyerOTPScreen() {
       await signInBuyer(finalBuyerData);
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", err.message || "Something went wrong");
+      Alert.alert(t("Error"), err.message || t("Something went wrong"));
     } finally {
       setLoading(false);
     }
@@ -84,13 +93,13 @@ export default function BuyerOTPScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <Text style={styles.title}>Verify OTP</Text>
+        <Text style={styles.title}>{t("Verify OTP")}</Text>
         <Text style={styles.subtitle}>
-          Enter the 6-digit OTP sent to +91 {mobileNumber}
+          {t("Enter the 6-digit OTP sent to") + ` ${mobileNumber}`}
         </Text>
 
         <Input
-          label="Enter OTP"
+          label={t("Enter OTP")}
           value={otp}
           onChangeText={setOtp}
           placeholder="XXXXXX"
@@ -98,7 +107,7 @@ export default function BuyerOTPScreen() {
         />
 
         <Button
-          title="Verify & Proceed"
+          title={t("Verify & Proceed")}
           onPress={handleVerifyOTP}
           loading={loading}
           style={{ backgroundColor: "#E76F51" }}
