@@ -69,7 +69,6 @@
   "No requests found": "No requests found",
   "Search by Lot ID": "Search by Lot ID",
   "Enter Lot ID": "Enter Lot ID",
-  "Cancel": "Cancel",
   "Search": "Search",
   "Request Details": "Request Details",
   "Crop": "Crop",
@@ -329,5 +328,9 @@
   "No products found in the marketplace.": "No products found in the marketplace.",
   "Confirm Rental": "Confirm Rental",
   "Confirm Purchase": "Confirm Purchase",
-  "Stock:": "Stock:"
+  "Stock:": "Stock:",
+  "Tools": "Tools",
+  "Machines": "Machines",
+  "Agri Inputs": "Agri Inputs",
+  "Rentals": "Rentals"
 }

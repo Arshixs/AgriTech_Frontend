@@ -69,7 +69,6 @@
   "No requests found": "कोई अनुरोध नहीं मिला",
   "Search by Lot ID": "लॉट आईडी द्वारा खोजें",
   "Enter Lot ID": "लॉट आईडी दर्ज करें",
-  "Cancel": "रद्द करना",
   "Search": "खोज",
   "Request Details": "अनुरोध विवरण",
   "Crop": "फसल",
@@ -329,5 +328,9 @@
   "No products found in the marketplace.": "बाजार में कोई उत्पाद नहीं मिला।",
   "Confirm Rental": "किराये की पुष्टि करें",
   "Confirm Purchase": "खरीदारी की पुष्टि करें",
-  "Stock:": "भंडार:"
+  "Stock:": "भंडार:",
+  "Tools": "औजार",
+  "Machines": "मशीनों",
+  "Agri Inputs": "कृषि इनपुट",
+  "Rentals": "किराये"
 }
