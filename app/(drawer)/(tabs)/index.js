@@ -10,12 +10,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../../secret";
-import Button from "../../src/components/common/Button";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../src/context/AuthContext";
+import { API_BASE_URL } from "../../../secret";
+import Button from "../../../src/components/common/Button";
+import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../../src/context/AuthContext";
+import { useNavigation } from "expo-router";
+import { DrawerActions } from "@react-navigation/native";
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const { user, signOut } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
@@ -219,9 +222,9 @@ export default function HomeScreen() {
             </View>
             <TouchableOpacity
               style={styles.profileButton}
-              onPress={() => router.push("/(tabs)/profile")}
+              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
             >
-              <FontAwesome name="user-circle" size={40} color="#2A9D8F" />
+              <FontAwesome name="navicon" size={28} color="#264653" />
             </TouchableOpacity>
           </View>
 

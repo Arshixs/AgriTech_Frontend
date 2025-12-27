@@ -16,9 +16,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../../secret";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../src/context/AuthContext";
+import { API_BASE_URL } from "../../../secret";
+import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../../src/context/AuthContext";
 
 export default function MyHarvestScreen() {
   const { user } = useAuth();

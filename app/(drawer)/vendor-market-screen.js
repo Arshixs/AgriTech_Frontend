@@ -14,10 +14,10 @@ import {
   View,
 } from "react-native";
 import { useTranslation } from "react-i18next";
-import { API_BASE_URL } from "../secret";
-import Button from "../src/components/common/Button";
-import ScreenWrapper from "../src/components/common/ScreenWrapper";
-import { useAuth } from "../src/context/AuthContext";
+import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
 // Assuming a shared Input component exists for Modal consistency
 
 // Helper function to format currency

@@ -12,9 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../secret";
-import ScreenWrapper from "../src/components/common/ScreenWrapper";
-import { useAuth } from "../src/context/AuthContext";
+import { API_BASE_URL } from "../../secret";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
 import { useTranslation } from "react-i18next";
 
 export default function QualityCertificatesScreen() {
