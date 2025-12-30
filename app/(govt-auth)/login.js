@@ -55,6 +55,7 @@ export default function GovtLoginScreen() {
     }
 
     setLoading(true);
+    
     try {
       const response = await axios.post(`${API_URL}/api/govt/auth/verify-otp`, {
         phone: phone.startsWith("+91") ? phone : `+91${phone}`,

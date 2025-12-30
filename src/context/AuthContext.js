@@ -1,25 +1,21 @@
 // File: src/context/AuthContext.js
 
-import { useRouter } from "expo-router"; // Make sure this is imported
+import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-// Create the context
 const AuthContext = createContext(null);
 
-// Custom hook to use the AuthContext
 export const useAuth = () => {
   return useContext(AuthContext);
 };
 
-// The AuthProvider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter(); // Initialize the router
+  const router = useRouter();
 
   useEffect(() => {
-    // This logic is fine - it just loads the user on startup
     const loadUser = async () => {
       let userString = null;
       try {
@@ -36,7 +32,6 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // const signInFarmer = async (userData, token) => {
   const signInFarmer = async (userData) => {
     const farmerUser = { ...userData, role: "farmer" };
     await SecureStore.setItemAsync("user", JSON.stringify(farmerUser));
@@ -48,33 +43,42 @@ export const AuthProvider = ({ children }) => {
     const vendorUser = { ...vendorData, role: "vendor" };
     await SecureStore.setItemAsync("user", JSON.stringify(vendorUser));
     setUser(vendorUser);
-    router.replace("/(vendor-tabs)"); // Redirect to vendor dashboard
+    router.replace("/(vendor-tabs)");
   };
 
   const signInBuyer = async (buyerData) => {
     const buyerUser = { ...buyerData, role: "buyer" };
     await SecureStore.setItemAsync("user", JSON.stringify(buyerUser));
     setUser(buyerUser);
-    router.replace("/(buyer-tabs)"); // Redirect to buyer dashboard
+    router.replace("/(buyer-tabs)");
   };
 
   const signInGovt = async (govtData) => {
     const govtUser = { ...govtData, role: "govt" };
     await SecureStore.setItemAsync("user", JSON.stringify(govtUser));
     setUser(govtUser);
-    router.replace("/(govt-tabs)"); // Redirect to govt dashboard
+
+    // Route based on profile completion and verification status
+    if (!govtUser.profileComplete) {
+      router.replace("/(govt-auth)/complete-profile");
+    } else if (govtUser.verificationStatus !== "verified") {
+      router.replace("/(govt-auth)/verification-pending");
+    } else {
+      router.replace("/(govt-tabs)");
+    }
   };
 
   const signOut = async () => {
     await SecureStore.deleteItemAsync("user");
     setUser(null);
-    router.replace("../"); // Redirect to root (Role Selection)
+    router.replace("../");
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         isLoading,
         signInFarmer,
         signInVendor,
