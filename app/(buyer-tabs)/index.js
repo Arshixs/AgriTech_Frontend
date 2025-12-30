@@ -17,31 +17,30 @@ export default function BuyerDashboard() {
   const { user } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
-
   const quickActions = [
     {
-      title: t("My Products"),
-      icon: "store",
+      title: t("Marketplace"),
+      icon: "store", // Standard shop icon
       color: "#2A9D8F",
-      route: "/(vendor-tabs)/products",
+      route: "/(buyer-tabs)/marketplace",
     },
     {
-      title: t("My Orders"),
-      icon: "package",
+      title: t("My Bids"),
+      icon: "gavel", // The auction hammer is the standard symbol for bidding
       color: "#457B9D",
-      route: "/(vendor-tabs)/orders",
+      route: "/(buyer-tabs)/bidding",
     },
     {
-      title: t("Transactions"),
-      icon: "transfer",
+      title: t("Requirements"),
+      icon: "clipboard-text", // Represents a list of needs/requirements
       color: "#F4A261",
-      route: "/transaction-history",
+      route: "/(buyer-tabs)/requirements",
     },
     {
-      title: t("Add New Product"),
-      icon: "plus-box",
+      title: t("Add New Requirements"),
+      icon: "clipboard-plus", // Represents adding a new item to that list
       color: "#E76F51",
-      route: "/add-edit-product",
+      route: "/post-requirement",
     },
   ];
 
