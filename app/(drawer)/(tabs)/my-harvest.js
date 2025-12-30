@@ -225,10 +225,11 @@ export default function MyHarvestScreen() {
 
   const handleViewCertificate = (output) => {
     if (output.qualityRequestId) {
-      router.push({
-        pathname: "/(tabs)/quality",
-        params: { requestId: output.qualityRequestId },
-      });
+      // router.push({
+      //   pathname: "/quality",
+      //   // params: { requestId: output.qualityRequestId },
+      // });
+      router.push("quality")
     }
   };
 
