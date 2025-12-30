@@ -722,5 +722,11 @@
   "This listing has been sold.": "This listing has been sold.",
   "Auction ended with no bids.": "Auction ended with no bids.",
   "Listing was cancelled by the seller.": "Listing was cancelled by the seller.",
-  "Auction has not started yet.": "Auction has not started yet."
+  "Auction has not started yet.": "Auction has not started yet.",
+  "Could not fetch transaction history": "Could not fetch transaction history",
+  "My Transactions": "My Transactions",
+  "Net Balance": "Net Balance",
+  "Income": "Income",
+  "Expense": "Expense",
+  "No {{type}} transactions found.": "No {{type}} transactions found."
 }

@@ -722,5 +722,11 @@
   "This listing has been sold.": "यह संपत्ति बिक चुकी है।",
   "Auction ended with no bids.": "नीलामी बिना किसी बोली के समाप्त हो गई।",
   "Listing was cancelled by the seller.": "विक्रेता द्वारा लिस्टिंग रद्द कर दी गई।",
-  "Auction has not started yet.": "नीलामी अभी शुरू नहीं हुई है।"
+  "Auction has not started yet.": "नीलामी अभी शुरू नहीं हुई है।",
+  "Could not fetch transaction history": "लेनदेन इतिहास प्राप्त नहीं किया जा सका",
+  "My Transactions": "मेरे लेन-देन",
+  "Net Balance": "निवल शेष",
+  "Income": "आय",
+  "Expense": "व्यय",
+  "No {{type}} transactions found.": "कोई {{type}} लेनदेन नहीं मिला।"
 }
