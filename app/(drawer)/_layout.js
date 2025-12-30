@@ -6,7 +6,7 @@ import {
 import { useRouter } from "expo-router";
 import { Drawer } from "expo-router/drawer";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../src/context/AuthContext";
 
 // Custom Sidebar Component
@@ -72,6 +72,10 @@ export default function DrawerLayout() {
         name="quality"
         options={{ drawerLabel: t("Quality Certification") }}
       />
+      <Drawer.Screen
+        name="farmer-transaction-history"
+        options={{ drawerLabel: t("Transaction History") }}
+      />
       {/* <Drawer.Screen name="field-details" options={{ drawerLabel: "Field Details" }} /> */}
     </Drawer>
   );
@@ -82,14 +86,14 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#f8f9fa",
     marginBottom: 10,
-    alignItems: "center"
+    alignItems: "center",
   },
   userName: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#264653",
     marginTop: 10,
-    borderRadius: 5
+    borderRadius: 5,
   },
   userRole: { fontSize: 12, color: "#666" },
 });
