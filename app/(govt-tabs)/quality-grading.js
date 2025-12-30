@@ -58,14 +58,23 @@ export default function QualityGradingScreen() {
     try {
       const headers = { Authorization: `Bearer ${authToken}` };
 
+      // Fetch pending requests (unassigned or assigned to current user)
       const res = await fetch(`${API_BASE_URL}/api/quality/govt/pending`, {
         headers,
       });
       if (res.ok) {
         const data = await res.json();
-        setPendingRequests(data.requests || []);
+        // Filter to only show unassigned requests or requests assigned to current user
+        const filteredRequests = (data.requests || []).filter((request) => {
+          return (
+            !request.assignedOfficer ||
+            request.assignedOfficer === user?._id
+          );
+        });
+        setPendingRequests(filteredRequests);
       }
 
+      // Fetch my requests (assigned to current user)
       const res2 = await fetch(`${API_BASE_URL}/api/quality/govt/my-requests`, {
         headers,
       });
@@ -97,6 +106,18 @@ export default function QualityGradingScreen() {
 
       if (res.ok) {
         const data = await res.json();
+        // Check if request is assigned to someone else
+        if (
+          data.request.assignedTo &&
+          data.request.assignedTo !== user?._id &&
+          data.request.assignedTo?._id !== user?._id
+        ) {
+          Alert.alert(
+            t("Access Denied"),
+            t("This request is assigned to another inspector")
+          );
+          return;
+        }
         setSelectedRequest(data.request);
         setShowSearchModal(false);
         setShowGradingModal(true);
@@ -170,7 +191,7 @@ export default function QualityGradingScreen() {
     if (miscellaneous.some((crop) => normalizedName.includes(crop)))
       return "miscellaneous";
 
-    return "miscellaneous"; // Default to miscellaneous if not found
+    return "miscellaneous";
   };
 
   const getGradesForCategory = (category) => {
@@ -182,15 +203,7 @@ export default function QualityGradingScreen() {
       miscellaneous: ["1", "2", "3", "4", "Rejected"],
     };
 
-    return (
-      gradeMapping[category] || [
-        "1",
-        "2",
-        "3",
-        "4",
-        "Rejected",
-      ]
-    );
+    return gradeMapping[category] || ["1", "2", "3", "4", "Rejected"];
   };
 
   const handleOpenGrading = (request) => {
@@ -290,87 +303,102 @@ export default function QualityGradingScreen() {
     }
   };
 
-  const renderRequestCard = (request, showActions = true) => (
-    <View key={request._id} style={styles.requestCard}>
-      <View style={styles.cardHeader}>
-        <View style={styles.cardTitle}>
-          <MaterialCommunityIcons name="sprout" size={24} color="#606C38" />
-          <View style={styles.titleText}>
-            <Text style={styles.cropName}>{request.cropId?.cropName}</Text>
-            <Text style={styles.farmerName}>
-              {t("Farmer")}: {request.farmerId?.name || t("Unknown")}
+  const renderRequestCard = (request, showActions = true) => {
+    // Check if request is assigned to someone else
+    const isAssignedToOther =
+      request.assignedTo &&
+      request.assignedTo !== user?._id &&
+      request.assignedTo?._id !== user?._id;
+
+    // Don't render if assigned to someone else
+    if (isAssignedToOther) {
+      return null;
+    }
+
+    return (
+      <View key={request._id} style={styles.requestCard}>
+        <View style={styles.cardHeader}>
+          <View style={styles.cardTitle}>
+            <MaterialCommunityIcons name="sprout" size={24} color="#606C38" />
+            <View style={styles.titleText}>
+              <Text style={styles.cropName}>{request.cropId?.cropName}</Text>
+              <Text style={styles.farmerName}>
+                {t("Farmer")}: {request.farmerId?.name || t("Unknown")}
+              </Text>
+            </View>
+          </View>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: getStatusColor(request.status) },
+            ]}
+          >
+            <Text style={styles.statusText}>
+              {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
             </Text>
           </View>
         </View>
-        <View
-          style={[
-            styles.statusBadge,
-            { backgroundColor: getStatusColor(request.status) },
-          ]}
-        >
-          <Text style={styles.statusText}>
-            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-          </Text>
-        </View>
-      </View>
 
-      <View style={styles.cardDetails}>
-        <View style={styles.detailRow}>
-          <MaterialCommunityIcons name="weight" size={16} color="#666" />
-          <Text style={styles.detailText}>
-            {request.quantity} {request.unit}
-          </Text>
-        </View>
-        <View style={styles.detailRow}>
-          <MaterialCommunityIcons name="map-marker" size={16} color="#666" />
-          <Text style={styles.detailText}>
-            {request.fieldId?.name || t("Unknown Field")}
-          </Text>
-        </View>
-        <View style={styles.detailRow}>
-          <MaterialCommunityIcons name="calendar" size={16} color="#666" />
-          <Text style={styles.detailText}>
-            {new Date(request.harvestDate).toLocaleDateString()}
-          </Text>
-        </View>
-      </View>
-
-      {request.grade && (
-        <View style={styles.gradeInfo}>
-          <Text style={styles.gradeLabel}>
-            {t("Grade")}: {request.grade}
-          </Text>
-          {request.certificateNumber && (
-            <Text style={styles.certNumber}>
-              {t("Certificate")}: {request.certificateNumber}
+        <View style={styles.cardDetails}>
+          <View style={styles.detailRow}>
+            <MaterialCommunityIcons name="weight" size={16} color="#666" />
+            <Text style={styles.detailText}>
+              {request.quantity} {request.unit}
             </Text>
-          )}
+          </View>
+          <View style={styles.detailRow}>
+            <MaterialCommunityIcons name="map-marker" size={16} color="#666" />
+            <Text style={styles.detailText}>
+              {request.fieldId?.name || t("Unknown Field")}
+            </Text>
+          </View>
+          <View style={styles.detailRow}>
+            <MaterialCommunityIcons name="calendar" size={16} color="#666" />
+            <Text style={styles.detailText}>
+              {new Date(request.harvestDate).toLocaleDateString()}
+            </Text>
+          </View>
         </View>
-      )}
 
-      <View style={styles.cardFooter}>
-        <Text style={styles.lotId}>
-          {t("Lot ID")}: {request._id.slice(-8)}
-        </Text>
-        {showActions && request.status === "pending" && (
-          <TouchableOpacity
-            style={styles.assignButton}
-            onPress={() => handleAssignToMe(request._id)}
-          >
-            <Text style={styles.assignButtonText}>{t("Assign to Me")}</Text>
-          </TouchableOpacity>
+        {request.grade && (
+          <View style={styles.gradeInfo}>
+            <Text style={styles.gradeLabel}>
+              {t("Grade")}: {request.grade}
+            </Text>
+            {request.certificateNumber && (
+              <Text style={styles.certNumber}>
+                {t("Certificate")}: {request.certificateNumber}
+              </Text>
+            )}
+          </View>
         )}
-        {showActions && request.status === "in-progress" && !request.grade && (
-          <TouchableOpacity
-            style={styles.gradeButton}
-            onPress={() => handleOpenGrading(request)}
-          >
-            <Text style={styles.gradeButtonText}>{t("Grade Now")}</Text>
-          </TouchableOpacity>
-        )}
+
+        <View style={styles.cardFooter}>
+          <Text style={styles.lotId}>
+            {t("Lot ID")}: {request._id.slice(-8)}
+          </Text>
+          {showActions && request.status === "pending" && (
+            <TouchableOpacity
+              style={styles.assignButton}
+              onPress={() => handleAssignToMe(request._id)}
+            >
+              <Text style={styles.assignButtonText}>{t("Assign to Me")}</Text>
+            </TouchableOpacity>
+          )}
+          {showActions &&
+            request.status === "in-progress" &&
+            !request.grade && (
+              <TouchableOpacity
+                style={styles.gradeButton}
+                onPress={() => handleOpenGrading(request)}
+              >
+                <Text style={styles.gradeButtonText}>{t("Grade Now")}</Text>
+              </TouchableOpacity>
+            )}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   if (loading) {
     return (
