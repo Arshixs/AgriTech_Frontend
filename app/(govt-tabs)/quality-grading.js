@@ -134,6 +134,65 @@ export default function QualityGradingScreen() {
     }
   };
 
+  // Crop categorization and grade mapping
+  const getCropCategory = (cropName) => {
+    if (!cropName) return null;
+
+    const normalizedName = cropName.toLowerCase();
+
+    const cereals = ["wheat", "bajra", "barley", "jowar", "ragi"];
+    const pulses = ["arhar", "masur", "lentil", "moong", "urad"];
+    const rice = ["paddy", "rice"];
+    const oils = [
+      "sunflower",
+      "soyabean",
+      "rapeseed",
+      "mustard",
+      "niger",
+      "groundnut",
+      "safflower",
+      "sesamum",
+    ];
+    const miscellaneous = [
+      "maize",
+      "sugarcane",
+      "jute",
+      "gram",
+      "coconut",
+      "cotton",
+      "copra",
+    ];
+
+    if (cereals.some((crop) => normalizedName.includes(crop))) return "cereals";
+    if (pulses.some((crop) => normalizedName.includes(crop))) return "pulses";
+    if (rice.some((crop) => normalizedName.includes(crop))) return "rice";
+    if (oils.some((crop) => normalizedName.includes(crop))) return "oils";
+    if (miscellaneous.some((crop) => normalizedName.includes(crop)))
+      return "miscellaneous";
+
+    return "miscellaneous"; // Default to miscellaneous if not found
+  };
+
+  const getGradesForCategory = (category) => {
+    const gradeMapping = {
+      cereals: ["1", "2", "3", "4", "Rejected"],
+      pulses: ["Special", "Standard", "General", "Rejected"],
+      rice: ["Special", "A", "Rejected"],
+      oils: ["Good", "Fair", "Ghani Cake", "Rejected"],
+      miscellaneous: ["1", "2", "3", "4", "Rejected"],
+    };
+
+    return (
+      gradeMapping[category] || [
+        "1",
+        "2",
+        "3",
+        "4",
+        "Rejected",
+      ]
+    );
+  };
+
   const handleOpenGrading = (request) => {
     console.log(request);
     setSelectedRequest(request);
@@ -418,7 +477,7 @@ export default function QualityGradingScreen() {
         </View>
       </Modal>
 
-      {/* Grading Modal - Continued in next artifact due to length */}
+      {/* Grading Modal */}
       <GradingModal
         visible={showGradingModal}
         onClose={() => setShowGradingModal(false)}
@@ -427,6 +486,8 @@ export default function QualityGradingScreen() {
         setGradingForm={setGradingForm}
         handleSubmitGrading={handleSubmitGrading}
         submitting={submitting}
+        getCropCategory={getCropCategory}
+        getGradesForCategory={getGradesForCategory}
         t={t}
       />
     </ScreenWrapper>
@@ -442,8 +503,16 @@ function GradingModal({
   setGradingForm,
   handleSubmitGrading,
   submitting,
+  getCropCategory,
+  getGradesForCategory,
   t,
 }) {
+  const cropCategory = selectedRequest?.cropId?.cropName
+    ? getCropCategory(selectedRequest.cropId.cropName)
+    : "miscellaneous";
+
+  const availableGrades = getGradesForCategory(cropCategory);
+
   return (
     <Modal
       visible={visible}
@@ -467,6 +536,11 @@ function GradingModal({
                   <Text style={styles.infoTitle}>{t("Request Details")}</Text>
                   <Text style={styles.infoText}>
                     {t("Crop")}: {selectedRequest.cropId?.cropName}
+                  </Text>
+                  <Text style={styles.infoText}>
+                    {t("Category")}:{" "}
+                    {cropCategory.charAt(0).toUpperCase() +
+                      cropCategory.slice(1)}
                   </Text>
                   <Text style={styles.infoText}>
                     {t("Quantity")}: {selectedRequest.quantity}{" "}
@@ -530,7 +604,7 @@ function GradingModal({
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>{t("Select Grade")}</Text>
                   <View style={styles.gradeOptions}>
-                    {["FAQ", "A", "B", "C", "Rejected"].map((grade) => (
+                    {availableGrades.map((grade) => (
                       <TouchableOpacity
                         key={grade}
                         style={[

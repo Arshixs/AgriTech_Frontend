@@ -1,4 +1,4 @@
-// app/(tabs)/my-harvest.js - COMPLETE UPDATED VERSION WITH SEPARATE STATUS FIELDS
+// app/(tabs)/my-harvest.js - COMPLETE UPDATED VERSION WITH FRONTEND FILTERING
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -45,23 +45,7 @@ export default function MyHarvestScreen() {
 
     try {
       const headers = { Authorization: `Bearer ${authToken}` };
-      let url = `${API_BASE_URL}/api/crop-output/my-outputs`;
-
-      // Apply filter based on status or qualityStatus
-      if (filter !== "all") {
-        if (
-          filter === "quality-pending" ||
-          filter === "quality-approved" ||
-          filter === "quality-rejected"
-        ) {
-          // Filter by quality status
-          const qualityStatus = filter.replace("quality-", "");
-          url = `${API_BASE_URL}/api/crop-output/my-outputs?qualityStatus=${qualityStatus}`;
-        } else {
-          // Filter by sale status
-          url = `${API_BASE_URL}/api/crop-output/my-outputs?status=${filter}`;
-        }
-      }
+      const url = `${API_BASE_URL}/api/crop-output/my-outputs`;
 
       const res = await fetch(url, { headers });
       if (res.ok) {
@@ -80,11 +64,35 @@ export default function MyHarvestScreen() {
     if (authToken) {
       fetchOutputs();
     }
-  }, [authToken, filter]);
+  }, [authToken]);
 
   const onRefresh = () => {
     fetchOutputs();
   };
+
+  // Filter outputs based on selected filter
+  const getFilteredOutputs = () => {
+    if (filter === "all") {
+      return cropOutputs;
+    }
+
+    if (filter === "quality-pending") {
+      return cropOutputs.filter((o) => o.qualityStatus === "pending");
+    }
+
+    if (filter === "quality-approved") {
+      return cropOutputs.filter((o) => o.qualityStatus === "approved");
+    }
+
+    if (filter === "quality-rejected") {
+      return cropOutputs.filter((o) => o.qualityStatus === "rejected");
+    }
+
+    // Filter by sale status
+    return cropOutputs.filter((o) => o.status === filter);
+  };
+
+  const filteredOutputs = getFilteredOutputs();
 
   const getQualityStatusColor = (qualityStatus) => {
     switch (qualityStatus) {
@@ -670,15 +678,15 @@ export default function MyHarvestScreen() {
         {/* Summary Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{cropOutputs.length}</Text>
+            <Text style={styles.statValue}>{filteredOutputs.length}</Text>
             <Text style={styles.statLabel}>{t("Total Harvests")}</Text>
           </View>
-          <View style={styles.statCard}>
+          {/* <View style={styles.statCard}>
             <Text style={[styles.statValue, { color: "#2A9D8F" }]}>
               {cropOutputs.filter((o) => o.status === "available").length}
             </Text>
             <Text style={styles.statLabel}>{t("Available")}</Text>
-          </View>
+          </View> */}
           <View style={styles.statCard}>
             <Text style={[styles.statValue, { color: "#4CAF50" }]}>
               {cropOutputs.filter((o) => o.qualityStatus === "approved").length}
@@ -687,7 +695,7 @@ export default function MyHarvestScreen() {
           </View>
         </View>
 
-        {cropOutputs.length === 0 ? (
+        {filteredOutputs.length === 0 ? (
           <View style={styles.emptyState}>
             <MaterialCommunityIcons name="tray-remove" size={64} color="#CCC" />
             <Text style={styles.emptyText}>{t("No crop outputs yet")}</Text>
@@ -701,7 +709,7 @@ export default function MyHarvestScreen() {
           </View>
         ) : (
           <View style={styles.outputsList}>
-            {cropOutputs.map(renderOutputCard)}
+            {filteredOutputs.map(renderOutputCard)}
           </View>
         )}
       </ScrollView>
@@ -1086,17 +1094,43 @@ const styles = StyleSheet.create({
   listedInfo: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // Push button to the right
+    justifyContent: "space-between",
     padding: 12,
-    backgroundColor: "#F0F8FF", // Alice Blue
+    backgroundColor: "#F0F8FF",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#E1F5FE",
+  },
+  listedInfoContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   listedText: {
     fontSize: 14,
     color: "#457B9D",
     fontWeight: "600",
+  },
+  viewListingBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: "rgba(69, 123, 157, 0.2)",
+    shadowColor: "#457B9D",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  viewListingText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#457B9D",
   },
   emptyState: {
     alignItems: "center",
@@ -1115,8 +1149,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
   },
-
-  // Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -1263,32 +1295,5 @@ const styles = StyleSheet.create({
     color: "#888",
     marginTop: 16,
     textAlign: "center",
-  },
-  listedInfoContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  viewListingBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20, // Pill shape
-    gap: 4,
-    // Subtle shadow/border for pop
-    borderWidth: 1,
-    borderColor: "rgba(69, 123, 157, 0.2)",
-    shadowColor: "#457B9D",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  viewListingText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#457B9D",
   },
 });
