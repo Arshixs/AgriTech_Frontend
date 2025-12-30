@@ -359,9 +359,7 @@ export default function MyHarvestScreen() {
               if (res.ok) {
                 Alert.alert(
                   t("Success"),
-                  t(
-                    "Government procurement request submitted successfully!"
-                  ),
+                  t("Government procurement request submitted successfully!"),
                   [
                     {
                       text: t("OK"),
@@ -466,8 +464,7 @@ export default function MyHarvestScreen() {
 
       {/* Actions based on BOTH statuses */}
       <View style={styles.cardActions}>
-        {(!output.qualityStatus ||
-          output.qualityStatus === "not-requested") &&
+        {(!output.qualityStatus || output.qualityStatus === "not-requested") &&
           output.status === "available" && (
             <TouchableOpacity
               style={[styles.actionButton, styles.primaryAction]}
@@ -491,9 +488,7 @@ export default function MyHarvestScreen() {
             onPress={() => handleViewCertificate(output)}
           >
             <MaterialCommunityIcons name="certificate" size={18} color="#FFF" />
-            <Text style={styles.actionButtonText}>
-              {t("View Certificate")}
-            </Text>
+            <Text style={styles.actionButtonText}>{t("View Certificate")}</Text>
           </TouchableOpacity>
         )}
 
@@ -524,9 +519,7 @@ export default function MyHarvestScreen() {
                 onPress={() => openSaleModal(output, "msp")}
               >
                 <MaterialCommunityIcons name="bank" size={18} color="#E76F51" />
-                <Text style={styles.mspActionText}>
-                  {t("Sell at MSP")}
-                </Text>
+                <Text style={styles.mspActionText}>{t("Sell at MSP")}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -548,9 +541,7 @@ export default function MyHarvestScreen() {
                 onPress={() => handleViewCertificate(output)}
                 style={{ marginTop: 4 }}
               >
-                <Text style={styles.trackLink}>
-                  {t("Track status")} →
-                </Text>
+                <Text style={styles.trackLink}>{t("Track status")} →</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -572,9 +563,7 @@ export default function MyHarvestScreen() {
                 onPress={() => handleViewCertificate(output)}
                 style={{ marginTop: 4 }}
               >
-                <Text style={styles.detailsLink}>
-                  {t("View details")} →
-                </Text>
+                <Text style={styles.detailsLink}>{t("View details")} →</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -583,14 +572,32 @@ export default function MyHarvestScreen() {
         {/* Show listed info */}
         {output.status === "listed-for-sale" && (
           <View style={styles.listedInfo}>
-            <MaterialCommunityIcons
-              name="check-circle"
-              size={20}
-              color="#457B9D"
-            />
-            <Text style={styles.listedText}>
-              {t("Listed for sale")}
-            </Text>
+            <View style={styles.listedInfoContent}>
+              <MaterialCommunityIcons
+                name="check-circle"
+                size={20}
+                color="#457B9D"
+              />
+              <Text style={styles.listedText}>{t("Listed for sale")}</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.viewListingBtn}
+              activeOpacity={0.7}
+              onPress={() =>
+                router.push({
+                  pathname: "/listing-details",
+                  params: { id: output.saleId },
+                })
+              }
+            >
+              <Text style={styles.viewListingText}>{t("View Details")}</Text>
+              <MaterialCommunityIcons
+                name="arrow-right"
+                size={14}
+                color="#457B9D"
+              />
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -664,9 +671,7 @@ export default function MyHarvestScreen() {
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{cropOutputs.length}</Text>
-            <Text style={styles.statLabel}>
-              {t("Total Harvests")}
-            </Text>
+            <Text style={styles.statLabel}>{t("Total Harvests")}</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={[styles.statValue, { color: "#2A9D8F" }]}>
@@ -685,9 +690,7 @@ export default function MyHarvestScreen() {
         {cropOutputs.length === 0 ? (
           <View style={styles.emptyState}>
             <MaterialCommunityIcons name="tray-remove" size={64} color="#CCC" />
-            <Text style={styles.emptyText}>
-              {t("No crop outputs yet")}
-            </Text>
+            <Text style={styles.emptyText}>{t("No crop outputs yet")}</Text>
             <Text style={styles.emptySubtext}>
               {filter === "all"
                 ? t("Harvest crops from your fields to see them here")
@@ -1083,10 +1086,12 @@ const styles = StyleSheet.create({
   listedInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    justifyContent: "space-between", // Push button to the right
     padding: 12,
-    backgroundColor: "#F0F8FF",
+    backgroundColor: "#F0F8FF", // Alice Blue
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E1F5FE",
   },
   listedText: {
     fontSize: 14,
@@ -1258,5 +1263,32 @@ const styles = StyleSheet.create({
     color: "#888",
     marginTop: 16,
     textAlign: "center",
+  },
+  listedInfoContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  viewListingBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20, // Pill shape
+    gap: 4,
+    // Subtle shadow/border for pop
+    borderWidth: 1,
+    borderColor: "rgba(69, 123, 157, 0.2)",
+    shadowColor: "#457B9D",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  viewListingText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#457B9D",
   },
 });

@@ -1,25 +1,24 @@
 // File: app/(govt-auth)/complete-profile.js
 
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
-import * as DocumentPicker from "expo-document-picker";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import Input from "../../src/components/common/Input";
-import Button from "../../src/components/common/Button";
-import { useAuth } from "../../src/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
-import { useTranslation } from "react-i18next";
-import { API_BASE_URL } from "../../secret";
+import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import Input from "../../src/components/common/Input";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
 import { uploadMultipleDocuments } from "../../src/utils/uploadUtils";
 
 export default function CompleteProfileScreen() {

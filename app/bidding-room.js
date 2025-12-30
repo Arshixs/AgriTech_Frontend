@@ -421,7 +421,7 @@ export default function BiddingRoom() {
           </Animated.View>
 
           {/* BID INPUT SECTION */}
-          {!isAuctionEnded && (
+          {!isAuctionEnded && user.role !== "farmer" && (
             <View style={styles.bidInputSection}>
               <Text style={styles.sectionTitle}>{t("Place Your Bid")}</Text>
 
