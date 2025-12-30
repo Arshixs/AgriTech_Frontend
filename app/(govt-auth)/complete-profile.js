@@ -20,19 +20,20 @@ import axios from "axios";
 import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../../secret";
 import { useRouter } from "expo-router";
+import { uploadMultipleDocuments } from "../../src/utils/uploadUtils";
 
 export default function CompleteProfileScreen() {
   const { user, setUser } = useAuth();
   const { t } = useTranslation();
-    const router = useRouter();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone:user.phone,
-    // employeeId: "",
-    //designation: "",
+    phone: user.phone,
+    designation: "",
     homeAddress: "",
     maritalStatus: "N/A",
     accountNumber: "",
@@ -42,8 +43,6 @@ export default function CompleteProfileScreen() {
   const [documents, setDocuments] = useState({
     idProof: null,
     addressProof: null,
-    //employmentLetter: null,
-    //qualificationCertificate: null,
   });
 
   const updateField = (field, value) => {
@@ -58,9 +57,17 @@ export default function CompleteProfileScreen() {
       });
 
       if (!result.canceled && result.assets && result.assets[0]) {
+        const file = result.assets[0];
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          Alert.alert(t("Error"), t("File size must be less than 5MB"));
+          return;
+        }
+
         setDocuments((prev) => ({
           ...prev,
-          [type]: result.assets[0],
+          [type]: file,
         }));
         Alert.alert(t("Success"), t("Document selected successfully"));
       }
@@ -77,13 +84,7 @@ export default function CompleteProfileScreen() {
 
   const handleSubmit = async () => {
     // Validation
-    console.log(user.phone);
-    if (
-      !formData.name ||
-      !formData.email
-    //   !formData.employeeId ||
-    //   !formData.designation
-    ) {
+    if (!formData.name || !formData.email) {
       Alert.alert(t("Validation"), t("Please fill all required fields"));
       return;
     }
@@ -93,30 +94,33 @@ export default function CompleteProfileScreen() {
       return;
     }
 
-    if (
-      !documents.idProof ||
-      !documents.addressProof
-    //   !documents.employmentLetter
-    ) {
+    if (!documents.idProof || !documents.addressProof) {
       Alert.alert(
         t("Validation"),
-        t("Please upload ID Proof, Address Proof, and Employment Letter")
+        t("Please upload ID Proof and Address Proof")
       );
       return;
     }
 
     setLoading(true);
-    try {
-      // In a real app, you would upload documents to a cloud storage (S3, Firebase, etc.)
-      // and get URLs back. For now, we'll simulate with file names
-      const documentUrls = {
-        idProof: documents.idProof.name,
-        addressProof: documents.addressProof.name,
-        // employmentLetter: documents.employmentLetter.name,
-        // qualificationCertificate:
-        //   documents.qualificationCertificate?.name || null,
-      };
+    setUploadProgress(0);
 
+    try {
+      // Upload documents to Firebase
+      Alert.alert(
+        t("Uploading"),
+        t("Uploading documents to secure storage...")
+      );
+
+      const documentUrls = await uploadMultipleDocuments(
+        documents,
+        user.id || user.phone,
+        (progress) => {
+          setUploadProgress(progress);
+        }
+      );
+
+      // Submit profile with document URLs
       const response = await axios.post(
         `${API_BASE_URL}/api/govt/auth/complete-profile`,
         {
@@ -137,7 +141,6 @@ export default function CompleteProfileScreen() {
         )
       );
 
-
       // Update user context
       if (setUser) {
         setUser((prev) => ({
@@ -148,16 +151,17 @@ export default function CompleteProfileScreen() {
       }
 
       router.replace("verification-pending");
-
-      
     } catch (error) {
       console.error("Complete Profile Error:", error);
       Alert.alert(
         t("Error"),
-        error.response?.data?.message || t("Failed to complete profile")
+        error.response?.data?.message ||
+          error.message ||
+          t("Failed to complete profile")
       );
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -194,19 +198,12 @@ export default function CompleteProfileScreen() {
             keyboardType="email-address"
           />
 
-          {/* <Input
-            label={`${t("Employee ID")} *`}
-            value={formData.employeeId}
-            onChangeText={(val) => updateField("employeeId", val)}
-            placeholder={t("Enter your employee ID")}
-          /> */}
-
-          {/* <Input
+          <Input
             label={`${t("Designation")} *`}
             value={formData.designation}
             onChangeText={(val) => updateField("designation", val)}
             placeholder={t("Enter your designation")}
-          /> */}
+          />
 
           <Input
             label={t("Home Address")}
@@ -264,7 +261,9 @@ export default function CompleteProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t("Required Documents")}</Text>
           <Text style={styles.documentNote}>
-            {t("Please upload clear PDF copies of the following documents")}
+            {t(
+              "Please upload clear PDF copies of the following documents (Max 5MB each)"
+            )}
           </Text>
 
           <DocumentUploadButton
@@ -280,21 +279,20 @@ export default function CompleteProfileScreen() {
             onPress={() => pickDocument("addressProof")}
             t={t}
           />
-{/* 
-          <DocumentUploadButton
-            label={`${t("Employment Letter")} *`}
-            document={documents.employmentLetter}
-            onPress={() => pickDocument("employmentLetter")}
-            t={t}
-          />
-
-          <DocumentUploadButton
-            label={t("Qualification Certificate (Optional)")}
-            document={documents.qualificationCertificate}
-            onPress={() => pickDocument("qualificationCertificate")}
-            t={t}
-          /> */}
         </View>
+
+        {loading && uploadProgress > 0 && (
+          <View style={styles.progressContainer}>
+            <Text style={styles.progressText}>
+              {t("Uploading documents")}: {uploadProgress}%
+            </Text>
+            <View style={styles.progressBar}>
+              <View
+                style={[styles.progressFill, { width: `${uploadProgress}%` }]}
+              />
+            </View>
+          </View>
+        )}
 
         <View style={styles.buttonContainer}>
           <Button
@@ -332,6 +330,11 @@ function DocumentUploadButton({ label, document, onPress, t }) {
           {document ? document.name : t("Choose File")}
         </Text>
       </TouchableOpacity>
+      {document && (
+        <Text style={styles.fileSizeText}>
+          {(document.size / 1024).toFixed(2)} KB
+        </Text>
+      )}
     </View>
   );
 }
@@ -432,6 +435,35 @@ const styles = StyleSheet.create({
   },
   uploadTextSuccess: {
     color: "#2A9D8F",
+  },
+  fileSizeText: {
+    fontSize: 12,
+    color: "#888",
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  progressContainer: {
+    marginVertical: 16,
+    padding: 16,
+    backgroundColor: "#F0F2E6",
+    borderRadius: 8,
+  },
+  progressText: {
+    fontSize: 14,
+    color: "#606C38",
+    fontWeight: "600",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#606C38",
   },
   buttonContainer: {
     marginTop: 20,

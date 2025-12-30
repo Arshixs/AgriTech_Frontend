@@ -3,12 +3,14 @@ secret.js
 # dependencies
 node_modules/
 
+src/config
 # Expo
 .expo/
 dist/
 web-build/
 expo-env.d.ts
 
+.env 
 # Native
 .kotlin/
 *.orig.*
