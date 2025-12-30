@@ -1,14 +1,39 @@
 // File: app/(govt-tabs)/_layout.js
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
+import { useEffect } from "react";
+import { useAuth } from "../../src/context/AuthContext";
 
 export default function GovtTabLayout() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Protect tabs - only allow access if verified
+    if (!user) {
+      router.replace("/(govt-auth)/login");
+    } else if (!user.profileComplete) {
+      router.replace("/(govt-auth)/complete-profile");
+    } else if (user.verificationStatus !== "verified") {
+      router.replace("/(govt-auth)/verification-pending");
+    }
+  }, [user]);
+
+  // Don't render tabs if not verified
+  if (
+    !user ||
+    !user.profileComplete ||
+    user.verificationStatus !== "verified"
+  ) {
+    return null;
+  }
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#606C38", // Govt Theme Color
+        tabBarActiveTintColor: "#606C38",
         tabBarInactiveTintColor: "#888",
         tabBarLabelStyle: {
           fontSize: 12,
@@ -58,15 +83,6 @@ export default function GovtTabLayout() {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="logistics-reports"
-        options={{
-          title: 'Reports',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-bar" color={color} size={size} />
-          ),
-        }}
-      /> */}
       <Tabs.Screen
         name="profile"
         options={{
