@@ -32,7 +32,7 @@ export default function CompleteProfileScreen() {
     email: "",
     phone:user.phone,
     // employeeId: "",
-    designation: "",
+    //designation: "",
     homeAddress: "",
     maritalStatus: "N/A",
     accountNumber: "",
@@ -80,9 +80,9 @@ export default function CompleteProfileScreen() {
     console.log(user.phone);
     if (
       !formData.name ||
-      !formData.email ||
+      !formData.email
     //   !formData.employeeId ||
-      !formData.designation
+    //   !formData.designation
     ) {
       Alert.alert(t("Validation"), t("Please fill all required fields"));
       return;
@@ -201,12 +201,12 @@ export default function CompleteProfileScreen() {
             placeholder={t("Enter your employee ID")}
           /> */}
 
-          <Input
+          {/* <Input
             label={`${t("Designation")} *`}
             value={formData.designation}
             onChangeText={(val) => updateField("designation", val)}
             placeholder={t("Enter your designation")}
-          />
+          /> */}
 
           <Input
             label={t("Home Address")}
