@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     await SecureStore.deleteItemAsync("user");
     setUser(null);
-    router.replace("../");
+    router.replace("/");
   };
 
   return (
