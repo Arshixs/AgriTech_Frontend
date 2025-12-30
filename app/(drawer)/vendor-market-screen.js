@@ -1,6 +1,8 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Dimensions,
@@ -13,7 +15,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
@@ -50,6 +51,42 @@ export default function VendorMarketScreen() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderError, setOrderError] = useState(null);
   const [orderSuccess, setOrderSuccess] = useState(null);
+
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [tempStartDate, setTempStartDate] = useState(new Date());
+  const [tempEndDate, setTempEndDate] = useState(new Date());
+
+  const formatDateForDisplay = (date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`; // dd-mm-yyyy
+  };
+
+  const formatDateForAPI = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`; // Keep as yyyy-mm-dd for API
+  };
+
+  // date change handlers
+  const onStartDateChange = (event, selectedDate) => {
+    setShowStartDatePicker(false);
+    if (selectedDate) {
+      setTempStartDate(selectedDate);
+      setStartDate(formatDateForAPI(selectedDate));
+    }
+  };
+
+  const onEndDateChange = (event, selectedDate) => {
+    setShowEndDatePicker(false);
+    if (selectedDate) {
+      setTempEndDate(selectedDate);
+      setEndDate(formatDateForAPI(selectedDate));
+    }
+  };
 
   // --- Data Fetching ---
 
@@ -94,8 +131,15 @@ export default function VendorMarketScreen() {
   const openOrderModal = (product) => {
     setSelectedProduct(product);
     setOrderQuantity("1");
-    setStartDate("");
-    setEndDate("");
+
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    setTempStartDate(today);
+    setTempEndDate(tomorrow); // Default to tomorrow for end date
+    setStartDate(formatDateForAPI(today));
+    setEndDate(formatDateForAPI(tomorrow));
+
     setOrderError(null);
     setOrderSuccess(null);
     setShowOrderModal(true);
@@ -210,7 +254,10 @@ export default function VendorMarketScreen() {
           <View style={styles.productDetails}>
             <Text style={styles.productName}>{product.name}</Text>
             <Text style={styles.vendorName}>
-              {t("Vendor")}: {product.vendor?.organizationName || product.vendor?.name || t("Unknown Vendor")}
+              {t("Vendor")}:{" "}
+              {product.vendor?.organizationName ||
+                product.vendor?.name ||
+                t("Unknown Vendor")}
             </Text>
           </View>
         </View>
@@ -279,10 +326,12 @@ export default function VendorMarketScreen() {
                   {selectedProduct.vendor.organizationName}
                 </Text>
                 <Text style={styles.modalProductPrice}>
-                  {formatCurrency(selectedProduct.price)} / {selectedProduct.unit}
+                  {formatCurrency(selectedProduct.price)} /{" "}
+                  {selectedProduct.unit}
                 </Text>
                 <Text style={styles.modalStockText}>
-                  {t("Stock Available")}: {selectedProduct.stock} {selectedProduct.unit}
+                  {t("Stock Available")}: {selectedProduct.stock}{" "}
+                  {selectedProduct.unit}
                 </Text>
               </View>
 
@@ -303,24 +352,55 @@ export default function VendorMarketScreen() {
               {isRental && (
                 <View style={styles.rentalContainer}>
                   <Text style={styles.inputLabel}>
-                    {t("Rental Period (YYYY-MM-DD)")}
+                    {t("Rental Period (DD-MM-YYYY)")}
                   </Text>
-                  <TextInput
-                    style={styles.textInput}
-                    value={startDate}
-                    onChangeText={setStartDate}
-                    placeholder={t("Start Date (e.g., 2025-12-15)")}
-                    placeholderTextColor="#888"
-                    keyboardType="numbers-and-punctuation"
-                  />
-                  <TextInput
-                    style={styles.textInput}
-                    value={endDate}
-                    onChangeText={setEndDate}
-                    placeholder={t("End Date (e.g., 2025-12-20)")}
-                    placeholderTextColor="#888"
-                    keyboardType="numbers-and-punctuation"
-                  />
+
+                  {/* Start Date Picker */}
+                  <View style={styles.dateInputContainer}>
+                    <Text style={styles.inputLabel}>{t("Start Date")}</Text>
+                    <TouchableOpacity
+                      style={styles.dateInput}
+                      onPress={() => setShowStartDatePicker(true)}
+                    >
+                      <Text style={styles.dateText}>
+                        {formatDateForDisplay(tempStartDate)}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* End Date Picker */}
+                  <View style={styles.dateInputContainer}>
+                    <Text style={styles.inputLabel}>{t("End Date")}</Text>
+                    <TouchableOpacity
+                      style={styles.dateInput}
+                      onPress={() => setShowEndDatePicker(true)}
+                    >
+                      <Text style={styles.dateText}>
+                        {formatDateForDisplay(tempEndDate)}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Date Pickers */}
+                  {showStartDatePicker && (
+                    <DateTimePicker
+                      value={tempStartDate}
+                      mode="date"
+                      display="default"
+                      onChange={onStartDateChange}
+                      minimumDate={new Date()}
+                    />
+                  )}
+
+                  {showEndDatePicker && (
+                    <DateTimePicker
+                      value={tempEndDate}
+                      mode="date"
+                      display="default"
+                      onChange={onEndDateChange}
+                      minimumDate={tempStartDate}
+                    />
+                  )}
                 </View>
               )}
 
@@ -651,5 +731,20 @@ const styles = StyleSheet.create({
     color: "#2A9D8F",
     textAlign: "center",
     fontWeight: "600",
+  },
+  dateInputContainer: {
+    marginBottom: 10,
+  },
+  dateInput: {
+    backgroundColor: "#F8F9FA",
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#DDD",
+  },
+  dateText: {
+    fontSize: 16,
+    color: "#333",
   },
 });
