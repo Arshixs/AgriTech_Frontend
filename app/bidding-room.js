@@ -75,7 +75,6 @@ export default function BiddingRoom() {
       });
 
       const data = await res.json();
-      console.log(data.bids.currentHighestBid);
       if (res.ok) {
         setBids(data.bids.bids || []);
         setCurrentHighest(data.bids.currentHighestBid || 0);
@@ -506,43 +505,45 @@ export default function BiddingRoom() {
                 showsVerticalScrollIndicator={true}
               >
                 <View style={styles.bidList}>
-                  {bids.map((item, index) => (
-                    <View
-                      key={item._id}
-                      style={[
-                        styles.bidItem,
-                        index === 0 && styles.highestBidItem,
-                      ]}
-                    >
-                      <View style={styles.bidItemLeft}>
-                        {index === 0 && (
-                          <MaterialCommunityIcons
-                            name="crown"
-                            size={20}
-                            color="#FFD700"
-                            style={styles.crownIcon}
-                          />
-                        )}
-                        <View style={styles.bidderAvatar}>
-                          <Text style={styles.bidderAvatarText}>
-                            {item.buyerId?.companyName?.[0]?.toUpperCase() ||
-                              "?"}
-                          </Text>
+                  {bids.map((item, index) => {
+                    return (
+                      <View
+                        key={item._id}
+                        style={[
+                          styles.bidItem,
+                          index === 0 && styles.highestBidItem,
+                        ]}
+                      >
+                        <View style={styles.bidItemLeft}>
+                          {index === 0 && (
+                            <MaterialCommunityIcons
+                              name="crown"
+                              size={20}
+                              color="#FFD700"
+                              style={styles.crownIcon}
+                            />
+                          )}
+                          <View style={styles.bidderAvatar}>
+                            <Text style={styles.bidderAvatarText}>
+                              {item.buyerId?.companyName?.[0]?.toUpperCase() ||
+                                "?"}
+                            </Text>
+                          </View>
+                          <View style={styles.bidInfo}>
+                            <Text style={styles.bidderName}>
+                              {item.buyerId?.companyName || t("Anonymous")}
+                            </Text>
+                            <Text style={styles.bidTime}>
+                              {new Date(item.bidTime).toLocaleTimeString()}
+                            </Text>
+                          </View>
                         </View>
-                        <View style={styles.bidInfo}>
-                          <Text style={styles.bidderName}>
-                            {item.buyerId?.companyName || t("Anonymous")}
-                          </Text>
-                          <Text style={styles.bidTime}>
-                            {new Date(item.bidTime).toLocaleTimeString()}
-                          </Text>
-                        </View>
+                        <Text style={styles.bidAmount}>
+                          ₹{item.amount.toLocaleString()}
+                        </Text>
                       </View>
-                      <Text style={styles.bidAmount}>
-                        ₹{item.amount.toLocaleString()}
-                      </Text>
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
               </ScrollView>
             )}
