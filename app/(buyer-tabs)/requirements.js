@@ -12,7 +12,6 @@ import {
   View,
 } from "react-native";
 
-// Adjust these paths based on your actual folder structure
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
@@ -49,47 +48,63 @@ export default function RequirementsScreen() {
     }
   };
 
-  // Reload when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchRequirements();
     }, [])
   );
 
+  // Helper: Status Colors
   const getStatusColor = (status) => {
-    if (status === "active") return "#2A9D8F"; // Green
-    if (status === "fulfilled") return "#457B9D"; // Blue
-    return "#E76F51"; // Cancelled/Closed
+    switch (status) {
+      case "active":
+        return "#2A9D8F";
+      case "fulfilled":
+        return "#457B9D";
+      case "expired":
+        return "#E76F51";
+      default:
+        return "#666";
+    }
   };
 
-  const formatStatus = (status) => {
-    if (status === "active") return t("Sourcing Open");
-    return status.charAt(0).toUpperCase() + status.slice(1);
+  // Helper: Contract Type formatting
+  const getContractLabel = (type) => {
+    if (type === "pre_harvest_contract") return t("Pre-Harvest");
+    if (type === "spot_market") return t("Spot Market");
+    return t("Contract");
+  };
+
+  const getContractColor = (type) => {
+    if (type === "pre_harvest_contract") return "#9C27B0"; // Purple
+    return "#F4A261"; // Orange for Spot
   };
 
   const renderRequirementItem = ({ item }) => (
     <TouchableOpacity
       style={styles.reqCard}
+      activeOpacity={0.7}
       onPress={() =>
+        // Pass ID to edit/view details screen.
+        // It's better to fetch fresh data on the next screen using ID.
         router.push({
           pathname: "/edit-requirement",
-          params: {
-            id: item._id,
-            title: item.title,
-            category: item.category,
-            quantity: item.quantity,
-            unit: item.unit,
-            targetPrice: item.targetPrice || "",
-            description: item.description || "",
-          },
+          params: { id: item._id },
         })
       }
     >
+      {/* Header: Name + Status */}
       <View style={styles.cardHeader}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.reqCrop}>{item.title}</Text>
-          <Text style={styles.reqCategory}>{item.category}</Text>
+        <View style={styles.headerLeft}>
+          <MaterialCommunityIcons
+            name="sprout"
+            size={20}
+            color="#2A9D8F"
+            style={{ marginRight: 8 }}
+          />
+          <Text style={styles.reqCrop}>{item.cropName}</Text>
         </View>
+
         <View
           style={[
             styles.statusBadge,
@@ -99,47 +114,96 @@ export default function RequirementsScreen() {
           <Text
             style={[styles.statusText, { color: getStatusColor(item.status) }]}
           >
-            {formatStatus(item.status)}
+            {t(item.status?.toUpperCase())}
           </Text>
         </View>
       </View>
 
-      <View style={styles.detailsRow}>
+      {/* Sub-Header: Contract Type + Category */}
+      <View style={styles.tagsRow}>
+        <View
+          style={[
+            styles.tag,
+            { backgroundColor: getContractColor(item.contractType) + "15" },
+          ]}
+        >
+          <Text
+            style={[
+              styles.tagText,
+              { color: getContractColor(item.contractType) },
+            ]}
+          >
+            {getContractLabel(item.contractType)}
+          </Text>
+        </View>
+        <View style={styles.separator} />
+        <Text style={styles.categoryText}>{item.category}</Text>
+      </View>
+
+      <View style={styles.divider} />
+
+      {/* Details Grid */}
+      <View style={styles.detailsGrid}>
         <View style={styles.detailItem}>
-          <MaterialCommunityIcons
-            name="weight-kilogram"
-            size={16}
-            color="#666"
-          />
-          <Text style={styles.detailText}>
+          <Text style={styles.detailLabel}>{t("Quantity")}</Text>
+          <Text style={styles.detailValue}>
             {item.quantity} {item.unit}
           </Text>
         </View>
 
-        {/* Showing Target Price if available */}
-        {item.targetPrice && (
-          <View style={styles.detailItem}>
-            <MaterialCommunityIcons name="cash" size={16} color="#666" />
-            <Text style={styles.detailText}>
-              {t("Target")}: ₹{item.targetPrice}/{item.unit}
-            </Text>
-          </View>
-        )}
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>{t("Target Price")}</Text>
+          <Text style={styles.detailValue}>
+            ₹{item.targetPrice}/{item.unit}
+          </Text>
+        </View>
 
         <View style={styles.detailItem}>
-          <MaterialCommunityIcons name="clock-outline" size={16} color="#666" />
-          <Text style={styles.detailText}>
-            {new Date(item.createdAt).toLocaleDateString()}
+          <Text style={styles.detailLabel}>{t("Deadline")}</Text>
+          <Text style={[styles.detailValue, { color: "#E76F51" }]}>
+            {new Date(item.requiredByDate).toLocaleDateString()}
           </Text>
         </View>
       </View>
+
+      <TouchableOpacity
+        style={styles.cardFooter}
+        activeOpacity={0.7}
+        onPress={() => {
+          // Navigate to the offers screen with params
+          router.push({
+            pathname: "/requirement-offers", // Make sure this matches your file path
+            params: {
+              requirementId: item._id,
+              cropName: item.cropName,
+            },
+          });
+        }}
+      >
+        <View style={styles.offersBadge}>
+          <MaterialCommunityIcons
+            name="email-outline"
+            size={16}
+            color="#457B9D"
+          />
+          <Text style={styles.offersText}>
+            {item.totalOffersReceived || 0} {t("Offers Received")}
+          </Text>
+        </View>
+
+        {/* The chevron creates a natural visual cue that this is clickable */}
+        <MaterialCommunityIcons name="chevron-right" size={20} color="#CCC" />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
   return (
     <ScreenWrapper>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t("My Crop Requirements")}</Text>
+        <Text style={styles.headerTitle}>{t("My Requirements")}</Text>
+        <Text style={styles.headerSubtitle}>
+          {t("Manage your crop needs and contracts")}
+        </Text>
       </View>
 
       <Button
@@ -161,9 +225,21 @@ export default function RequirementsScreen() {
         }
         ListEmptyComponent={
           !loading && (
-            <Text style={styles.emptyText}>
-              {t("You have not posted any requirements yet.")}
-            </Text>
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons
+                name="clipboard-text-outline"
+                size={60}
+                color="#DDD"
+              />
+              <Text style={styles.emptyText}>
+                {t("You have not posted any requirements yet.")}
+              </Text>
+              <Text style={styles.emptySubText}>
+                {t(
+                  "Post a requirement to start receiving offers from farmers."
+                )}
+              </Text>
+            </View>
           )
         }
       />
@@ -174,14 +250,19 @@ export default function RequirementsScreen() {
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingTop: 30,
     paddingBottom: 16,
     backgroundColor: "#FFF",
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "bold",
     color: "#264653",
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#888",
+    marginTop: 4,
   },
   postButton: {
     backgroundColor: "#E76F51",
@@ -193,63 +274,123 @@ const styles = StyleSheet.create({
   },
   reqCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 6,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.03)",
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-    paddingBottom: 12,
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   reqCrop: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#264653",
   },
-  reqCategory: {
-    fontSize: 12,
-    color: "#888",
-    textTransform: "uppercase",
-    marginTop: 2,
-  },
   statusBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 8,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: "bold",
+    fontSize: 11,
+    fontWeight: "800",
   },
-  detailsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingTop: 12,
-  },
-  detailItem: {
+  tagsRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
-    marginBottom: 4,
+    marginBottom: 12,
   },
-  detailText: {
+  tag: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  tagText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  separator: {
+    width: 1,
+    height: 12,
+    backgroundColor: "#DDD",
+    marginHorizontal: 8,
+  },
+  categoryText: {
+    fontSize: 13,
+    color: "#888",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#F0F0F0",
+    marginBottom: 12,
+  },
+  detailsGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  detailItem: {
+    flex: 1,
+  },
+  detailLabel: {
+    fontSize: 11,
+    color: "#999",
+    marginBottom: 2,
+    textTransform: "uppercase",
+  },
+  detailValue: {
     fontSize: 14,
-    color: "#555",
-    marginLeft: 6,
+    fontWeight: "600",
+    color: "#444",
+  },
+  cardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#F8F9FA",
+    padding: 10,
+    borderRadius: 8,
+  },
+  offersBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  offersText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#457B9D",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 60,
   },
   emptyText: {
-    textAlign: "center",
-    marginTop: 50,
+    marginTop: 16,
     fontSize: 16,
+    fontWeight: "600",
     color: "#666",
+  },
+  emptySubText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
+    paddingHorizontal: 40,
   },
 });

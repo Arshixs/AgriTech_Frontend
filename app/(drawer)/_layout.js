@@ -76,6 +76,7 @@ export default function DrawerLayout() {
         name="farmer-transaction-history"
         options={{ drawerLabel: t("Transaction History") }}
       />
+      <Drawer.Screen name="feed" options={{ drawerLabel: t("Feed") }} />
       {/* <Drawer.Screen name="field-details" options={{ drawerLabel: "Field Details" }} /> */}
     </Drawer>
   );
