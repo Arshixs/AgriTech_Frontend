@@ -25,7 +25,7 @@ export default function PriceForecastScreen() {
   const [selectedCrop, setSelectedCrop] = useState(initialCrop || "Wheat");
   const [timeframe, setTimeframe] = useState("3months");
   const [forecast, setForecast] = useState(null);
-  const authToken = user.token;
+  const authToken = user?.token;
 
   const crops = ["Rice", "Wheat", "Tomato", "Cotton", "Sugarcane", "Potato"];
   const timeframes = [

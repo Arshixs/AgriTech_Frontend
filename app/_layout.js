@@ -27,7 +27,7 @@ const RootLayout = () => {
       // --- (No changes to this logic) ---
     } else {
       if (!inAuthGroup && !atRootIndex) {
-        router.replace('../');
+        router.replace('/welcome');
       }
     }
   }, [user, isLoading, segments, router, signOut]); 
@@ -41,7 +41,7 @@ const RootLayout = () => {
   }
   
   return (
-    <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
+    <Stack screenOptions={{ headerShown: false }} initialRouteName="welcome">
       {/* Group Stacks (Layouts) */}
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(auth)" />
@@ -57,7 +57,7 @@ const RootLayout = () => {
       <Stack.Screen name="(govt-auth)" />
       
       {/* Root Index Screen */}
-      <Stack.Screen name="index" />
+      <Stack.Screen name="welcome" />
 
       {/* --- (All your top-level screens remain here) --- */}
       <Stack.Screen name="expense-prediction" />

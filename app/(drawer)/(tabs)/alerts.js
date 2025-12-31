@@ -17,7 +17,7 @@ import { useAuth } from "../../../src/context/AuthContext";
 export default function AlertsScreen() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const authToken = user.token;
+  const authToken = user?.token;
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fields, setFields] = useState([]);
