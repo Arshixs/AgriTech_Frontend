@@ -375,7 +375,8 @@ export default function QualityGradingScreen() {
 
         <View style={styles.cardFooter}>
           <Text style={styles.lotId}>
-            {t("Lot ID")}: {request._id.slice(-8)}
+            {/* {t("Lot ID")}: {request._id.slice(-8)} */}
+             {t("Lot ID")}: {request.lotId}
           </Text>
           {showActions && request.status === "pending" && (
             <TouchableOpacity
