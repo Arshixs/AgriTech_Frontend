@@ -31,10 +31,10 @@ export default function BuyerDashboard() {
       route: "/(buyer-tabs)/bidding",
     },
     {
-      title: t("Requirements"),
+      title: t("Requirements Offer"),
       icon: "clipboard-text", // Represents a list of needs/requirements
       color: "#F4A261",
-      route: "/(buyer-tabs)/requirements",
+      route: "/requirement-offers",
     },
     {
       title: t("Add New Requirements"),
