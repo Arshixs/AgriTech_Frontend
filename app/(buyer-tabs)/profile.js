@@ -17,7 +17,12 @@ import { useAuth } from "../../src/context/AuthContext";
 export default function BuyerProfileScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const nextLanguage = i18n.language === "en" ? "hi" : "en";
+    i18n.changeLanguage(nextLanguage);
+  };
 
   // The signOut function from AuthContext will handle the redirect
   const handleSignOut = () => {
@@ -29,6 +34,16 @@ export default function BuyerProfileScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{t("Company Profile")}</Text>
       </View>
+
+      {/* Floating Language Toggle */}
+      <TouchableOpacity
+        onPress={toggleLanguage}
+        style={styles.langButton}
+        activeOpacity={0.7}
+      >
+        <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
+        <Text style={styles.langText}>{t("हिन्दी")}</Text>
+      </TouchableOpacity>
 
       <ScrollView>
         <View style={styles.container}>
@@ -232,5 +247,25 @@ const styles = StyleSheet.create({
   signOutContainer: {
     marginTop: 16,
     marginBottom: 40,
+  },
+  langButton: {
+    position: "absolute", // This is key to removing the separation
+    top: 60, // Adjusts based on OS
+    right: 15,
+    zIndex: 10, // Ensures it stays above all other content
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: "#2A9D8F",
+    // Stronger elevation for a clean floating look
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
 });

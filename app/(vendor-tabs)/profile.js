@@ -17,7 +17,12 @@ export default function VendorProfileScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   // 2. Initialize Hook
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const nextLanguage = i18n.language === "en" ? "hi" : "en";
+    i18n.changeLanguage(nextLanguage);
+  };
 
   const handleSignOut = () => {
     signOut();
@@ -30,6 +35,16 @@ export default function VendorProfileScreen() {
           {/* 3. Wrap Static Strings */}
           <Text style={styles.headerTitle}>{t("Profile & Settings")}</Text>
         </View>
+
+        {/* Floating Language Toggle */}
+        <TouchableOpacity
+          onPress={toggleLanguage}
+          style={styles.langButton}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
+          <Text style={styles.langText}>{t("हिन्दी")}</Text>
+        </TouchableOpacity>
 
         <View style={styles.container}>
           {/* Profile Info Card */}
@@ -243,5 +258,25 @@ const styles = StyleSheet.create({
   signOutContainer: {
     marginTop: 16,
     marginBottom: 40,
+  },
+  langButton: {
+    position: "absolute", // This is key to removing the separation
+    top: 20, // Adjusts based on OS
+    right: 15,
+    zIndex: 10, // Ensures it stays above all other content
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: "#2A9D8F",
+    // Stronger elevation for a clean floating look
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
 });
