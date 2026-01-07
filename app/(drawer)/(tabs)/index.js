@@ -1,5 +1,6 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { DrawerActions } from "@react-navigation/native";
+import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -14,8 +15,6 @@ import { API_BASE_URL } from "../../../secret";
 import Button from "../../../src/components/common/Button";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../../src/context/AuthContext";
-import { useNavigation } from "expo-router";
-import { DrawerActions } from "@react-navigation/native";
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -144,6 +143,14 @@ export default function HomeScreen() {
       icon: "check-decagram",
       color: "#4dff00ff",
       route: "/quality",
+    },
+    {
+      id: 9,
+      title: t("My Offers"),
+      description: t("See Requirement offer status"),
+      icon: "offer",
+      color: "#459d9dff",
+      route: "/my-offers",
     },
   ];
 

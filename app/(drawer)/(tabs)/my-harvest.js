@@ -229,7 +229,7 @@ export default function MyHarvestScreen() {
       //   pathname: "/quality",
       //   // params: { requestId: output.qualityRequestId },
       // });
-      router.push("quality")
+      router.push("quality");
     }
   };
 

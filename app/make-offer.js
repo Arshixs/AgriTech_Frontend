@@ -24,7 +24,18 @@ export default function MakeOfferScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const params = useLocalSearchParams();
-  const { requirementId, buyerId, cropName, targetPrice, unit } = params;
+  const { requirementId, buyerId, cropName, targetPrice, unit, crop } = params;
+  console.log(crop);
+  let cropData = null;
+  // 2. Parse the string back into an Object
+  try {
+    if (crop) {
+      cropData = JSON.parse(crop);
+    }
+  } catch (error) {
+    console.error("Error parsing crop data:", error);
+    // This usually happens if the data wasn't stringified properly before sending
+  }
 
   const [loading, setLoading] = useState(false);
   const [pricePerUnit, setPricePerUnit] = useState(
@@ -125,6 +136,10 @@ export default function MakeOfferScreen() {
               <Text style={styles.targetPrice}>
                 ₹{targetPrice}/{unit}
               </Text>
+            </View>
+            <View style={styles.quantityContainer}>
+              <Text style={styles.quantityLabel}>Buyer's Need:</Text>
+              <Text style={styles.quantityNeeded}>{cropData.quantity}</Text>
             </View>
           </View>
 
@@ -302,15 +317,35 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF7ED", // Light orange bg
     padding: 12,
     borderRadius: 8,
+    marginBottom: 6,
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#edeeffff", // Light orange bg
+    padding: 12,
+    borderRadius: 8,
   },
   targetLabel: {
     fontSize: 14,
     color: "#9A3412",
     fontWeight: "600",
   },
+  quantityLabel: {
+    fontSize: 14,
+    color: "#0c49c2ff",
+    fontWeight: "600",
+  },
   targetPrice: {
     fontSize: 16,
     color: "#C2410C",
+    fontWeight: "bold",
+    marginBottom: "10px",
+  },
+  quantityNeeded: {
+    fontSize: 16,
+    color: "#0c49c2ff",
     fontWeight: "bold",
   },
 

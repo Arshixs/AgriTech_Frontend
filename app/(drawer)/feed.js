@@ -68,6 +68,7 @@ export default function RequirementsFeedScreen() {
               cropName: item.cropName,
               targetPrice: item.targetPrice,
               unit: item.unit,
+              crop: JSON.stringify(item),
             },
           })
         }
