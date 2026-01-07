@@ -1,33 +1,39 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import Button from "../../src/components/common/Button";
-import { useAuth } from "../../src/context/AuthContext";
-import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
 const API_BASE = API_BASE_URL;
 
 export default function GovtProfileScreen() {
   const { user, signOut, setUser } = useAuth();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [localUser, setLocalUser] = useState(user || {});
   const [editVisible, setEditVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const toggleLanguage = () => {
+    const nextLanguage = i18n.language === "en" ? "hi" : "en";
+    i18n.changeLanguage(nextLanguage);
+  };
 
   const fetchProfile = async () => {
     try {
@@ -85,9 +91,9 @@ export default function GovtProfileScreen() {
     setEditVisible(false);
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setRefreshing(true);
-    fetchProfile();
+    await fetchProfile();
   };
 
   if (loading) {
@@ -105,16 +111,23 @@ export default function GovtProfileScreen() {
     <ScreenWrapper style={styles.wrapper}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{t("Profile and Settings")}</Text>
-        <TouchableOpacity onPress={handleRefresh} disabled={refreshing}>
-          <MaterialCommunityIcons
-            name="refresh"
-            size={24}
-            color={refreshing ? "#ccc" : "#606C38"}
-          />
-        </TouchableOpacity>
       </View>
 
-      <ScrollView>
+      {/* Floating Language Toggle */}
+      <TouchableOpacity
+        onPress={toggleLanguage}
+        style={styles.langButton}
+        activeOpacity={0.7}
+      >
+        <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
+        <Text style={styles.langText}>{t("हिन्दी")}</Text>
+      </TouchableOpacity>
+
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
         <View style={styles.container}>
           <View style={styles.profileCard}>
             <View style={styles.profileHeader}>
@@ -639,5 +652,25 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 1,
+  },
+  langButton: {
+    position: "absolute", // This is key to removing the separation
+    top: 65, // Adjusts based on OS
+    right: 10,
+    zIndex: 10, // Ensures it stays above all other content
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: "#2A9D8F",
+    // Stronger elevation for a clean floating look
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
 });

@@ -25,7 +25,12 @@ export default function FarmerProfileScreen() {
   const { user, signOut } = useAuth();
   const authToken = user?.token;
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const nextLanguage = i18n.language === "en" ? "hi" : "en";
+    i18n.changeLanguage(nextLanguage);
+  };
 
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -205,6 +210,16 @@ export default function FarmerProfileScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        {/* Floating Language Toggle */}
+        <TouchableOpacity
+          onPress={toggleLanguage}
+          style={styles.langButton}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
+          <Text style={styles.langText}>{t("हिन्दी")}</Text>
+        </TouchableOpacity>
+
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
@@ -400,6 +415,27 @@ const styles = StyleSheet.create({
   avatarContainer: { marginBottom: 15 },
   userName: { fontSize: 24, fontWeight: "bold", color: "#264653" },
   userPhone: { fontSize: 16, color: "#666", marginTop: 4 },
+
+  langButton: {
+    position: "absolute", // This is key to removing the separation
+    top: 20, // Adjusts based on OS
+    right: 20,
+    zIndex: 10, // Ensures it stays above all other content
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: "#2A9D8F",
+    // Stronger elevation for a clean floating look
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
 
   // Map Preview (Style from Register)
   mapPreview: {
