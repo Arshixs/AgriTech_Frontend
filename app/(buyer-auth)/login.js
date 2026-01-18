@@ -1,11 +1,11 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import { useTranslation } from "react-i18next";
 
 export default function BuyerLoginScreen() {
   const router = useRouter();
@@ -92,6 +92,17 @@ export default function BuyerLoginScreen() {
       Alert.alert(t("Error"), t("Failed to send OTP request."));
     }
   };
+  const handleNumberEnter = (text) => {
+    const filtered = text.replace(/[^0-9]/g, "");
+    if (text !== filtered) {
+      Alert.alert(
+        "Invalid input",
+        "Please type the mobile number using English digits (0–9) only."
+      );
+    }
+
+    setMobileNumber(filtered);
+  };
 
   return (
     <ScreenWrapper>
@@ -104,7 +115,7 @@ export default function BuyerLoginScreen() {
         <Input
           label={t("Mobile Number")}
           value={mobileNumber}
-          onChangeText={setMobileNumber}
+          onChangeText={handleNumberEnter}
           placeholder={t("e.g., 9876543210")}
           keyboardType="phone-pad"
           maxLength={10}
