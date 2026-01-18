@@ -92,6 +92,17 @@ export default function VendorLoginScreen() {
       Alert.alert(t("Error"), t("Failed to send OTP request."));
     }
   };
+  const handleNumberEnter = (text) => {
+    const filtered = text.replace(/[^0-9]/g, "");
+    if (text !== filtered) {
+      Alert.alert(
+        "Invalid input",
+        "Please type the mobile number using English digits (0–9) only."
+      );
+    }
+
+    setMobileNumber(filtered);
+  };
 
   return (
     <ScreenWrapper>
@@ -103,7 +114,7 @@ export default function VendorLoginScreen() {
         <Input
           label={t("Mobile Number")}
           value={mobileNumber}
-          onChangeText={setMobileNumber}
+          onChangeText={handleNumberEnter}
           placeholder={t("e.g.") + `, 9876543210`}
           keyboardType="phone-pad"
           maxLength={10}
