@@ -1,6 +1,7 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   StyleSheet,
@@ -9,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
@@ -78,7 +78,7 @@ export default function ExpensePredictionScreen() {
         `${API_BASE_URL}/api/data/soil/latest?fieldId=${field._id}`,
         {
           headers: { Authorization: `Bearer ${authToken}` },
-        }
+        },
       );
       const data = await res.json();
 
@@ -119,7 +119,7 @@ export default function ExpensePredictionScreen() {
   };
 
   const filteredCrops = crops.filter((c) =>
-    c.cropName.toLowerCase().includes(searchQuery.toLowerCase())
+    c.cropName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const formatCurrency = (val) =>
@@ -150,14 +150,10 @@ export default function ExpensePredictionScreen() {
             >
               <FontAwesome name="arrow-left" size={20} color="#264653" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>
-              {t("Expense Prediction")}
-            </Text>
+            <Text style={styles.headerTitle}>{t("Expense Prediction")}</Text>
           </View>
 
-          <Text style={styles.sectionTitle}>
-            {t("Select Field")}
-          </Text>
+          <Text style={styles.sectionTitle}>{t("Select Field")}</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -186,9 +182,7 @@ export default function ExpensePredictionScreen() {
 
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.sectionTitle}>
-                {t("Land Area (Acres)")}
-              </Text>
+              <Text style={styles.sectionTitle}>{t("Land Area (Acres)")}</Text>
               <TextInput
                 style={styles.input}
                 value={landArea}
@@ -277,40 +271,38 @@ export default function ExpensePredictionScreen() {
 
               {/* Cost Breakdown Section */}
               <View style={styles.breakdownContainer}>
-                <Text style={styles.sectionTitle}>
-                  {t("Cost Breakdown")}
-                </Text>
+                <Text style={styles.sectionTitle}>{t("Cost Breakdown")}</Text>
                 {prediction.breakdown && (
                   <>
                     {renderBreakdownItem(
                       t("Seeds"),
                       prediction.breakdown.seeds,
-                      "seed"
+                      "seed",
                     )}
                     {renderBreakdownItem(
                       t("Fertilizers"),
                       prediction.breakdown.fertilizers,
-                      "flask"
+                      "flask",
                     )}
                     {renderBreakdownItem(
                       t("Pesticides"),
                       prediction.breakdown.pesticides,
-                      "bug"
+                      "bug",
                     )}
                     {renderBreakdownItem(
                       t("Irrigation"),
                       prediction.breakdown.irrigation,
-                      "water"
+                      "water",
                     )}
                     {renderBreakdownItem(
                       t("Labor"),
                       prediction.breakdown.labor,
-                      "account-group"
+                      "account-group",
                     )}
                     {renderBreakdownItem(
                       t("Machinery"),
                       prediction.breakdown.machinery,
-                      "tractor"
+                      "tractor",
                     )}
                   </>
                 )}
@@ -326,17 +318,14 @@ export default function ExpensePredictionScreen() {
                   <View style={styles.comparisonRow}>
                     {prediction.expectedRevenueMSP !== null && (
                       <View style={styles.revCard}>
-                        <Text style={styles.revLabel}>
-                          {t("Govt MSP")}
-                        </Text>
+                        <Text style={styles.revLabel}>{t("Govt MSP")}</Text>
                         <Text style={styles.revVal}>
                           {formatCurrency(prediction.expectedRevenueMSP)}
                         </Text>
                         <Text style={styles.profitLabel}>
                           {t("Profit")}:{" "}
                           {formatCurrency(
-                            prediction.expectedRevenueMSP -
-                              prediction.total
+                            prediction.expectedRevenueMSP - prediction.total,
                           )}
                         </Text>
                       </View>
@@ -345,9 +334,7 @@ export default function ExpensePredictionScreen() {
                       <View
                         style={[styles.revCard, { borderColor: "#E9C46A" }]}
                       >
-                        <Text style={styles.revLabel}>
-                          {t("Market Rate")}
-                        </Text>
+                        <Text style={styles.revLabel}>{t("Market Rate")}</Text>
                         <Text style={styles.revVal}>
                           {formatCurrency(prediction.expectedRevenueMarket)}
                         </Text>
@@ -356,8 +343,7 @@ export default function ExpensePredictionScreen() {
                         >
                           {t("Profit")}:{" "}
                           {formatCurrency(
-                            prediction.expectedRevenueMarket -
-                              prediction.total
+                            prediction.expectedRevenueMarket - prediction.total,
                           )}
                         </Text>
                       </View>
