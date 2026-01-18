@@ -40,39 +40,30 @@ export default function ExpensePredictionScreen() {
 
   const fetchInitialData = async () => {
     try {
-      const [cropRes, fieldRes, soilRes] = await Promise.all([
+      const [cropRes, fieldRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/crops/crops`, {
           headers: { Authorization: `Bearer ${authToken}` },
         }),
         fetch(`${API_BASE_URL}/api/farm/fields`, {
           headers: { Authorization: `Bearer ${authToken}` },
         }),
-        fetch(`${API_BASE_URL}/api/data/soil/latest`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        }),
       ]);
 
       const cropData = await cropRes.json();
       const fieldData = await fieldRes.json();
-      const soilData = await soilRes.json();
 
       setCrops(cropData.crops || []);
       setFields(fieldData.fields || []);
-
-      const exists = !!(soilData.soilData && soilData.soilData.pH);
-      setHasSoilData(exists);
     } catch (err) {
       console.error(t("Initialization Error"), err);
-      setHasSoilData(false);
     }
   };
 
   const handleSelectField = async (field) => {
     setSelectedField(field);
     setLandArea(field.area.toString());
-    setUseSoilData(false); // Reset toggle when field changes
+    setUseSoilData(false);
 
-    // Check if this specific field has soil data
     try {
       const res = await fetch(
         `${API_BASE_URL}/api/data/soil/latest?fieldId=${field._id}`,
@@ -81,8 +72,6 @@ export default function ExpensePredictionScreen() {
         },
       );
       const data = await res.json();
-
-      // Enable or disable Soil-Sync based on this specific field's data
       setHasSoilData(!!data.soilData);
     } catch (err) {
       setHasSoilData(false);
@@ -153,6 +142,7 @@ export default function ExpensePredictionScreen() {
             <Text style={styles.headerTitle}>{t("Expense Prediction")}</Text>
           </View>
 
+          {/* Input Sections */}
           <Text style={styles.sectionTitle}>{t("Select Field")}</Text>
           <ScrollView
             horizontal
@@ -258,6 +248,7 @@ export default function ExpensePredictionScreen() {
             loading={loading}
           />
 
+          {/* Results Section */}
           {prediction && (
             <View style={styles.resultContainer}>
               <View style={styles.totalCard}>
@@ -265,50 +256,23 @@ export default function ExpensePredictionScreen() {
                   {t("Total Estimated Investment")}
                 </Text>
                 <Text style={styles.totalAmount}>
-                  {formatCurrency(prediction.total)}
+                  {formatCurrency(prediction.totalExpense)}
                 </Text>
               </View>
 
-              {/* Cost Breakdown Section */}
               <View style={styles.breakdownContainer}>
                 <Text style={styles.sectionTitle}>{t("Cost Breakdown")}</Text>
-                {prediction.breakdown && (
-                  <>
-                    {renderBreakdownItem(
-                      t("Seeds"),
-                      prediction.breakdown.seeds,
-                      "seed",
-                    )}
-                    {renderBreakdownItem(
-                      t("Fertilizers"),
-                      prediction.breakdown.fertilizers,
-                      "flask",
-                    )}
-                    {renderBreakdownItem(
-                      t("Pesticides"),
-                      prediction.breakdown.pesticides,
-                      "bug",
-                    )}
-                    {renderBreakdownItem(
-                      t("Irrigation"),
-                      prediction.breakdown.irrigation,
-                      "water",
-                    )}
-                    {renderBreakdownItem(
-                      t("Labor"),
-                      prediction.breakdown.labor,
-                      "account-group",
-                    )}
-                    {renderBreakdownItem(
-                      t("Machinery"),
-                      prediction.breakdown.machinery,
-                      "tractor",
-                    )}
-                  </>
-                )}
+                {prediction.breakdown &&
+                  Object.entries(prediction.breakdown).map(([key, val]) =>
+                    renderBreakdownItem(
+                      t(key.charAt(0).toUpperCase() + key.slice(1)),
+                      val,
+                      "circle-outline",
+                    ),
+                  )}
               </View>
 
-              {/* Conditional Revenue Rendering */}
+              {/* Revenue Comparison */}
               {(prediction.expectedRevenueMSP ||
                 prediction.expectedRevenueMarket) && (
                 <>
@@ -316,34 +280,71 @@ export default function ExpensePredictionScreen() {
                     {t("Expected Revenue Scenarios")}
                   </Text>
                   <View style={styles.comparisonRow}>
+                    {/* MSP Card */}
                     {prediction.expectedRevenueMSP !== null && (
-                      <View style={styles.revCard}>
+                      <View
+                        style={[
+                          styles.revCard,
+                          prediction.metadata?.recommendedChannel ===
+                            "Government (MSP)" && styles.bestValueCard,
+                        ]}
+                      >
+                        {prediction.metadata?.recommendedChannel ===
+                          "Government (MSP)" && (
+                          <View style={styles.bestBadge}>
+                            <Text style={styles.bestText}>{t("BEST")}</Text>
+                          </View>
+                        )}
                         <Text style={styles.revLabel}>{t("Govt MSP")}</Text>
                         <Text style={styles.revVal}>
                           {formatCurrency(prediction.expectedRevenueMSP)}
                         </Text>
                         <Text style={styles.profitLabel}>
-                          {t("Profit")}:{" "}
+                          {t("Net Profit")}:{" "}
                           {formatCurrency(
-                            prediction.expectedRevenueMSP - prediction.total,
+                            prediction.expectedRevenueMSP -
+                              prediction.totalExpense,
                           )}
                         </Text>
                       </View>
                     )}
+
+                    {/* Market Card */}
                     {prediction.expectedRevenueMarket !== null && (
                       <View
-                        style={[styles.revCard, { borderColor: "#E9C46A" }]}
+                        style={[
+                          styles.revCard,
+                          { borderColor: "#E9C46A" },
+                          prediction.metadata?.recommendedChannel ===
+                            "Marketplace" && styles.bestValueCardMarket,
+                        ]}
                       >
-                        <Text style={styles.revLabel}>{t("Market Rate")}</Text>
+                        {prediction.metadata?.recommendedChannel ===
+                          "Marketplace" && (
+                          <View
+                            style={[
+                              styles.bestBadge,
+                              { backgroundColor: "#E9C46A" },
+                            ]}
+                          >
+                            <Text style={styles.bestText}>{t("BEST")}</Text>
+                          </View>
+                        )}
+                        <Text style={styles.revLabel}>{t("Market Price")}</Text>
                         <Text style={styles.revVal}>
                           {formatCurrency(prediction.expectedRevenueMarket)}
+                        </Text>
+                        <Text style={styles.locationTag}>
+                          <FontAwesome name="map-marker" size={10} />{" "}
+                          {prediction.metadata?.locationUsed}
                         </Text>
                         <Text
                           style={[styles.profitLabel, { color: "#E9C46A" }]}
                         >
-                          {t("Profit")}:{" "}
+                          {t("Net Profit")}:{" "}
                           {formatCurrency(
-                            prediction.expectedRevenueMarket - prediction.total,
+                            prediction.expectedRevenueMarket -
+                              prediction.totalExpense,
                           )}
                         </Text>
                       </View>
@@ -475,15 +476,34 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: "#FFF",
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: "#2A9D8F",
+    position: "relative",
   },
-  revLabel: { fontSize: 12, color: "#666", fontWeight: "bold" },
+  bestValueCard: {
+    borderWidth: 2,
+    shadowColor: "#2A9D8F",
+    shadowOpacity: 0.2,
+    elevation: 4,
+  },
+  bestValueCardMarket: { borderWidth: 2, borderColor: "#E9C46A", elevation: 4 },
+  bestBadge: {
+    position: "absolute",
+    top: -10,
+    right: 10,
+    backgroundColor: "#2A9D8F",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  bestText: { color: "#FFF", fontSize: 8, fontWeight: "bold" },
+  revLabel: { fontSize: 11, color: "#666", fontWeight: "bold" },
   revVal: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#264653",
-    marginVertical: 5,
+    marginVertical: 3,
   },
-  profitLabel: { fontSize: 11, color: "#2A9D8F", fontWeight: "600" },
+  locationTag: { fontSize: 9, color: "#888", marginBottom: 5 },
+  profitLabel: { fontSize: 10, color: "#2A9D8F", fontWeight: "600" },
 });
