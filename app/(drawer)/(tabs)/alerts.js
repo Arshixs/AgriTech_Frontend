@@ -76,7 +76,7 @@ export default function AlertsScreen() {
       // 1. Fetch Weather Data for specific field
       const weatherRes = await fetch(
         `${API_BASE_URL}/api/data/weather?fieldId=${fieldId}`,
-        { headers }
+        { headers },
       );
 
       if (weatherRes.ok) {
@@ -91,7 +91,7 @@ export default function AlertsScreen() {
       // 2. Fetch Alerts for specific field
       const alertsRes = await fetch(
         `${API_BASE_URL}/api/data/alerts?fieldId=${fieldId}`,
-        { headers }
+        { headers },
       );
 
       if (alertsRes.ok) {
@@ -101,7 +101,7 @@ export default function AlertsScreen() {
         const errorText = await alertsRes.text();
         setAlerts([]);
         setError((prev) =>
-          prev ? `${prev} | Alerts: ${errorText}` : `Alerts: ${errorText}`
+          prev ? `${prev} | Alerts: ${errorText}` : `Alerts: ${errorText}`,
         );
       }
     } catch (error) {
@@ -130,6 +130,19 @@ export default function AlertsScreen() {
       default:
         return "#888";
     }
+  };
+
+  const getForecastIcon = (condition) => {
+    const cond = condition.toLowerCase();
+    if (cond.includes("sun") || cond.includes("clear")) return "weather-sunny";
+    if (cond.includes("rain") || cond.includes("drizzle"))
+      return "weather-rainy";
+    if (cond.includes("snow") || cond.includes("ice")) return "weather-snowy";
+    if (cond.includes("cloud") || cond.includes("overcast"))
+      return "weather-cloudy";
+    if (cond.includes("thunder") || cond.includes("storm"))
+      return "weather-lightning";
+    return "weather-partly-cloudy";
   };
 
   const getAlertIcon = (type) => {
@@ -234,8 +247,7 @@ export default function AlertsScreen() {
                 <View style={styles.fieldInfoText}>
                   <Text style={styles.fieldName}>{selectedField.name}</Text>
                   <Text style={styles.fieldDetails}>
-                    {selectedField.area}{" "}
-                    acres
+                    {selectedField.area} acres
                   </Text>
                 </View>
               </View>
@@ -315,6 +327,53 @@ export default function AlertsScreen() {
                   </Text>
                 </View>
               ) : null}
+
+              {/* Forecast Section - Insert after Weather Card */}
+              {weatherData?.forecast && (
+                <View style={{ marginBottom: 24 }}>
+                  <Text style={styles.sectionTitle}>{t("Forecast")}</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 12 }}
+                  >
+                    {weatherData.forecast.map((day, index) => (
+                      <View key={index} style={styles.forecastCard}>
+                        <Text style={styles.forecastDate}>
+                          {new Date(day.date).toLocaleDateString(undefined, {
+                            weekday: "short",
+                            day: "numeric",
+                          })}
+                        </Text>
+                        <MaterialCommunityIcons
+                          name={getForecastIcon(day.condition)}
+                          size={32}
+                          color="#2A9D8F"
+                        />
+                        <Text style={styles.forecastTemp}>{day.avgTemp}°C</Text>
+                        <Text
+                          style={styles.forecastCondition}
+                          numberOfLines={1}
+                        >
+                          {day.condition}
+                        </Text>
+                        <Text
+                          style={styles.forecastCondition}
+                          numberOfLines={1}
+                        >
+                          {day.windSpeed} km/h
+                        </Text>
+                        <View style={styles.rainChanceRow}>
+                          <FontAwesome name="tint" size={10} color="#457B9D" />
+                          <Text style={styles.rainChanceText}>
+                            {day.chanceOfRain}%
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
 
               {/* Alerts Section */}
               <Text style={styles.sectionTitle}>{t("Active Alerts")}</Text>
@@ -517,7 +576,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 15,
+    elevation: 0.5,
   },
   weatherHeader: {
     flexDirection: "row",
@@ -665,5 +724,48 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 12,
     textAlign: "center",
+  },
+  forecastCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
+    width: 130,
+    elevation: 0.4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
+  },
+  forecastDate: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#264653",
+    marginBottom: 8,
+  },
+  forecastTemp: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#264653",
+    marginTop: 8,
+  },
+  forecastCondition: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 2,
+    textAlign: "center",
+  },
+  rainChanceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+    gap: 4,
+  },
+  rainChanceText: {
+    fontSize: 11,
+    color: "#457B9D",
+    fontWeight: "600",
   },
 });
