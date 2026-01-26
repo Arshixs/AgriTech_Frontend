@@ -1,7 +1,6 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
-// 1. Add Import
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -13,7 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
 import { API_BASE_URL } from "../secret";
 import Button from "../src/components/common/Button";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
@@ -28,6 +26,55 @@ export default function ListingDetailsScreen() {
 
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    // 1. Check for the correct property name (auctionStartTime vs auctionStartDate)
+    const targetTime = listing?.auctionStartTime || listing?.auctionStartDate;
+
+    if (!listing || listing.status !== "pending" || !targetTime) return;
+
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const start = new Date(targetTime).getTime(); // Handles "2026-01-10T18:30:00.000Z" automatically
+      const distance = start - now;
+
+      if (distance < 0) {
+        setTimeLeft(t("Auction Starting..."));
+        // Optional: Trigger a re-fetch here to update status to 'active'
+        fetchListingDetails();
+        return;
+      }
+
+      // 2. Math for Days, Hours, Minutes, Seconds
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      // 3. Format the string
+      // Example: "1d 04h 20m" or "04h 20m 10s"
+      let timeString = "";
+      if (days > 0) timeString += `${days}d `;
+
+      // Pad with '0' (e.g., "5" becomes "05")
+      timeString += `${hours.toString().padStart(2, "0")}h `;
+      timeString += `${minutes.toString().padStart(2, "0")}m `;
+      timeString += `${seconds.toString().padStart(2, "0")}s`;
+
+      setTimeLeft(timeString);
+    };
+
+    // Run once immediately to avoid 1-second delay
+    calculateTimeLeft();
+
+    const timerId = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timerId);
+  }, [listing]);
 
   // =========================
   // FETCH LISTING DETAILS
@@ -138,7 +185,6 @@ export default function ListingDetailsScreen() {
         }
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {/* IMAGE PLACEHOLDER */}
         <View style={styles.imagePlaceholder}>
           <MaterialCommunityIcons name="sprout" size={64} color="#2A9D8F" />
         </View>
@@ -244,10 +290,29 @@ export default function ListingDetailsScreen() {
                   </Text>
                 )}
 
+                {/* COUNTDOWN DISPLAY */}
                 {listing.status === "pending" && (
-                  <Text style={styles.statusMessage}>
-                    {t("Auction has not started yet.")}
-                  </Text>
+                  <View style={styles.timerContainer}>
+                    <Text style={styles.statusMessage}>
+                      {t("Auction starts in:")}
+                    </Text>
+                    <View style={styles.countdownBox}>
+                      <MaterialCommunityIcons
+                        name="clock-outline"
+                        size={24}
+                        color="#E76F51"
+                      />
+                      <Text style={styles.countdownText}>
+                        {timeLeft || "N/A"}
+                      </Text>
+                    </View>
+                    <Text style={styles.startTimeText}>
+                      {/* Displays date in user's local timezone automatically */}
+                      {new Date(
+                        listing.auctionStartTime || listing.auctionStartDate
+                      ).toLocaleString() || "N/A"}
+                    </Text>
+                  </View>
                 )}
               </View>
             )}
@@ -258,7 +323,6 @@ export default function ListingDetailsScreen() {
   );
 }
 
-// Styles remain unchanged
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
@@ -385,14 +449,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-  statusTitle: {
-    fontSize: 16,
+  statusTitle: { fontSize: 16, fontWeight: "bold", color: "#37474F" },
+  statusMessage: { marginTop: 6, fontSize: 14, color: "#607D8B" },
+
+  // NEW STYLES FOR TIMER
+  timerContainer: { alignItems: "center", marginTop: 10 },
+  countdownBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 8,
+  },
+  countdownText: {
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#37474F",
+    color: "#E76F51",
+    marginLeft: 8,
   },
-  statusMessage: {
-    marginTop: 6,
-    fontSize: 14,
-    color: "#607D8B",
-  },
+  startTimeText: { fontSize: 12, color: "#999" },
 });

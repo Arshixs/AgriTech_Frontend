@@ -1,4 +1,4 @@
-import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -16,10 +16,15 @@ import {
   View,
 } from "react-native";
 import { API_BASE_URL } from "../../secret";
-import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
-// Assuming a shared Input component exists for Modal consistency
+
+const CATEGORY_TABS = [
+  { label: "All", value: "all" },
+  { label: "Rentals", value: "rentals" },
+  { label: "Seeds", value: "seeds" },
+  { label: "Agri Inputs", value: "agri-inputs" },
+];
 
 // Helper function to format currency
 const formatCurrency = (amount) => {
@@ -41,6 +46,7 @@ export default function VendorMarketScreen() {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   // Modal State
   const [showOrderModal, setShowOrderModal] = useState(false);
@@ -61,17 +67,16 @@ export default function VendorMarketScreen() {
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
-    return `${day}-${month}-${year}`; // dd-mm-yyyy
+    return `${day}-${month}-${year}`;
   };
 
   const formatDateForAPI = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`; // Keep as yyyy-mm-dd for API
+    return `${year}-${month}-${day}`;
   };
 
-  // date change handlers
   const onStartDateChange = (event, selectedDate) => {
     setShowStartDatePicker(false);
     if (selectedDate) {
@@ -87,8 +92,6 @@ export default function VendorMarketScreen() {
       setEndDate(formatDateForAPI(selectedDate));
     }
   };
-
-  // --- Data Fetching ---
 
   const fetchProducts = async () => {
     if (!authToken) return;
@@ -126,7 +129,12 @@ export default function VendorMarketScreen() {
     fetchProducts();
   };
 
-  // --- Order Handling ---
+  const getFilteredProducts = () => {
+    if (categoryFilter === "all") return products;
+    return products.filter((p) => p.category === categoryFilter);
+  };
+
+  const filteredProducts = getFilteredProducts();
 
   const openOrderModal = (product) => {
     setSelectedProduct(product);
@@ -136,7 +144,7 @@ export default function VendorMarketScreen() {
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
     setTempStartDate(today);
-    setTempEndDate(tomorrow); // Default to tomorrow for end date
+    setTempEndDate(tomorrow);
     setStartDate(formatDateForAPI(today));
     setEndDate(formatDateForAPI(tomorrow));
 
@@ -169,7 +177,7 @@ export default function VendorMarketScreen() {
       quantity: parseInt(orderQuantity),
     };
 
-    if (orderType === "rentals") {
+    if (orderType === "rental") {
       body = { ...body, startDate, endDate };
     }
 
@@ -207,8 +215,6 @@ export default function VendorMarketScreen() {
     }
   };
 
-  // --- Rendering Helpers ---
-
   const getCategoryIcon = (category) => {
     switch (category) {
       case "rentals":
@@ -235,62 +241,107 @@ export default function VendorMarketScreen() {
     }
   };
 
+  const getCategoryLabel = (category) => {
+    switch (category) {
+      case "rentals":
+        return t("Rental");
+      case "seeds":
+        return t("Seeds");
+      case "agri-inputs":
+        return t("Agri Input");
+      default:
+        return category;
+    }
+  };
+
   const renderProductCard = (product) => {
     const isRental = product.category === "rentals";
     const cardColor = getCategoryColor(product.category);
 
     return (
-      <View key={product._id} style={styles.productCard}>
-        <View style={[styles.cardHeader, { borderLeftColor: cardColor }]}>
+      <TouchableOpacity
+        key={product._id}
+        style={styles.productCard}
+        activeOpacity={0.7}
+        onPress={() => openOrderModal(product)}
+      >
+        <View style={styles.cardContent}>
+          {/* Icon Badge */}
           <View
-            style={[styles.iconCircle, { backgroundColor: cardColor + "10" }]}
+            style={[styles.iconBadge, { backgroundColor: cardColor + "15" }]}
           >
             <MaterialCommunityIcons
               name={getCategoryIcon(product.category)}
-              size={30}
+              size={28}
               color={cardColor}
             />
           </View>
-          <View style={styles.productDetails}>
-            <Text style={styles.productName}>{product.name}</Text>
-            <Text style={styles.vendorName}>
-              {t("Vendor")}:{" "}
+
+          {/* Product Info */}
+          <View style={styles.productInfo}>
+            <View style={styles.productHeader}>
+              <Text style={styles.productName} numberOfLines={1}>
+                {product.name}
+              </Text>
+              <View
+                style={[
+                  styles.categoryBadge,
+                  { backgroundColor: cardColor + "20" },
+                ]}
+              >
+                <Text style={[styles.categoryText, { color: cardColor }]}>
+                  {getCategoryLabel(product.category)}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.vendorName} numberOfLines={1}>
+              <MaterialCommunityIcons name="store" size={12} color="#888" />{" "}
               {product.vendor?.organizationName ||
                 product.vendor?.name ||
                 t("Unknown Vendor")}
             </Text>
+
+            {product.description && (
+              <Text style={styles.productDescription} numberOfLines={2}>
+                {product.description}
+              </Text>
+            )}
+
+            {/* Price and Stock Row */}
+            <View style={styles.bottomRow}>
+              <View style={styles.priceSection}>
+                <Text style={styles.priceLabel}>
+                  {isRental ? t("Per Day") : t("Price")}
+                </Text>
+                <Text style={[styles.priceValue, { color: cardColor }]}>
+                  {formatCurrency(product.price)}
+                  <Text style={styles.unitText}>/{product.unit}</Text>
+                </Text>
+              </View>
+
+              <View style={styles.stockSection}>
+                <MaterialCommunityIcons
+                  name="package-variant"
+                  size={14}
+                  color="#666"
+                />
+                <Text style={styles.stockText}>
+                  {product.stock} {product.unit}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
 
-        <Text style={styles.productDescription} numberOfLines={2}>
-          {product.description}
-        </Text>
-
-        <View style={styles.cardFooter}>
-          <View style={styles.priceContainer}>
-            <Text style={styles.priceLabel}>
-              {isRental ? t("Price/Day") : t("Price/Unit")}
-            </Text>
-            <Text style={styles.priceValue}>
-              {formatCurrency(product.price)} / {product.unit}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.buyButton, { backgroundColor: cardColor }]}
-            onPress={() => openOrderModal(product)}
-          >
-            <Text style={styles.buyButtonText}>
-              {isRental ? t("Rent Now") : t("Buy Now")}
-            </Text>
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={18}
-              color="#FFFFFF"
-            />
-          </TouchableOpacity>
+        {/* Action Button */}
+        <View style={[styles.actionButton, { backgroundColor: cardColor }]}>
+          <Text style={styles.actionButtonText}>
+            {isRental ? t("Rent Now") : t("Buy Now")}
+          </Text>
+          <MaterialCommunityIcons name="arrow-right" size={18} color="#FFF" />
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -309,32 +360,64 @@ export default function VendorMarketScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {isRental ? t("Place Rental Order") : t("Place Purchase Order")}
-              </Text>
+              <View style={styles.modalHeaderLeft}>
+                <View
+                  style={[
+                    styles.modalIcon,
+                    { backgroundColor: cardColor + "15" },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={getCategoryIcon(selectedProduct.category)}
+                    size={24}
+                    color={cardColor}
+                  />
+                </View>
+                <View>
+                  <Text style={styles.modalTitle}>
+                    {isRental ? t("Rent Equipment") : t("Place Order")}
+                  </Text>
+                  <Text style={styles.modalSubtitle}>
+                    {selectedProduct.name}
+                  </Text>
+                </View>
+              </View>
               <TouchableOpacity onPress={closeOrderModal}>
-                <FontAwesome name="times" size={24} color="#666" />
+                <MaterialCommunityIcons name="close" size={24} color="#666" />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalBody}>
-              <View style={styles.modalProductInfo}>
-                <Text style={[styles.modalProductName, { color: cardColor }]}>
-                  {selectedProduct.name}
-                </Text>
-                <Text style={styles.modalProductVendor}>
-                  {selectedProduct.vendor.organizationName}
-                </Text>
-                <Text style={styles.modalProductPrice}>
-                  {formatCurrency(selectedProduct.price)} /{" "}
-                  {selectedProduct.unit}
-                </Text>
-                <Text style={styles.modalStockText}>
-                  {t("Stock Available")}: {selectedProduct.stock}{" "}
-                  {selectedProduct.unit}
-                </Text>
+              {/* Product Summary Card */}
+              <View style={styles.productSummaryCard}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>{t("Vendor")}</Text>
+                  <Text style={styles.summaryValue}>
+                    {selectedProduct.vendor?.organizationName}
+                  </Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>
+                    {isRental ? t("Rate per Day") : t("Unit Price")}
+                  </Text>
+                  <Text style={[styles.summaryValue, { color: cardColor }]}>
+                    {formatCurrency(selectedProduct.price)}/
+                    {selectedProduct.unit}
+                  </Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>
+                    {t("Available Stock")}
+                  </Text>
+                  <Text style={styles.summaryValue}>
+                    {selectedProduct.stock} {selectedProduct.unit}
+                  </Text>
+                </View>
               </View>
 
+              {/* Quantity Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>
                   {t("Quantity")} ({selectedProduct.unit})
@@ -349,39 +432,63 @@ export default function VendorMarketScreen() {
                 />
               </View>
 
+              {/* Rental Dates */}
               {isRental && (
                 <View style={styles.rentalContainer}>
-                  <Text style={styles.inputLabel}>
-                    {t("Rental Period (DD-MM-YYYY)")}
-                  </Text>
-
-                  {/* Start Date Picker */}
-                  <View style={styles.dateInputContainer}>
-                    <Text style={styles.inputLabel}>{t("Start Date")}</Text>
-                    <TouchableOpacity
-                      style={styles.dateInput}
-                      onPress={() => setShowStartDatePicker(true)}
-                    >
-                      <Text style={styles.dateText}>
-                        {formatDateForDisplay(tempStartDate)}
-                      </Text>
-                    </TouchableOpacity>
+                  <View style={styles.rentalHeader}>
+                    <MaterialCommunityIcons
+                      name="calendar-range"
+                      size={20}
+                      color={cardColor}
+                    />
+                    <Text style={[styles.rentalTitle, { color: cardColor }]}>
+                      {t("Rental Period")}
+                    </Text>
                   </View>
 
-                  {/* End Date Picker */}
-                  <View style={styles.dateInputContainer}>
-                    <Text style={styles.inputLabel}>{t("End Date")}</Text>
-                    <TouchableOpacity
-                      style={styles.dateInput}
-                      onPress={() => setShowEndDatePicker(true)}
-                    >
-                      <Text style={styles.dateText}>
-                        {formatDateForDisplay(tempEndDate)}
-                      </Text>
-                    </TouchableOpacity>
+                  <View style={styles.dateRow}>
+                    <View style={styles.dateInputWrapper}>
+                      <Text style={styles.dateLabel}>{t("Start Date")}</Text>
+                      <TouchableOpacity
+                        style={styles.dateInput}
+                        onPress={() => setShowStartDatePicker(true)}
+                      >
+                        <MaterialCommunityIcons
+                          name="calendar"
+                          size={16}
+                          color={cardColor}
+                        />
+                        <Text style={styles.dateText}>
+                          {formatDateForDisplay(tempStartDate)}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <MaterialCommunityIcons
+                      name="arrow-right"
+                      size={20}
+                      color="#CCC"
+                      style={{ marginTop: 28 }}
+                    />
+
+                    <View style={styles.dateInputWrapper}>
+                      <Text style={styles.dateLabel}>{t("End Date")}</Text>
+                      <TouchableOpacity
+                        style={styles.dateInput}
+                        onPress={() => setShowEndDatePicker(true)}
+                      >
+                        <MaterialCommunityIcons
+                          name="calendar"
+                          size={16}
+                          color={cardColor}
+                        />
+                        <Text style={styles.dateText}>
+                          {formatDateForDisplay(tempEndDate)}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
 
-                  {/* Date Pickers */}
                   {showStartDatePicker && (
                     <DateTimePicker
                       value={tempStartDate}
@@ -406,25 +513,53 @@ export default function VendorMarketScreen() {
 
               {/* Error/Success Messages */}
               {orderError && (
-                <View style={styles.modalError}>
-                  <Text style={styles.modalErrorText}>{orderError}</Text>
+                <View style={styles.messageBox}>
+                  <MaterialCommunityIcons
+                    name="alert-circle"
+                    size={20}
+                    color="#E76F51"
+                  />
+                  <Text style={styles.errorText}>{orderError}</Text>
                 </View>
               )}
               {orderSuccess && (
-                <View style={styles.modalSuccess}>
-                  <Text style={styles.modalSuccessText}>{orderSuccess}</Text>
+                <View style={[styles.messageBox, styles.successBox]}>
+                  <MaterialCommunityIcons
+                    name="check-circle"
+                    size={20}
+                    color="#4CAF50"
+                  />
+                  <Text style={styles.successText}>{orderSuccess}</Text>
                 </View>
               )}
 
-              {/* Final Order Button */}
-              {/* Instead of the Button, use conditional rendering */}
+              {/* Confirm Button */}
               {!orderSuccess && (
-                <Button
-                  title={isRental ? t("Confirm Rental") : t("Confirm Purchase")}
+                <TouchableOpacity
+                  style={[
+                    styles.confirmButton,
+                    { backgroundColor: cardColor },
+                    isPlacingOrder && styles.confirmButtonDisabled,
+                  ]}
                   onPress={handlePlaceOrder}
-                  loading={isPlacingOrder}
-                  style={{ backgroundColor: cardColor, marginTop: 15 }}
-                />
+                  disabled={isPlacingOrder}
+                  activeOpacity={0.8}
+                >
+                  {isPlacingOrder ? (
+                    <ActivityIndicator color="#FFF" />
+                  ) : (
+                    <>
+                      <Text style={styles.confirmButtonText}>
+                        {isRental ? t("Confirm Rental") : t("Confirm Order")}
+                      </Text>
+                      <MaterialCommunityIcons
+                        name="check"
+                        size={20}
+                        color="#FFF"
+                      />
+                    </>
+                  )}
+                </TouchableOpacity>
               )}
             </ScrollView>
           </View>
@@ -433,16 +568,30 @@ export default function VendorMarketScreen() {
     );
   };
 
-  // --- Main Render ---
+  const FilterButton = ({ label, value }) => (
+    <TouchableOpacity
+      style={[
+        styles.filterButton,
+        categoryFilter === value && styles.filterButtonActive,
+      ]}
+      onPress={() => setCategoryFilter(value)}
+    >
+      <Text
+        style={[
+          styles.filterText,
+          categoryFilter === value && styles.filterTextActive,
+        ]}
+      >
+        {t(label)}
+      </Text>
+    </TouchableOpacity>
+  );
 
   if (!authToken || loading) {
     return (
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2A9D8F" />
-          <Text style={{ marginTop: 10, color: "#666" }}>
-            {t("Fetching Vendor Products...")}
-          </Text>
         </View>
       </ScreenWrapper>
     );
@@ -452,190 +601,328 @@ export default function VendorMarketScreen() {
     <ScreenWrapper>
       {renderOrderModal()}
 
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>{t("Vendor Marketplace")}</Text>
+          <Text style={styles.headerSubtitle}>
+            {t("Farm supplies and equipment")}
+          </Text>
+        </View>
+      </View>
+
+      {/* Filter Tabs */}
+      <View style={styles.filterContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScroll}
+        >
+          {CATEGORY_TABS.map((tab) => (
+            <FilterButton key={tab.value} label={tab.label} value={tab.value} />
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Stats */}
+      <View style={styles.statsContainer}>
+        {/* <View style={styles.statCard}>
+          <Text style={styles.statValue}>{filteredProducts.length}</Text>
+          <Text style={styles.statLabel}>{t("Products")}</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={[styles.statValue, { color: "#E76F51" }]}>
+            {products.filter((p) => p.category === "rentals").length}
+          </Text>
+          <Text style={styles.statLabel}>{t("Rentals")}</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={[styles.statValue, { color: "#2A9D8F" }]}>
+            {products.filter((p) => p.category === "seeds").length}
+          </Text>
+          <Text style={styles.statLabel}>{t("Seeds")}</Text>
+        </View> */}
+      </View>
+
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.container}>
-          <Text style={styles.header}>{t("Vendor Marketplace")}</Text>
-          <Text style={styles.subtitle}>
-            {t(
-              "Browse farm supplies and rental machinery from verified vendors ({{count}} items)",
-              { count: products.length }
-            )}
-          </Text>
+        {error && (
+          <View style={styles.errorBanner}>
+            <MaterialCommunityIcons
+              name="alert-circle"
+              size={20}
+              color="#E76F51"
+            />
+            <Text style={styles.errorBannerText}>{error}</Text>
+          </View>
+        )}
 
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>
-                {t("Connection Error")}: {error}
-              </Text>
-            </View>
-          )}
-
-          {products.length === 0 && !error ? (
-            <View style={styles.noProductsCard}>
-              <MaterialCommunityIcons name="store-off" size={30} color="#888" />
-              <Text style={styles.noProductsText}>
-                {t("No products found in the marketplace.")}
-              </Text>
-            </View>
-          ) : (
-            products.map(renderProductCard)
-          )}
-        </View>
+        {filteredProducts.length === 0 && !error ? (
+          <View style={styles.emptyContainer}>
+            <MaterialCommunityIcons name="store-off" size={64} color="#CCC" />
+            <Text style={styles.emptyText}>
+              {categoryFilter === "all"
+                ? t("No products available")
+                : t("No {{category}} products found", {
+                    category: categoryFilter,
+                  })}
+            </Text>
+            <Text style={styles.emptySubtext}>
+              {t("Check back later for new listings")}
+            </Text>
+          </View>
+        ) : (
+          filteredProducts.map(renderProductCard)
+        )}
       </ScrollView>
     </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 16,
+    backgroundColor: "#FFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
   },
-  container: {
-    padding: 20,
-    paddingBottom: 40,
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#264653",
   },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#888",
+    marginTop: 4,
+  },
+
+  filterContainer: {
+    backgroundColor: "#FFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  filterScroll: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#F0F0F0",
+    marginRight: 8,
+  },
+  filterButtonActive: {
+    backgroundColor: "#2A9D8F",
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#666",
+  },
+  filterTextActive: {
+    color: "#FFF",
+  },
+
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 100,
   },
-  header: {
-    fontSize: 32,
+
+
+  statCard: {
+    flex: 1,
+    backgroundColor: "#FFF",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    elevation: 1,
+  },
+  statValue: {
+    fontSize: 24,
     fontWeight: "bold",
     color: "#264653",
-    marginTop: 20,
-    marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
+  statLabel: {
+    fontSize: 12,
     color: "#666",
-    marginBottom: 20,
+    marginTop: 4,
+    textAlign: "center",
   },
-  errorContainer: {
+
+  scrollView: {
+    flex: 1,
+    backgroundColor: "#F8F9FA",
+    marginTop:3
+  },
+  scrollContent: {
+    padding: 20,
+    paddingTop: 0,
+  },
+
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     backgroundColor: "#FFF0F0",
-    padding: 10,
+    padding: 12,
     borderRadius: 8,
-    marginBottom: 20,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: "#E76F51",
   },
-  errorText: {
+  errorBannerText: {
+    flex: 1,
     color: "#E76F51",
+    fontSize: 14,
     fontWeight: "600",
-    textAlign: "center",
   },
-  noProductsCard: {
-    padding: 30,
-    backgroundColor: "#F8F8F8",
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  noProductsText: {
-    fontSize: 16,
-    color: "#888",
-    marginTop: 10,
-  },
+
   productCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    marginBottom: 16,
+    elevation: 2,
+    overflow: "hidden",
   },
-  cardHeader: {
+  cardContent: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingLeft: 10,
-    marginBottom: 10,
-    borderLeftWidth: 4,
-    // borderLeftColor set inline
+    padding: 16,
   },
-  iconCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  iconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 15,
-    // backgroundColor set inline
+    marginRight: 12,
   },
-  productDetails: {
+  productInfo: {
     flex: 1,
   },
+  productHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 4,
+  },
   productName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "bold",
     color: "#264653",
+    flex: 1,
+    marginRight: 8,
+  },
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  categoryText: {
+    fontSize: 10,
+    fontWeight: "700",
   },
   vendorName: {
     fontSize: 13,
-    color: "#666",
-    marginTop: 2,
+    color: "#888",
+    marginBottom: 6,
   },
   productDescription: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 15,
-    paddingHorizontal: 5,
+    fontSize: 13,
+    color: "#666",
+    lineHeight: 18,
+    marginBottom: 12,
   },
-  cardFooter: {
+  bottomRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#E8E8E8",
   },
-  priceContainer: {
+  priceSection: {
     flex: 1,
   },
   priceLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: "#888",
+    marginBottom: 2,
   },
   priceValue: {
     fontSize: 18,
-    fontWeight: "extrabold",
-    color: "#E76F51",
-    marginTop: 4,
+    fontWeight: "bold",
   },
-  buyButton: {
+  unitText: {
+    fontSize: 13,
+    fontWeight: "normal",
+    color: "#888",
+  },
+  stockSection: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 10,
-    // backgroundColor set inline
-    minWidth: 120,
-    justifyContent: "space-between",
+    gap: 4,
+    backgroundColor: "#F8F9FA",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
-  buyButtonText: {
-    color: "#FFFFFF",
+  stockText: {
+    fontSize: 12,
+    color: "#666",
+    fontWeight: "600",
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    gap: 6,
+  },
+  actionButtonText: {
+    color: "#FFF",
+    fontSize: 14,
     fontWeight: "700",
-    fontSize: 15,
   },
-  // --- MODAL STYLES ---
+
+  emptyContainer: {
+    alignItems: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#666",
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#888",
+    marginTop: 8,
+    textAlign: "center",
+  },
+
+  // Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: Dimensions.get("window").height * 0.9,
+    maxHeight: Dimensions.get("window").height * 0.85,
   },
   modalHeader: {
     flexDirection: "row",
@@ -643,108 +930,173 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#E8E8E8",
+    borderBottomColor: "#E0E0E0",
+  },
+  modalHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  modalIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#264653",
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    color: "#888",
+    marginTop: 2,
   },
   modalBody: {
     padding: 20,
   },
-  modalProductInfo: {
-    alignItems: "center",
+
+  productSummaryCard: {
+    backgroundColor: "#F8F9FA",
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
   },
-  modalProductName: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 5,
-    // color set inline
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  modalProductVendor: {
-    fontSize: 15,
+  summaryLabel: {
+    fontSize: 13,
     color: "#666",
-    marginBottom: 10,
   },
-  modalProductPrice: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#E76F51",
-  },
-  modalStockText: {
+  summaryValue: {
     fontSize: 14,
-    color: "#2A9D8F",
-    marginTop: 5,
-    fontWeight: "500",
+    fontWeight: "600",
+    color: "#264653",
   },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: "#E0E0E0",
+    marginVertical: 10,
+  },
+
   inputGroup: {
-    marginBottom: 15,
+    marginBottom: 20,
   },
   inputLabel: {
     fontSize: 14,
-    color: "#333",
-    marginBottom: 5,
-    fontWeight: "500",
+    fontWeight: "600",
+    color: "#264653",
+    marginBottom: 8,
   },
   textInput: {
     backgroundColor: "#F8F9FA",
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#DDD",
+    borderColor: "#E0E0E0",
     fontSize: 16,
-    color: "#333",
-    marginBottom: 10,
+    color: "#264653",
   },
+
   rentalContainer: {
-    padding: 10,
     backgroundColor: "#F0F8F7",
-    borderRadius: 10,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#2A9D8F",
-    marginBottom: 15,
+    borderColor: "#E0F2FE",
   },
-  modalError: {
-    backgroundColor: "#FFDDDD",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
+  rentalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
   },
-  modalErrorText: {
-    color: "#E76F51",
-    textAlign: "center",
+  rentalTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  dateInputWrapper: {
+    flex: 1,
+  },
+  dateLabel: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 6,
     fontWeight: "600",
-  },
-  modalSuccess: {
-    backgroundColor: "#DDEEDD",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  modalSuccessText: {
-    color: "#2A9D8F",
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  dateInputContainer: {
-    marginBottom: 10,
   },
   dateInput: {
-    backgroundColor: "#F8F9FA",
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#FFF",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#DDD",
+    borderColor: "#E0E0E0",
   },
   dateText: {
+    fontSize: 14,
+    color: "#264653",
+    fontWeight: "600",
+  },
+
+  messageBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 20,
+    backgroundColor: "#FFF0F0",
+    borderWidth: 1,
+    borderColor: "#E76F51",
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#E76F51",
+    fontWeight: "600",
+  },
+  successBox: {
+    backgroundColor: "#F0FFF4",
+    borderColor: "#4CAF50",
+  },
+  successText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#4CAF50",
+    fontWeight: "600",
+  },
+
+  confirmButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+    elevation: 2,
+  },
+  confirmButtonDisabled: {
+    opacity: 0.6,
+  },
+  confirmButtonText: {
+    color: "#FFF",
     fontSize: 16,
-    color: "#333",
+    fontWeight: "700",
   },
 });

@@ -79,7 +79,7 @@ export default function BuyerProfileScreen() {
           </View>
 
           {/* Settings Section */}
-          <Text style={styles.sectionTitle}>{t("Settings")}</Text>
+          {/* <Text style={styles.sectionTitle}>{t("Settings")}</Text>
           <View style={styles.menuContainer}>
             <TouchableOpacity style={styles.menuItem}>
               <MaterialCommunityIcons
@@ -112,7 +112,7 @@ export default function BuyerProfileScreen() {
                 color="#CCC"
               />
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           {/* Sign Out */}
           <View style={styles.signOutContainer}>
