@@ -2,7 +2,9 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -19,6 +21,8 @@ export default function BiddingScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const [bids, setBids] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // 2. State always holds the English key, e.g., "All"
   const [activeTab, setActiveTab] = useState("All");
@@ -29,11 +33,17 @@ export default function BiddingScreen() {
       if (user?.token) {
         fetchBids();
       }
-    }, [user])
+    }, [user]),
   );
 
-  const fetchBids = async () => {
+  const fetchBids = async (isRefreshing = false) => {
     try {
+      if (isRefreshing) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/bids/my/unique`, {
         method: "GET",
         headers: { Authorization: `Bearer ${user.token}` },
@@ -42,7 +52,14 @@ export default function BiddingScreen() {
       setBids(data.bids || []);
     } catch (err) {
       console.log("Error fetching bids", err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    fetchBids(true);
   };
 
   // 3. Filter logic compares English State against English Strings
@@ -157,11 +174,26 @@ export default function BiddingScreen() {
         renderItem={renderBidItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#E76F51"]}
+            tintColor="#E76F51"
+          />
+        }
         ListEmptyComponent={
-          <Text style={styles.emptyText}>
-            {/* 6. Clean up the empty message translation */}
-            {t("No bids found for")} "{t(activeTab)}"
-          </Text>
+          loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#E76F51"
+              style={{ marginTop: 50 }}
+            />
+          ) : (
+            <Text style={styles.emptyText}>
+              {t("No bids found for")} "{t(activeTab)}"
+            </Text>
+          )
         }
       />
     </ScreenWrapper>

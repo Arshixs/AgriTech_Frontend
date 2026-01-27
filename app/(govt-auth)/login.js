@@ -1,16 +1,16 @@
 // File: app/(govt-auth)/login.js
 
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { useRouter } from "expo-router";
-import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import Input from "../../src/components/common/Input";
-import Button from "../../src/components/common/Button";
-import { useAuth } from "../../src/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { API_BASE_URL } from "../../secret";
+import Button from "../../src/components/common/Button";
+import Input from "../../src/components/common/Input";
+import ScreenWrapper from "../../src/components/common/ScreenWrapper";
+import { useAuth } from "../../src/context/AuthContext";
 const API_URL = API_BASE_URL;
 
 export default function GovtLoginScreen() {
@@ -55,7 +55,7 @@ export default function GovtLoginScreen() {
     }
 
     setLoading(true);
-    
+
     try {
       const response = await axios.post(`${API_URL}/api/govt/auth/verify-otp`, {
         phone: phone.startsWith("+91") ? phone : `+91${phone}`,
@@ -80,6 +80,18 @@ export default function GovtLoginScreen() {
     }
   };
 
+  const handleNumberEnter = (text) => {
+    const filtered = text.replace(/[^0-9]/g, "");
+    if (text !== filtered) {
+      Alert.alert(
+        "Invalid input",
+        "Please type the mobile number using English digits (0–9) only."
+      );
+    }
+
+    setPhone(filtered);
+  };
+
   return (
     <ScreenWrapper>
       <View style={styles.container}>
@@ -100,7 +112,7 @@ export default function GovtLoginScreen() {
         <Input
           label={t("Mobile Number")}
           value={phone}
-          onChangeText={setPhone}
+          onChangeText={handleNumberEnter}
           placeholder={t("Enter 10 digit mobile number")}
           keyboardType="phone-pad"
           maxLength={13}

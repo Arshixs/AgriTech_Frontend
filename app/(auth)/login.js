@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
@@ -41,6 +41,18 @@ export default function LoginScreen() {
     }
   };
 
+  const handleNumberEnter = (text) => {
+    const filtered = text.replace(/[^0-9]/g, "");
+    if (text !== filtered) {
+      Alert.alert(
+        "Invalid input",
+        "Please type the mobile number using English digits (0–9) only."
+      );
+    }
+
+    setMobileNumber(filtered);
+  };
+
   return (
     <ScreenWrapper>
       <View style={styles.container}>
@@ -48,7 +60,7 @@ export default function LoginScreen() {
         <Input
           label={t("Mobile Number")}
           value={mobileNumber}
-          onChangeText={setMobileNumber}
+          onChangeText={handleNumberEnter}
           placeholder={t("e.g., 9876543210")}
           keyboardType="phone-pad"
         />
