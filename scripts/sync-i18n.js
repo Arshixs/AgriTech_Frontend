@@ -2,7 +2,8 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby49VOPDwu_-F7Pk-YQNTtK7PRW_zlq4LWk5VW42UZdNAMl6MN3w-4XqNiUVaAl8oZ4uQ/exec';
+const WEB_APP_URL =
+  "https://script.google.com/macros/s/AKfycby49VOPDwu_-F7Pk-YQNTtK7PRW_zlq4LWk5VW42UZdNAMl6MN3w-4XqNiUVaAl8oZ4uQ/exec";
 
 async function syncTranslations() {
   try {
@@ -30,6 +31,10 @@ async function syncTranslations() {
     fs.writeFileSync(
       path.join(__dirname, '../src/i18n/locales/hi/translation.json'),
       JSON.stringify(sheetData.hi, null, 2)
+    );
+    fs.writeFileSync(
+      path.join(__dirname, "../src/i18n/locales/bho/translation.json"),
+      JSON.stringify(sheetData.bho, null, 2),
     );
 
     console.log('Sync Complete: Local JSON files updated from Sheet.');

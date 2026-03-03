@@ -15,7 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps"; // Added MapView
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { API_BASE_URL } from "../../../secret";
 import Button from "../../../src/components/common/Button";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
@@ -27,16 +27,27 @@ export default function FarmerProfileScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
 
-  const toggleLanguage = () => {
-    const nextLanguage = i18n.language === "en" ? "hi" : "en";
-    i18n.changeLanguage(nextLanguage);
+  const LANGUAGES = ["en", "hi", "bho"];
+
+  const LANGUAGE_LABELS = {
+    en: "English",
+    hi: "हिन्दी",
+    bho: "भोजपुरी",
   };
+
+  const toggleLanguage = () => {
+    const currentIndex = LANGUAGES.indexOf(i18n.language);
+    const nextIndex = (currentIndex + 1) % LANGUAGES.length;
+    i18n.changeLanguage(LANGUAGES[nextIndex]);
+  };
+
+  const currentLangLabel = LANGUAGE_LABELS[i18n.language] || "English";
 
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [fetchingGps, setFetchingGps] = useState(false); // Added for GPS loading
-  const [isMapModalVisible, setMapModalVisible] = useState(false); // Added for Modal
+  const [fetchingGps, setFetchingGps] = useState(false);
+  const [isMapModalVisible, setMapModalVisible] = useState(false);
   const [tempCoords, setTempCoords] = useState({ lat: null, lng: null });
 
   const mapRef = useRef(null);
@@ -50,7 +61,6 @@ export default function FarmerProfileScreen() {
     coordinates: { lat: null, lng: null },
   });
 
-  // Map region state
   const [previewRegion, setPreviewRegion] = useState({
     latitude: 20.5937,
     longitude: 78.9629,
@@ -68,7 +78,6 @@ export default function FarmerProfileScreen() {
       const data = await res.json();
       if (res.ok) {
         setProfile(data.farmer);
-        // Sync map preview if coords exist
         if (data.farmer.coordinates?.lat) {
           setPreviewRegion({
             latitude: data.farmer.coordinates.lat,
@@ -95,12 +104,8 @@ export default function FarmerProfileScreen() {
     fetchProfile();
   }, []);
 
-  /**
-   * MAP LOGIC FROM REGISTER.JS
-   */
   const handleMapPress = useCallback((e) => {
     const coords = e.nativeEvent.coordinate;
-    // Update ONLY temp state
     setTempCoords({ lat: coords.latitude, lng: coords.longitude });
   }, []);
 
@@ -111,7 +116,7 @@ export default function FarmerProfileScreen() {
       if (status !== "granted") {
         RNAlert.alert(
           "Permission Denied",
-          t("Location permission is required")
+          t("Location permission is required"),
         );
         return;
       }
@@ -121,7 +126,6 @@ export default function FarmerProfileScreen() {
       });
       const { latitude, longitude } = loc.coords;
 
-      // Update ONLY temp state
       setTempCoords({ lat: latitude, lng: longitude });
 
       if (mapRef.current) {
@@ -132,7 +136,7 @@ export default function FarmerProfileScreen() {
             latitudeDelta: 0.005,
             longitudeDelta: 0.005,
           },
-          500
+          500,
         );
       }
     } catch (error) {
@@ -148,10 +152,8 @@ export default function FarmerProfileScreen() {
       return;
     }
 
-    // Save temp to profile
     setProfile((prev) => ({ ...prev, coordinates: tempCoords }));
 
-    // Sync the small preview map
     setPreviewRegion({
       latitude: tempCoords.lat,
       longitude: tempCoords.lng,
@@ -217,7 +219,7 @@ export default function FarmerProfileScreen() {
           activeOpacity={0.7}
         >
           <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
-          <Text style={styles.langText}>{t("हिन्दी")}</Text>
+          <Text style={styles.langText}>{currentLangLabel}</Text>
         </TouchableOpacity>
 
         <View style={styles.container}>
@@ -230,13 +232,12 @@ export default function FarmerProfileScreen() {
             <Text style={styles.userPhone}>{profile.phone}</Text>
           </View>
 
-          {/* Location Management Section (Updated to match Register style) */}
+          {/* Location Management Section */}
           <Text style={styles.sectionTitle}>{t("Farm Location")}</Text>
 
           <TouchableOpacity
             style={styles.mapPreview}
             onPress={() => {
-              // Initialize tempCoords with existing profile coords when opening
               setTempCoords(profile.coordinates);
               setMapModalVisible(true);
             }}
@@ -329,7 +330,7 @@ export default function FarmerProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Fullscreen Map Modal (Copied from Register) */}
+          {/* Fullscreen Map Modal */}
           <Modal
             visible={isMapModalVisible}
             animationType="slide"
@@ -417,10 +418,10 @@ const styles = StyleSheet.create({
   userPhone: { fontSize: 16, color: "#666", marginTop: 4 },
 
   langButton: {
-    position: "absolute", // This is key to removing the separation
-    top: 20, // Adjusts based on OS
+    position: "absolute",
+    top: 20,
     right: 20,
-    zIndex: 10, // Ensures it stays above all other content
+    zIndex: 10,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
@@ -429,15 +430,19 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     borderWidth: 1.5,
     borderColor: "#2A9D8F",
-    // Stronger elevation for a clean floating look
     elevation: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
   },
+  langText: {
+    color: "#2A9D8F",
+    fontWeight: "bold",
+    marginLeft: 8,
+    fontSize: 15,
+  },
 
-  // Map Preview (Style from Register)
   mapPreview: {
     height: 180,
     backgroundColor: "#e8f4f8",
@@ -467,7 +472,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  // Form
   infoSection: { marginBottom: 20 },
   sectionTitle: {
     fontSize: 18,
@@ -493,8 +497,8 @@ const styles = StyleSheet.create({
     color: "#264653",
   },
   disabledInput: {
-    backgroundColor: "#F0F0F0", // Greyed out background
-    color: "#888", // Muted text color
+    backgroundColor: "#F0F0F0",
+    color: "#888",
     borderColor: "#E0E0E0",
   },
   helperText: {
@@ -504,7 +508,6 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
 
-  // Modal Styles (From Register)
   modalBody: { flex: 1, backgroundColor: "#000" },
   fullMap: { flex: 1 },
   modalHeader: {
@@ -548,7 +551,6 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
 
-  // Footer Actions
   actions: { marginTop: 10 },
   signOutButton: {
     flexDirection: "row",

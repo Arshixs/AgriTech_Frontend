@@ -22,12 +22,12 @@ export default function PriceForecastScreen() {
   const { t } = useTranslation();
   const { crop: initialCrop } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
-  const [selectedCrop, setSelectedCrop] = useState(initialCrop || "Wheat");
+  const [selectedCrop, setSelectedCrop] = useState(initialCrop || "Rice");
   const [timeframe, setTimeframe] = useState("3months");
   const [forecast, setForecast] = useState(null);
   const authToken = user?.token;
 
-  const crops = ["Rice", "Wheat", "Tomato", "Cotton", "Sugarcane", "Potato"];
+  const crops = ["Rice"];
   const timeframes = [
     { value: "1month", label: t("1 Month") },
     { value: "3months", label: t("3 Months") },
@@ -217,6 +217,7 @@ export default function PriceForecastScreen() {
                     {formatCurrency(forecast.currentPrice)}
                   </Text>
                   <Text style={styles.perUnit}>{t("per quintal")}</Text>
+                  <Text style={styles.perUnit}>{t("*tentative")}</Text>
                 </View>
 
                 <MaterialCommunityIcons
@@ -242,8 +243,7 @@ export default function PriceForecastScreen() {
                       style={[
                         styles.changeText,
                         {
-                          color:
-                            forecast.change >= 0 ? "#2A9D8F" : "#E76F51",
+                          color: forecast.change >= 0 ? "#2A9D8F" : "#E76F51",
                         },
                       ]}
                     >
@@ -301,8 +301,8 @@ export default function PriceForecastScreen() {
                               factor.impact === "high"
                                 ? "#E76F51"
                                 : factor.impact === "medium"
-                                ? "#F4A261"
-                                : "#E9C46A",
+                                  ? "#F4A261"
+                                  : "#E9C46A",
                           },
                         ]}
                       />
@@ -314,16 +314,16 @@ export default function PriceForecastScreen() {
                           factor.trend === "up"
                             ? "arrow-up"
                             : factor.trend === "down"
-                            ? "arrow-down"
-                            : "minus"
+                              ? "arrow-down"
+                              : "minus"
                         }
                         size={18}
                         color={
                           factor.trend === "up"
                             ? "#2A9D8F"
                             : factor.trend === "down"
-                            ? "#E76F51"
-                            : "#666"
+                              ? "#E76F51"
+                              : "#666"
                         }
                       />
                       <Text style={styles.impactText}>
@@ -341,9 +341,7 @@ export default function PriceForecastScreen() {
                   size={24}
                   color="#F4A261"
                 />
-                <Text style={styles.insightsTitle}>
-                  {t("Market Insights")}
-                </Text>
+                <Text style={styles.insightsTitle}>{t("Market Insights")}</Text>
                 <Text style={styles.insightsText}>
                   •{" "}
                   {t("{{crop}} prices are showing a {{trend}} seasonal trend", {

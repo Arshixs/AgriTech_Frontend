@@ -32,7 +32,6 @@ export default function CompleteProfileScreen() {
     name: "",
     email: "",
     phone: user.phone,
-    designation: "",
     homeAddress: "",
     maritalStatus: "N/A",
     accountNumber: "",
@@ -195,13 +194,6 @@ export default function CompleteProfileScreen() {
             onChangeText={(val) => updateField("email", val)}
             placeholder={t("Enter your email")}
             keyboardType="email-address"
-          />
-
-          <Input
-            label={`${t("Designation")} *`}
-            value={formData.designation}
-            onChangeText={(val) => updateField("designation", val)}
-            placeholder={t("Enter your designation")}
           />
 
           <Input

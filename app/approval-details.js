@@ -52,7 +52,7 @@ export default function ApprovalDetailsScreen() {
     }
 
     // --- Mock API call ---
-    console.log(`Submitting action: ${action} for item ${id} with notes: ${notes}`);
+    //console.log(`Submitting action: ${action} for item ${id} with notes: ${notes}`);
     
     Alert.alert(
       'Action Submitted',

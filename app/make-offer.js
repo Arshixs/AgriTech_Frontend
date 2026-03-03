@@ -25,7 +25,7 @@ export default function MakeOfferScreen() {
   const { user } = useAuth();
   const params = useLocalSearchParams();
   const { requirementId, buyerId, cropName, targetPrice, unit, crop } = params;
-  console.log(crop);
+  //console.log(crop);
   let cropData = null;
   // 2. Parse the string back into an Object
   try {

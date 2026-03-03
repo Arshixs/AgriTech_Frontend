@@ -19,10 +19,21 @@ export default function BuyerProfileScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
 
-  const toggleLanguage = () => {
-    const nextLanguage = i18n.language === "en" ? "hi" : "en";
-    i18n.changeLanguage(nextLanguage);
+  const LANGUAGES = ["en", "hi", "bho"];
+
+  const LANGUAGE_LABELS = {
+    en: "English",
+    hi: "हिन्दी",
+    bho: "भोजपुरी",
   };
+
+  const toggleLanguage = () => {
+    const currentIndex = LANGUAGES.indexOf(i18n.language);
+    const nextIndex = (currentIndex + 1) % LANGUAGES.length;
+    i18n.changeLanguage(LANGUAGES[nextIndex]);
+  };
+
+  const currentLangLabel = LANGUAGE_LABELS[i18n.language] || "English";
 
   // The signOut function from AuthContext will handle the redirect
   const handleSignOut = () => {
@@ -42,7 +53,7 @@ export default function BuyerProfileScreen() {
         activeOpacity={0.7}
       >
         <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
-        <Text style={styles.langText}>{t("हिन्दी")}</Text>
+        <Text style={styles.langText}>{currentLangLabel}</Text>
       </TouchableOpacity>
 
       <ScrollView>
@@ -77,42 +88,6 @@ export default function BuyerProfileScreen() {
               <MaterialCommunityIcons name="pencil" size={14} color="#E76F51" />
             </TouchableOpacity>
           </View>
-
-          {/* Settings Section */}
-          {/* <Text style={styles.sectionTitle}>{t("Settings")}</Text>
-          <View style={styles.menuContainer}>
-            <TouchableOpacity style={styles.menuItem}>
-              <MaterialCommunityIcons
-                name="shield-account"
-                size={24}
-                color="#457B9D"
-              />
-              <Text style={styles.menuItemText}>{t("Account & Security")}</Text>
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
-                color="#CCC"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
-              <MaterialCommunityIcons name="bank" size={24} color="#2A9D8F" />
-              <Text style={styles.menuItemText}>{t("Payment & Billing")}</Text>
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
-                color="#CCC"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
-              <MaterialCommunityIcons name="bell" size={24} color="#F4A261" />
-              <Text style={styles.menuItemText}>{t("Notifications")}</Text>
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
-                color="#CCC"
-              />
-            </TouchableOpacity>
-          </View> */}
 
           {/* Sign Out */}
           <View style={styles.signOutContainer}>
@@ -249,10 +224,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   langButton: {
-    position: "absolute", // This is key to removing the separation
-    top: 60, // Adjusts based on OS
+    position: "absolute",
+    top: 60,
     right: 15,
-    zIndex: 10, // Ensures it stays above all other content
+    zIndex: 10,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
@@ -261,11 +236,16 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     borderWidth: 1.5,
     borderColor: "#2A9D8F",
-    // Stronger elevation for a clean floating look
     elevation: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
+  },
+  langText: {
+    color: "#2A9D8F",
+    fontWeight: "bold",
+    marginLeft: 8,
+    fontSize: 15,
   },
 });

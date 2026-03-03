@@ -1,6 +1,5 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-// 1. Add Import
 import { useTranslation } from "react-i18next";
 import {
   ScrollView,
@@ -16,13 +15,23 @@ import { useAuth } from "../../src/context/AuthContext";
 export default function VendorProfileScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  // 2. Initialize Hook
   const { t, i18n } = useTranslation();
 
-  const toggleLanguage = () => {
-    const nextLanguage = i18n.language === "en" ? "hi" : "en";
-    i18n.changeLanguage(nextLanguage);
+  const LANGUAGES = ["en", "hi", "bho"];
+
+  const LANGUAGE_LABELS = {
+    en: "English",
+    hi: "हिन्दी",
+    bho: "भोजपुरी",
   };
+
+  const toggleLanguage = () => {
+    const currentIndex = LANGUAGES.indexOf(i18n.language);
+    const nextIndex = (currentIndex + 1) % LANGUAGES.length;
+    i18n.changeLanguage(LANGUAGES[nextIndex]);
+  };
+
+  const currentLangLabel = LANGUAGE_LABELS[i18n.language] || "English";
 
   const handleSignOut = () => {
     signOut();
@@ -32,7 +41,6 @@ export default function VendorProfileScreen() {
     <ScreenWrapper style={styles.wrapper}>
       <ScrollView>
         <View style={styles.header}>
-          {/* 3. Wrap Static Strings */}
           <Text style={styles.headerTitle}>{t("Profile & Settings")}</Text>
         </View>
 
@@ -43,7 +51,7 @@ export default function VendorProfileScreen() {
           activeOpacity={0.7}
         >
           <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
-          <Text style={styles.langText}>{t("हिन्दी")}</Text>
+          <Text style={styles.langText}>{currentLangLabel}</Text>
         </TouchableOpacity>
 
         <View style={styles.container}>
@@ -53,7 +61,6 @@ export default function VendorProfileScreen() {
               <FontAwesome name="user-circle" size={50} color="#457B9D" />
               <View style={styles.profileInfo}>
                 <Text style={styles.profileorganizationName}>
-                  {/* Translate fallback text */}
                   {user?.organizationName || t("Vendor Organisation")}
                 </Text>
                 <Text style={styles.profileName}>
@@ -109,29 +116,7 @@ export default function VendorProfileScreen() {
                 color="#CCC"
               />
             </TouchableOpacity>
-
-            {/* Commented out sections left as-is, remember to add t() if you uncomment them */}
-            {/* <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => router.push("/expense-calculator")}
-            >
-              <MaterialCommunityIcons
-                name="calculator-variant"
-                size={24}
-                color="#E76F51"
-              />
-              <Text style={styles.menuItemText}>Expense Calculator</Text>
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
-                color="#CCC"
-              />
-            </TouchableOpacity> */}
           </View>
-
-          {/* Settings Section - Commented Out */}
-          {/* <Text style={styles.sectionTitle}>Settings</Text> */}
-          {/* ... */}
 
           {/* Sign Out */}
           <View style={styles.signOutContainer}>
@@ -260,10 +245,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   langButton: {
-    position: "absolute", // This is key to removing the separation
-    top: 20, // Adjusts based on OS
+    position: "absolute",
+    top: 20,
     right: 15,
-    zIndex: 10, // Ensures it stays above all other content
+    zIndex: 10,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
@@ -272,11 +257,16 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     borderWidth: 1.5,
     borderColor: "#2A9D8F",
-    // Stronger elevation for a clean floating look
     elevation: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
+  },
+  langText: {
+    color: "#2A9D8F",
+    fontWeight: "bold",
+    marginLeft: 8,
+    fontSize: 15,
   },
 });
