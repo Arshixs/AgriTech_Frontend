@@ -1,5 +1,5 @@
 module.exports = {
-  locales: ['en', 'hi'],
+  locales: ['en', 'hi','bho'],
   output: 'src/i18n/locales/$LOCALE/translation.json', // Matches your current path
   input: ['app/**/*.{js,jsx}', 'src/**/*.{js,jsx}'],
   keySeparator: false, // Allows natural English sentences as keys

@@ -40,7 +40,7 @@ export default function VendorLoginScreen() {
 
       const checkData = await checkRes.json();
 
-      console.log(checkData);
+      //console.log(checkData);
 
       if (checkRes.status === 404 || checkData.exists === false) {
         // CASE A: NEW VENDOR -> Redirect to Registration

@@ -58,7 +58,7 @@ export default function ListingViolationScreen() {
           style: action === 'Delist' ? 'destructive' : 'default',
           onPress: () => {
             // --- Mock API call ---
-            console.log(`Action: ${action} for violation ${id}`);
+           // console.log(`Action: ${action} for violation ${id}`);
             Alert.alert('Action Taken', `The action was successful.`, [
               { text: 'OK', onPress: () => router.back() }
             ]);

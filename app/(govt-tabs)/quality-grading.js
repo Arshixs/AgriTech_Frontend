@@ -207,7 +207,7 @@ export default function QualityGradingScreen() {
   };
 
   const handleOpenGrading = (request) => {
-    console.log(request);
+    //console.log(request);
     setSelectedRequest(request);
     setGradingForm({
       grade: "",

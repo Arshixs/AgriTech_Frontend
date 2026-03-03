@@ -24,7 +24,7 @@ export default function BuyerOTPScreen() {
       );
     }
     setLoading(true);
-    console.log(mobileNumber);
+    //console.log(mobileNumber);
 
     try {
       const verifyRes = await fetch(

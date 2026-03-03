@@ -3,10 +3,12 @@ import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
 import en from './locales/en/translation.json';
 import hi from './locales/hi/translation.json';
+import bho from './locales/bho/translation.json';
 
 const resources = {
   en: { translation: en },
-  hi: { translation: hi }
+  hi: { translation: hi },
+  bho:{translation: bho}
 };
 
 // Get device locale (e.g., 'en-US' or 'hi-IN')
@@ -18,7 +20,7 @@ i18n
   .init({
     resources,
     lng: deviceLanguage, // Use device language initially
-    fallbackLng: 'en',    // Fallback if key is missing in Hindi
+    fallbackLng: 'hi',    // Fallback if key is missing in Hindi
     compatibilityJSON: 'v3',
     interpolation: {
       escapeValue: false // React already escapes values

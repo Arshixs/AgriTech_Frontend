@@ -41,7 +41,7 @@ export default function VendorDashboard() {
       const data = await res.json();
 
       if (res.ok) {
-        console.log(data);
+       // console.log(data);
         setRecentOrders(data.recentOrders);
         setTotalRevenue(data.stats.monthlyRevenue);
         setPendingOrders(data.stats.pendingOrders);

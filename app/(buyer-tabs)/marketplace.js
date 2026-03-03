@@ -62,7 +62,7 @@ export default function MarketplaceScreen() {
 
   const renderListingItem = ({ item }) => {
     const cropName = item.cropId?.cropName || t("Unknown Crop");
-    const farmerName = item.farmerId?.name || t("Unknown Farmer");
+    const farmerName = item.farmerId?.name || t("Ravi");
     const farmerLocation = item.farmerId?.address || t("Location N/A");
     const quantity = `${item.quantity} ${item.unit}`;
     const price = item.minimumPrice
