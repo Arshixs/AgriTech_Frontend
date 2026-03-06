@@ -1,5 +1,3 @@
-// File: app/(govt-auth)/complete-profile.js
-
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import * as DocumentPicker from "expo-document-picker";

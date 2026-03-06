@@ -1,89 +1,52 @@
-// File: app/(buyer-auth)/otp.js
+// File: app/(govt-auth)/otp.js
 
 import { FontAwesome } from "@expo/vector-icons";
+import axios from "axios";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
-import { API_BASE_URL, BUYER_COLOR } from "../../secret";
+import { API_BASE_URL, GOVERNMENT_COLOR } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 import { styles } from "../../src/styles/auth/OTPScreenStyles";
 
-export default function BuyerOTPScreen() {
+export default function GovtOtpScreen() {
   const router = useRouter();
-  const { mobileNumber, pendingProfile } = useLocalSearchParams();
-  const { signInBuyer } = useAuth();
+  const { t } = useTranslation();
+  const { signInGovt } = useAuth();
+
+  const { mobileNumber } = useLocalSearchParams();
+
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
-  const { t } = useTranslation();
 
-  const handleVerifyOTP = async () => {
+  const handleVerifyOtp = async () => {
     if (!otp || otp.length !== 6) {
       return Alert.alert(
-        t("Invalid OTP"),
-        t("Please enter a valid 6-digit code."),
+        t("Invalid Input"),
+        t("Please enter a valid 6-digit OTP."),
       );
     }
+
     setLoading(true);
 
     try {
-      const verifyRes = await fetch(
-        `${API_BASE_URL}/api/buyer/auth/verify-otp`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            phone: `${mobileNumber}`,
-            otp: otp,
-          }),
-        },
+      const response = await axios.post(
+        `${API_BASE_URL}/api/govt/auth/verify-otp`,
+        { phone: mobileNumber, otp },
       );
 
-      const verifyData = await verifyRes.json();
-
-      if (!verifyRes.ok) {
-        throw new Error(verifyData.message || t("Verification failed"));
-      }
-
-      const { token, buyer } = verifyData;
-      let finalBuyerData = { ...buyer, token };
-
-      if (pendingProfile) {
-        const profileData = JSON.parse(pendingProfile);
-
-        const updateRes = await fetch(
-          `${API_BASE_URL}/api/buyer/auth/update-profile`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(profileData),
-          },
-        );
-
-        const updateData = await updateRes.json();
-
-        if (!updateRes.ok) {
-          Alert.alert(
-            t("Warning"),
-            t(
-              "OTP Verified but Profile Update failed. Please update profile in settings.",
-            ),
-          );
-        } else {
-          finalBuyerData = { ...finalBuyerData, ...updateData.buyer };
-        }
-      }
-
-      await signInBuyer(finalBuyerData);
+      const { token, employee } = response.data;
+      await signInGovt({ ...employee, token });
     } catch (err) {
       console.error(err);
-      Alert.alert(t("Error"), err.message || t("Something went wrong"));
+      Alert.alert(
+        t("Error"),
+        err.response?.data?.message || t("Failed to verify OTP"),
+      );
     } finally {
       setLoading(false);
     }
@@ -98,14 +61,12 @@ export default function BuyerOTPScreen() {
         >
           <FontAwesome name="arrow-left" size={20} color="#264653" />
         </TouchableOpacity>
-
         <Text style={styles.title}>{t("Verify OTP")}</Text>
         <Text style={styles.subtitle}>
           {t("Enter the 6-digit code sent to")}
           {"\n"}
           <Text style={styles.subtitleHighlight}>{mobileNumber}</Text>
         </Text>
-
         <Input
           label={t("OTP Code")}
           value={otp}
@@ -115,20 +76,21 @@ export default function BuyerOTPScreen() {
           maxLength={6}
           style={styles.otpInput}
         />
-
         <Button
           title={t("Verify & Proceed")}
-          onPress={handleVerifyOTP}
+          onPress={handleVerifyOtp}
           loading={loading}
           style={{ marginTop: 20 }}
-          color={BUYER_COLOR}
+          color={GOVERNMENT_COLOR}
         />
+
+        {/* Grouped both text elements inside the resendContainer */}
         <View style={styles.resendContainer}>
           <TouchableOpacity>
             <Text
               style={[
                 styles.resendText,
-                { color: BUYER_COLOR, marginBottom: 16 },
+                { color: GOVERNMENT_COLOR, marginBottom: 16 },
               ]}
             >
               {t("Didn't receive code? Resend")}
@@ -136,7 +98,7 @@ export default function BuyerOTPScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={[styles.resendText, { color: BUYER_COLOR }]}>
+            <Text style={[styles.resendText, { color: GOVERNMENT_COLOR }]}>
               {t("Change Number")}
             </Text>
           </TouchableOpacity>
