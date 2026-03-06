@@ -2,14 +2,20 @@
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
+  Alert,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
@@ -18,6 +24,50 @@ export default function BuyerProfileScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [companyName, setCompanyName] = useState(user?.companyName || "");
+  const [contactPerson, setContactPerson] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [updating, setUpdating] = useState(false);
+
+  const handleUpdateProfile = async () => {
+    if (!companyName.trim() || !contactPerson.trim() || !email.trim()) {
+      Alert.alert(t("Error"), t("All fields are required"));
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/update-profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          companyName,
+          contactPerson,
+          email,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        Alert.alert(t("Success"), t("Profile updated successfully"));
+        // Update user context with new data
+        // You might need to add an updateUser function in your AuthContext
+        setIsEditModalVisible(false);
+      } else {
+        Alert.alert(t("Error"), data.message || t("Failed to update profile"));
+      }
+    } catch (error) {
+      Alert.alert(t("Error"), t("Something went wrong"));
+      console.error("Update profile error:", error);
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const toggleLanguage = () => {
     const nextLanguage = i18n.language === "en" ? "hi" : "en";
@@ -70,7 +120,10 @@ export default function BuyerProfileScreen() {
               <Text style={styles.infoLabel}>{t("Contact Person:")}</Text>
               <Text style={styles.infoValue}>{user?.name || "N/A"}</Text>
             </View>
-            <TouchableOpacity style={styles.editButton}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => setIsEditModalVisible(true)}
+            >
               <Text style={styles.editButtonText}>
                 {t("Edit Company Details")}
               </Text>
@@ -124,6 +177,82 @@ export default function BuyerProfileScreen() {
           </View>
         </View>
       </ScrollView>
+      <Modal
+        visible={isEditModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsEditModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t("Edit Company Details")}</Text>
+              <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t("Company Name")}</Text>
+                <TextInput
+                  style={styles.input}
+                  value={companyName}
+                  onChangeText={setCompanyName}
+                  placeholder={t("Enter company name")}
+                  placeholderTextColor="#999"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t("Contact Person")}</Text>
+                <TextInput
+                  style={styles.input}
+                  value={contactPerson}
+                  onChangeText={setContactPerson}
+                  placeholder={t("Enter contact person name")}
+                  placeholderTextColor="#999"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t("Email")}</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder={t("Enter email")}
+                  placeholderTextColor="#999"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setIsEditModalVisible(false)}
+                disabled={updating}
+              >
+                <Text style={styles.cancelButtonText}>{t("Cancel")}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleUpdateProfile}
+                disabled={updating}
+              >
+                {updating ? (
+                  <ActivityIndicator color="#FFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>{t("Save Changes")}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenWrapper>
   );
 }
@@ -267,5 +396,79 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#FFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: "80%",
+    paddingBottom: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#264653",
+  },
+  modalBody: {
+    padding: 20,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#264653",
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    color: "#264653",
+    backgroundColor: "#F8F9FA",
+  },
+  modalFooter: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButton: {
+    backgroundColor: "#F0F0F0",
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#666",
+  },
+  saveButton: {
+    backgroundColor: "#E76F51",
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFF",
   },
 });
