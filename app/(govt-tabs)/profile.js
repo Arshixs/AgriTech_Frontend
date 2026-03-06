@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { API_BASE_URL } from "../../secret";
 import Button from "../../src/components/common/Button";
+import LanguageDropdown from "../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 const API_BASE = API_BASE_URL;
@@ -29,22 +30,6 @@ export default function GovtProfileScreen() {
   const [editVisible, setEditVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  const LANGUAGES = ["en", "hi", "bho"];
-
-  const LANGUAGE_LABELS = {
-    en: "English",
-    hi: "हिन्दी",
-    bho: "भोजपुरी",
-  };
-
-  const toggleLanguage = () => {
-    const currentIndex = LANGUAGES.indexOf(i18n.language);
-    const nextIndex = (currentIndex + 1) % LANGUAGES.length;
-    i18n.changeLanguage(LANGUAGES[nextIndex]);
-  };
-
-  const currentLangLabel = LANGUAGE_LABELS[i18n.language] || "English";
 
   const fetchProfile = async () => {
     try {
@@ -124,15 +109,7 @@ export default function GovtProfileScreen() {
         <Text style={styles.headerTitle}>{t("Profile and Settings")}</Text>
       </View>
 
-      {/* Floating Language Toggle */}
-      <TouchableOpacity
-        onPress={toggleLanguage}
-        style={styles.langButton}
-        activeOpacity={0.7}
-      >
-        <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
-        <Text style={styles.langText}>{currentLangLabel}</Text>
-      </TouchableOpacity>
+      <LanguageDropdown />
 
       <ScrollView
         refreshControl={
