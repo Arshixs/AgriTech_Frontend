@@ -1,49 +1,17 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  Platform,
-  StatusBar,
-} from "react-native";
-import { useRouter } from "expo-router";
-import ScreenWrapper from "../src/components/common/ScreenWrapper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import LanguageDropdown from "../src/components/common/LanguageDropdown";
+import ScreenWrapper from "../src/components/common/ScreenWrapper";
 
 export default function RoleSelectionScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
 
-  const LANGUAGES = ["en", "hi", "bho"];
-
-  const LANGUAGE_LABELS = {
-    en: "English",
-    hi: "हिन्दी",
-    bho: "भोजपुरी",
-  };
-
-  const toggleLanguage = () => {
-    const currentIndex = LANGUAGES.indexOf(i18n.language);
-    const nextIndex = (currentIndex + 1) % LANGUAGES.length;
-    i18n.changeLanguage(LANGUAGES[nextIndex]);
-  };
-
-  const currentLangLabel = LANGUAGE_LABELS[i18n.language] || "English";
-
   return (
     <ScreenWrapper>
-      {/* Floating Language Toggle - Now Absolute Positioned */}
-      <TouchableOpacity
-        onPress={toggleLanguage}
-        style={styles.langButton}
-        activeOpacity={0.7}
-      >
-        <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
-        <Text style={styles.langText}>{currentLangLabel}</Text>
-      </TouchableOpacity>
+      <LanguageDropdown />
 
       <View style={styles.container}>
         <Text style={styles.title}>{t("Welcome to Agri-Tech")}</Text>
@@ -102,31 +70,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#F8F9FA",
-  },
-  langButton: {
-    position: "absolute",
-    top: 40,
-    right: 20,
-    zIndex: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 30,
-    borderWidth: 1.5,
-    borderColor: "#2A9D8F",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  langText: {
-    color: "#2A9D8F",
-    fontWeight: "bold",
-    marginLeft: 8,
-    fontSize: 15,
   },
   title: {
     fontSize: 32,

@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import Button from "../../src/components/common/Button";
+import LanguageDropdown from "../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 
@@ -17,42 +18,17 @@ export default function VendorProfileScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
 
-  const LANGUAGES = ["en", "hi", "bho"];
-
-  const LANGUAGE_LABELS = {
-    en: "English",
-    hi: "हिन्दी",
-    bho: "भोजपुरी",
-  };
-
-  const toggleLanguage = () => {
-    const currentIndex = LANGUAGES.indexOf(i18n.language);
-    const nextIndex = (currentIndex + 1) % LANGUAGES.length;
-    i18n.changeLanguage(LANGUAGES[nextIndex]);
-  };
-
-  const currentLangLabel = LANGUAGE_LABELS[i18n.language] || "English";
-
   const handleSignOut = () => {
     signOut();
   };
 
   return (
     <ScreenWrapper style={styles.wrapper}>
+      <LanguageDropdown />
       <ScrollView>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{t("Profile & Settings")}</Text>
         </View>
-
-        {/* Floating Language Toggle */}
-        <TouchableOpacity
-          onPress={toggleLanguage}
-          style={styles.langButton}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
-          <Text style={styles.langText}>{currentLangLabel}</Text>
-        </TouchableOpacity>
 
         <View style={styles.container}>
           {/* Profile Info Card */}

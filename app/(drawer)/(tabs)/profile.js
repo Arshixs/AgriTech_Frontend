@@ -18,6 +18,7 @@ import {
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { API_BASE_URL } from "../../../secret";
 import Button from "../../../src/components/common/Button";
+import LanguageDropdown from "../../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../../src/context/AuthContext";
 
@@ -26,22 +27,6 @@ export default function FarmerProfileScreen() {
   const authToken = user?.token;
   const router = useRouter();
   const { t, i18n } = useTranslation();
-
-  const LANGUAGES = ["en", "hi", "bho"];
-
-  const LANGUAGE_LABELS = {
-    en: "English",
-    hi: "हिन्दी",
-    bho: "भोजपुरी",
-  };
-
-  const toggleLanguage = () => {
-    const currentIndex = LANGUAGES.indexOf(i18n.language);
-    const nextIndex = (currentIndex + 1) % LANGUAGES.length;
-    i18n.changeLanguage(LANGUAGES[nextIndex]);
-  };
-
-  const currentLangLabel = LANGUAGE_LABELS[i18n.language] || "English";
 
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -206,21 +191,13 @@ export default function FarmerProfileScreen() {
 
   return (
     <ScreenWrapper>
+      <LanguageDropdown />
       <ScrollView
         style={styles.scrollView}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Floating Language Toggle */}
-        <TouchableOpacity
-          onPress={toggleLanguage}
-          style={styles.langButton}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons name="translate" size={20} color="#2A9D8F" />
-          <Text style={styles.langText}>{currentLangLabel}</Text>
-        </TouchableOpacity>
 
         <View style={styles.container}>
           {/* Header */}
@@ -405,7 +382,7 @@ export default function FarmerProfileScreen() {
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  container: { padding: 20, paddingBottom: 40 },
+  container: { paddingLeft: 20, paddingRight: 20, paddingBottom: 40 },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
