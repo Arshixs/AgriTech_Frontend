@@ -23,7 +23,7 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    const fullPhoneNumber = `${mobileNumber}`;
+    const fullPhoneNumber = `+91${mobileNumber}`;
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/farmer-auth/send-otp`, {
@@ -37,7 +37,7 @@ export default function LoginScreen() {
       if (res.ok) {
         router.push({
           pathname: "/(auth)/otp",
-          params: { mobileNumber: fullPhoneNumber, role: "farmer" },
+          params: { mobileNumber: mobileNumber, role: "farmer" },
         });
       } else {
         Alert.alert(t("Error"), data.message || t("Failed to send OTP"));
@@ -61,7 +61,7 @@ export default function LoginScreen() {
         t("Please type the mobile number using English digits (0–9) only."),
       );
     }
-    
+
     setMobileNumber(filtered);
   };
 
