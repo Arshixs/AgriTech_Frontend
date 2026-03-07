@@ -12,7 +12,7 @@ import {
 } from "react-native";
 
 import { useTranslation } from "react-i18next";
-import { API_BASE_URL } from "../../secret";
+import { API_BASE_URL, VENDOR_COLOR } from "../../secret";
 import Button from "../../src/components/common/Button";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
@@ -69,7 +69,7 @@ export default function ProductsScreen() {
     >
       {/* Placeholder image logic since we simplified the model */}
       <View style={styles.imagePlaceholder}>
-        <MaterialCommunityIcons name="leaf" size={24} color="#2A9D8F" />
+        <MaterialCommunityIcons name="leaf" size={24} color={VENDOR_COLOR} />
       </View>
 
       <View style={styles.productInfo}>
@@ -82,7 +82,7 @@ export default function ProductsScreen() {
           <Text
             style={[
               styles.productStock,
-              { color: item.stock < 10 ? "#E76F51" : "#2A9D8F" },
+              { color: item.stock < 10 ? "#E76F51" : VENDOR_COLOR },
             ]}
           >
             {t("Stock")}: {item.stock}
@@ -104,13 +104,14 @@ export default function ProductsScreen() {
           icon={() => (
             <MaterialCommunityIcons name="plus" size={18} color="#FFF" />
           )}
+          color={VENDOR_COLOR}
         />
       </View>
 
       {loading ? (
         <ActivityIndicator
           size="large"
-          color="#2A9D8F"
+          color={VENDOR_COLOR}
           style={{ marginTop: 50 }}
         />
       ) : (
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 8,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#e8eef5ff",
     marginRight: 16,
     justifyContent: "center",
     alignItems: "center",

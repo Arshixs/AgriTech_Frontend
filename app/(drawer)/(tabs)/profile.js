@@ -16,7 +16,7 @@ import {
   View,
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { API_BASE_URL } from "../../../secret";
+import { API_BASE_URL, FARMER_COLOR } from "../../../secret";
 import Button from "../../../src/components/common/Button";
 import LanguageDropdown from "../../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
@@ -198,7 +198,6 @@ export default function FarmerProfileScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>

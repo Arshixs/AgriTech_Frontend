@@ -1,79 +1,48 @@
-// File: app/(govt-auth)/login.js
-
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { API_BASE_URL } from "../../secret";
+import { Alert, TouchableOpacity, View, Text } from "react-native";
+import { API_BASE_URL, GOVERNMENT_COLOR } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../src/context/AuthContext";
-const API_URL = API_BASE_URL;
+import { styles } from "../../src/styles/auth/LoginScreenStyles";
 
 export default function GovtLoginScreen() {
   const router = useRouter();
-  const { signInGovt } = useAuth();
   const { t } = useTranslation();
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSendOtp = async () => {
-    if (!phone || phone.length < 10) {
+    if (!phone || phone.length !== 10) {
       return Alert.alert(
-        t("Error"),
-        t("Please enter a valid 10 digit phone number")
+        t("Invalid Input"),
+        t("Enter a valid 10-digit number.")
       );
     }
 
     setLoading(true);
+    const fullPhoneNumber = `+91${phone}`;
+
     try {
-      const response = await axios.post(`${API_URL}/api/govt/auth/send-otp`, {
-        phone: phone.startsWith("+91") ? phone : `+91${phone}`,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/govt/auth/send-otp`,
+        { phone: fullPhoneNumber }
+      );
 
       Alert.alert(t("Success"), response.data.message);
-      setOtpSent(true);
-    } catch (error) {
-      console.error("Send OTP Error:", error);
+      router.push({
+        pathname: "/(govt-auth)/otp",
+        params: { mobileNumber: fullPhoneNumber, role: "govt" },
+      });
+    } catch (err) {
+      console.error(err);
       Alert.alert(
         t("Error"),
-        error.response?.data?.message || t("Failed to send OTP")
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otp || otp.length !== 6) {
-      return Alert.alert(t("Error"), t("Please enter a valid 6 digit OTP"));
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await axios.post(`${API_URL}/api/govt/auth/verify-otp`, {
-        phone: phone.startsWith("+91") ? phone : `+91${phone}`,
-        otp,
-      });
-
-      const { token, employee } = response.data;
-
-      // Store token and user data
-      await signInGovt({
-        ...employee,
-        token,
-      });
-    } catch (error) {
-      console.error("Verify OTP Error:", error);
-      Alert.alert(
-        t("Error"),
-        error.response?.data?.message || t("Failed to verify OTP")
+        err.response?.data?.message || t("Failed to send OTP")
       );
     } finally {
       setLoading(false);
@@ -84,11 +53,10 @@ export default function GovtLoginScreen() {
     const filtered = text.replace(/[^0-9]/g, "");
     if (text !== filtered) {
       Alert.alert(
-        "Invalid input",
-        "Please type the mobile number using English digits (0–9) only."
+        t("Invalid Input"),
+        t("Please type the mobile number using English digits (0–9) only.")
       );
     }
-
     setPhone(filtered);
   };
 
@@ -103,100 +71,28 @@ export default function GovtLoginScreen() {
         </TouchableOpacity>
 
         <View style={styles.iconHeader}>
-          <MaterialCommunityIcons name="bank" size={60} color="#606C38" />
+          <MaterialCommunityIcons name="bank" size={60} color={GOVERNMENT_COLOR} />
         </View>
 
-        <Text style={styles.title}>{t("Government Portal")}</Text>
-        <Text style={styles.subtitle}>{t("Authorized Personnel Only")}</Text>
+        <Text style={styles.titleCentered}>{t("Government Portal")}</Text>
+        <Text style={styles.subtitleCentered}>{t("Authorized Personnel Only")}</Text>
 
         <Input
           label={t("Mobile Number")}
           value={phone}
           onChangeText={handleNumberEnter}
-          placeholder={t("Enter 10 digit mobile number")}
+          placeholder={t("e.g., 9876543210")}
           keyboardType="phone-pad"
-          maxLength={13}
-          editable={!otpSent}
+          maxLength={10}
         />
 
-        {otpSent && (
-          <Input
-            label={t("OTP")}
-            value={otp}
-            onChangeText={setOtp}
-            placeholder={t("Enter 6 digit OTP")}
-            keyboardType="number-pad"
-            maxLength={6}
-          />
-        )}
-
-        {!otpSent ? (
-          <Button
-            title={t("Send OTP")}
-            onPress={handleSendOtp}
-            loading={loading}
-            style={{ backgroundColor: "#606C38" }}
-          />
-        ) : (
-          <>
-            <Button
-              title={t("Verify and Login")}
-              onPress={handleVerifyOtp}
-              loading={loading}
-              style={{ backgroundColor: "#606C38" }}
-            />
-            <TouchableOpacity
-              style={styles.resendButton}
-              onPress={() => {
-                setOtpSent(false);
-                setOtp("");
-              }}
-            >
-              <Text style={styles.resendText}>{t("Change Number")}</Text>
-            </TouchableOpacity>
-          </>
-        )}
+        <Button
+          title={t("Send OTP")}
+          onPress={handleSendOtp}
+          loading={loading}
+          color={GOVERNMENT_COLOR}
+        />
       </View>
     </ScreenWrapper>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 24,
-  },
-  backButton: {
-    position: "absolute",
-    top: 60,
-    left: 24,
-    zIndex: 1,
-  },
-  iconHeader: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#264653",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 32,
-    textAlign: "center",
-  },
-  resendButton: {
-    marginTop: 16,
-    alignItems: "center",
-  },
-  resendText: {
-    fontSize: 16,
-    color: "#606C38",
-    fontWeight: "600",
-  },
-});

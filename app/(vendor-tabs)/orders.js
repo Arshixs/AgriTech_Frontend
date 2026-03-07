@@ -15,7 +15,7 @@ import {
 } from "react-native";
 
 import { useTranslation } from "react-i18next";
-import { API_BASE_URL } from "../../secret";
+import { API_BASE_URL, VENDOR_COLOR } from "../../secret";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 
@@ -111,7 +111,7 @@ export default function VendorOrdersScreen() {
 
   const getStatusColor = (status) => {
     if (status === "pending") return "#F4A261"; // Orange
-    if (status === "accepted") return "#2A9D8F"; // Teal
+    if (status === "accepted") return VENDOR_COLOR; // Teal
     if (status === "completed") return "#264653"; // Dark Blue
     return "#E76F51"; // Red (Rejected)
   };
@@ -196,7 +196,7 @@ export default function VendorOrdersScreen() {
         <View style={styles.detailRow}>
           <MaterialCommunityIcons name="cash" size={16} color="#666" />
           <Text
-            style={[styles.detailText, { fontWeight: "600", color: "#2A9D8F" }]}
+            style={[styles.detailText, { fontWeight: "600", color: VENDOR_COLOR }]}
           >
             {t("Total")}: ₹{item.totalAmount}
           </Text>
@@ -206,7 +206,7 @@ export default function VendorOrdersScreen() {
         {isPending && (
           <View style={styles.buttonRow}>
             {actionLoading === item._id ? (
-              <ActivityIndicator size="small" color="#2A9D8F" />
+              <ActivityIndicator size="small" color={"#2A9D8F"} />
             ) : (
               <>
                 <TouchableOpacity
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "transparent",
   },
   tabActive: {
-    borderBottomColor: "#2A9D8F",
+    borderBottomColor: VENDOR_COLOR,
   },
   tabText: {
     fontSize: 14,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   tabTextActive: {
-    color: "#2A9D8F",
+    color: VENDOR_COLOR,
   },
   listContainer: {
     padding: 20,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   },
   phoneText: {
     fontSize: 14,
-    color: "#0794a3ff",
+    color: VENDOR_COLOR,
     marginLeft: 8,
     flex: 1,
   },
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   acceptButton: {
-    backgroundColor: "#2A9D8F",
+    backgroundColor: VENDOR_COLOR,
   },
   completeButton: {
     backgroundColor: "#264653",

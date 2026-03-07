@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../../secret";
+import { API_BASE_URL, BUYER_COLOR } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
@@ -38,7 +38,7 @@ export default function BuyerRegistrationScreen() {
     if (!emailRegex.test(email)) {
       return Alert.alert(
         t("Invalid Email"),
-        t("Please enter a valid email address.")
+        t("Please enter a valid email address."),
       );
     }
 
@@ -84,7 +84,7 @@ export default function BuyerRegistrationScreen() {
 
   return (
     <ScreenWrapper>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
           <TouchableOpacity
             style={styles.backButton}
@@ -99,12 +99,17 @@ export default function BuyerRegistrationScreen() {
             <Text style={{ fontWeight: "bold" }}>{phone}</Text>
           </Text>
 
+          {/* Organisation Details */}
+          <Text style={styles.sectionTitle}>{t("Company Details")}</Text>
           <Input
             label={t("Company Name")}
             value={companyName}
             onChangeText={setCompanyName}
             placeholder={t("e.g., Fresh Foods Inc.")}
           />
+
+          {/* Contact Details */}
+          <Text style={styles.sectionTitle}>{t("Contact Information")}</Text>
           <Input
             label={t("Contact Person Name")}
             value={contactPerson}
@@ -124,7 +129,7 @@ export default function BuyerRegistrationScreen() {
             title={t("Send OTP & Verify")}
             onPress={handleRegister}
             loading={loading}
-            style={{ marginTop: 16, backgroundColor: "#E76F51" }}
+            color={BUYER_COLOR}
           />
         </View>
       </ScrollView>
@@ -136,23 +141,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    paddingTop: 60,
+    paddingTop: 40,
   },
   backButton: {
-    position: "absolute",
-    top: 60,
-    left: 24,
-    zIndex: 1,
+    marginBottom: 20,
+    alignSelf: "flex-start",
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "bold",
+    marginBottom: 8,
     color: "#264653",
-    marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
     color: "#666",
-    marginBottom: 32,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: BUYER_COLOR,
+    marginTop: 16,
+    marginBottom: 12,
   },
 });

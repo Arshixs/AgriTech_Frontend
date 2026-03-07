@@ -1,5 +1,3 @@
-// File: app/(govt-auth)/complete-profile.js
-
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import * as DocumentPicker from "expo-document-picker";
@@ -14,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../../secret";
+import { API_BASE_URL, GOVERNMENT_COLOR } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
@@ -95,7 +93,7 @@ export default function CompleteProfileScreen() {
     if (!documents.idProof || !documents.addressProof) {
       Alert.alert(
         t("Validation"),
-        t("Please upload ID Proof and Address Proof")
+        t("Please upload ID Proof and Address Proof"),
       );
       return;
     }
@@ -107,7 +105,7 @@ export default function CompleteProfileScreen() {
       // Upload documents to Firebase
       Alert.alert(
         t("Uploading"),
-        t("Uploading documents to secure storage...")
+        t("Uploading documents to secure storage..."),
       );
 
       const documentUrls = await uploadMultipleDocuments(
@@ -115,7 +113,7 @@ export default function CompleteProfileScreen() {
         user.id || user.phone,
         (progress) => {
           setUploadProgress(progress);
-        }
+        },
       );
 
       // Submit profile with document URLs
@@ -129,14 +127,14 @@ export default function CompleteProfileScreen() {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        }
+        },
       );
 
       Alert.alert(
         t("Success"),
         t(
-          "Profile submitted for verification. You will be notified once approved."
-        )
+          "Profile submitted for verification. You will be notified once approved.",
+        ),
       );
 
       // Update user context
@@ -155,7 +153,7 @@ export default function CompleteProfileScreen() {
         t("Error"),
         error.response?.data?.message ||
           error.message ||
-          t("Failed to complete profile")
+          t("Failed to complete profile"),
       );
     } finally {
       setLoading(false);
@@ -253,7 +251,7 @@ export default function CompleteProfileScreen() {
           <Text style={styles.sectionTitle}>{t("Required Documents")}</Text>
           <Text style={styles.documentNote}>
             {t(
-              "Please upload clear PDF copies of the following documents (Max 5MB each)"
+              "Please upload clear PDF copies of the following documents (Max 5MB each)",
             )}
           </Text>
 
@@ -290,7 +288,7 @@ export default function CompleteProfileScreen() {
             title={loading ? t("Submitting...") : t("Submit for Verification")}
             onPress={handleSubmit}
             loading={loading}
-            style={{ backgroundColor: "#606C38" }}
+            color={GOVERNMENT_COLOR}
           />
         </View>
 

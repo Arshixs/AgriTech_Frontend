@@ -15,27 +15,39 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleSendOTP = async () => {
-    if (mobileNumber.length !== 10)
-      return alert(t("Enter a valid 10-digit number."));
+    if (mobileNumber.length !== 10) {
+      return Alert.alert(
+        t("Invalid Input"),
+        t("Enter a valid 10-digit number."),
+      );
+    }
+
     setLoading(true);
+    const fullPhoneNumber = `+91${mobileNumber}`;
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/farmer-auth/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: `+91${mobileNumber}`,
-          role: "farmer",
-        }),
+        body: JSON.stringify({ phone: fullPhoneNumber }),
       });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || t("Server error"));
-      }
+
       const data = await res.json();
-      // navigate to OTP screen (adjust if your backend returns different payload)
-      router.push({ pathname: "/(auth)/otp", params: { mobileNumber } });
+
+      if (res.ok) {
+        router.push({
+          pathname: "/(auth)/otp",
+          params: { mobileNumber: mobileNumber, role: "farmer" },
+        });
+      } else {
+        Alert.alert(t("Error"), data.message || t("Failed to send OTP"));
+      }
     } catch (err) {
-      alert(err.message || t("Failed to send OTP"));
+      console.error(err);
+      Alert.alert(
+        t("Network Error"),
+        t("Check your connection and IP address."),
+      );
     } finally {
       setLoading(false);
     }
@@ -45,8 +57,8 @@ export default function LoginScreen() {
     const filtered = text.replace(/[^0-9]/g, "");
     if (text !== filtered) {
       Alert.alert(
-        "Invalid input",
-        "Please type the mobile number using English digits (0–9) only."
+        t("Invalid Input"),
+        t("Please type the mobile number using English digits (0–9) only."),
       );
     }
 
@@ -56,14 +68,20 @@ export default function LoginScreen() {
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <Text style={styles.title}>{t("Welcome Farmer")}</Text>
+        <Text style={styles.title}>{t("Farmer Login")}</Text>
+        <Text style={styles.subtitle}>
+          {t("Enter your mobile number to continue")}
+        </Text>
+
         <Input
           label={t("Mobile Number")}
           value={mobileNumber}
           onChangeText={handleNumberEnter}
           placeholder={t("e.g., 9876543210")}
           keyboardType="phone-pad"
+          maxLength={10}
         />
+
         <Button
           title={t("Send OTP")}
           onPress={handleSendOTP}

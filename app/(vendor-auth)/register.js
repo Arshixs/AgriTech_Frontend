@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../../secret";
+import { API_BASE_URL, VENDOR_COLOR } from "../../secret";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
@@ -83,7 +83,7 @@ export default function VendorRegistrationScreen() {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <FontAwesome name="arrow-left" size={20} color="#264653" />
+            <FontAwesome name="arrow-left" size={20} />
           </TouchableOpacity>
 
           <Text style={styles.title}>{t("New Vendor Profile")}</Text>
@@ -131,6 +131,7 @@ export default function VendorRegistrationScreen() {
             onPress={handleRegister}
             loading={loading}
             style={{ marginTop: 24 }}
+            color={VENDOR_COLOR}
           />
         </View>
       </ScrollView>
@@ -151,7 +152,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#264653",
     marginBottom: 8,
   },
   subtitle: {
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#2A9D8F",
+    color: VENDOR_COLOR,
     marginTop: 16,
     marginBottom: 12,
   },

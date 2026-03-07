@@ -1,5 +1,3 @@
-// File: app/(govt-auth)/verification-pending.js
-
 import React, { useState, useEffect } from "react";
 import {
   View,
