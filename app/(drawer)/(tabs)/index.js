@@ -1,5 +1,4 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import { DrawerActions } from "@react-navigation/native";
 import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../../../secret";
+import { API_BASE_URL, FARMER_COLOR } from "../../../secret";
 import Button from "../../../src/components/common/Button";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../../src/context/AuthContext";
@@ -182,13 +181,13 @@ export default function HomeScreen() {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (res.ok) {
         // Refresh tasks or filter completed task out
         setTodaysTasks((prevTasks) =>
-          prevTasks.filter((task) => task._id !== taskId)
+          prevTasks.filter((task) => task._id !== taskId),
         );
         setFarmStats((prevStats) => ({
           ...prevStats,
@@ -227,11 +226,17 @@ export default function HomeScreen() {
                 {user ? user.name : t("Farmer")}!
               </Text>
             </View>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.profileButton}
               onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
             >
               <FontAwesome name="navicon" size={28} color="#264653" />
+            </TouchableOpacity> */}
+            <TouchableOpacity
+              style={styles.profileButton}
+              onPress={() => router.push("/(tabs)/profile")}
+            >
+              <FontAwesome name="user-circle" size={40} color={FARMER_COLOR} />
             </TouchableOpacity>
           </View>
 
@@ -309,7 +314,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Today's Tasks */}
-          <View style={styles.tasksSection}>
+          {/* <View style={styles.tasksSection}>
             <Text style={styles.sectionTitle}>
               {t("Today's Tasks")} ({farmStats.todaysTasks})
             </Text>
@@ -350,7 +355,7 @@ export default function HomeScreen() {
                 </View>
               ))
             )}
-          </View>
+          </View> */}
 
           {/* Sign Out Button */}
           <View style={styles.signOutContainer}>
