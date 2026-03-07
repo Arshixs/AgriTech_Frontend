@@ -59,10 +59,7 @@ export default function DrawerLayout() {
         name="iot-devices"
         options={{ drawerLabel: t("IoT Devices") }}
       />
-      <Drawer.Screen
-        name="alerts"
-        options={{ drawerLabel: t("Alerts") }}
-      />
+      <Drawer.Screen name="alerts" options={{ drawerLabel: t("Alerts") }} />
       <Drawer.Screen
         name="price-forecast"
         options={{ drawerLabel: t("Price Forecast") }}
@@ -83,6 +80,10 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="farmer-transaction-history"
         options={{ drawerLabel: t("Transaction History") }}
+      />
+      <Drawer.Screen
+        name="all-actions"
+        options={{ drawerLabel: t("All Actions") }}
       />
       <Drawer.Screen name="feed" options={{ drawerLabel: t("Feed") }} />
       {/* <Drawer.Screen name="field-details" options={{ drawerLabel: "Field Details" }} /> */}

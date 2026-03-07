@@ -93,7 +93,7 @@ export default function HomeScreen() {
       title: t("Marketplace"),
       description: t("Rentals and buy raw maerials"),
       icon: "tools",
-      color: "#2A9D8F",
+      color: "#457B9D",
       route: "/vendor-market-screen",
     },
     {
@@ -102,56 +102,56 @@ export default function HomeScreen() {
       description: t("Track crop prices"),
       icon: "chart-line",
       color: "#F4A261",
-      route: "/(tabs)/price-forecast",
+      route: "/price-forecast",
     },
     {
       id: 4,
-      title: t("Weather & Alerts"),
-      description: t("Stay updated"),
-      icon: "bell",
+      title: t("More Actions"),
+      description: t("Explore more features"),
+      icon: "more",
       color: "#E76F51",
-      route: "/(tabs)/alerts",
+      route: "all-actions",
     },
-    {
-      id: 5,
-      title: t("Crop Guide"),
-      description: t("Get recommendations"),
-      icon: "sprout",
-      color: "#606C38",
-      route: "/(tabs)/recommendations",
-    },
-    {
-      id: 6,
-      title: t("IoT Devices"),
-      description: t("Monitor sensors"),
-      icon: "access-point",
-      color: "#457B9D",
-      route: "/iot-devices",
-    },
-    {
-      id: 7,
-      title: t("My Orders"),
-      description: t("All orders and Rentals"),
-      icon: "access-point",
-      color: "#809d45ff",
-      route: "/farmer-orders-screen",
-    },
-    {
-      id: 8,
-      title: t("My Certificates"),
-      description: t("All certificates"),
-      icon: "check-decagram",
-      color: "#4dff00ff",
-      route: "/quality",
-    },
-    {
-      id: 9,
-      title: t("My Offers"),
-      description: t("See Requirement offer status"),
-      icon: "offer",
-      color: "#459d9dff",
-      route: "/my-offers",
-    },
+    // {
+    //   id: 5,
+    //   title: t("Crop Guide"),
+    //   description: t("Get recommendations"),
+    //   icon: "sprout",
+    //   color: "#606C38",
+    //   route: "/(tabs)/recommendations",
+    // },
+    // {
+    //   id: 6,
+    //   title: t("IoT Devices"),
+    //   description: t("Monitor sensors"),
+    //   icon: "access-point",
+    //   color: "#457B9D",
+    //   route: "/iot-devices",
+    // },
+    // {
+    //   id: 7,
+    //   title: t("My Orders"),
+    //   description: t("All orders and Rentals"),
+    //   icon: "access-point",
+    //   color: "#809d45ff",
+    //   route: "/farmer-orders-screen",
+    // },
+    // {
+    //   id: 8,
+    //   title: t("My Certificates"),
+    //   description: t("All certificates"),
+    //   icon: "check-decagram",
+    //   color: "#4dff00ff",
+    //   route: "/quality",
+    // },
+    // {
+    //   id: 9,
+    //   title: t("My Offers"),
+    //   description: t("See Requirement offer status"),
+    //   icon: "offer",
+    //   color: "#459d9dff",
+    //   route: "/my-offers",
+    // },
   ];
 
   const stats = [
@@ -251,7 +251,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Featured: Expense Predictor */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.featuredCard}
             onPress={() => router.push("/expense-prediction")}
             activeOpacity={0.8}
@@ -276,7 +276,7 @@ export default function HomeScreen() {
               </View>
               <FontAwesome name="chevron-right" size={20} color="#FFFFFF" />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Quick Actions */}
           <Text style={styles.sectionTitle}>{t("Quick Actions")}</Text>
