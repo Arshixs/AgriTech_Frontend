@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../../secret";
+import { API_BASE_URL, VENDOR_COLOR } from "../../secret";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 
@@ -63,7 +63,7 @@ export default function VendorDashboard() {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "completed":
-        return "#2A9D8F";
+        return VENDOR_COLOR;
       case "pending":
         return "#F4A261";
       case "rejected":
@@ -164,7 +164,7 @@ export default function VendorDashboard() {
                 <MaterialCommunityIcons
                   name={stat.icon}
                   size={24}
-                  color="#2A9D8F"
+                  color={VENDOR_COLOR}
                 />
                 <Text style={styles.statValue}>{stat.value}</Text>
                 <Text style={styles.statLabel}>{stat.label}</Text>

@@ -12,6 +12,7 @@ import Button from "../../src/components/common/Button";
 import LanguageDropdown from "../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
+import { VENDOR_COLOR } from "../../secret";
 
 export default function VendorProfileScreen() {
   const { user, signOut } = useAuth();
@@ -50,7 +51,7 @@ export default function VendorProfileScreen() {
             </View>
             <TouchableOpacity style={styles.editButton}>
               <Text style={styles.editButtonText}>{t("Edit Profile")}</Text>
-              <MaterialCommunityIcons name="pencil" size={14} color="#2A9D8F" />
+              <MaterialCommunityIcons name="pencil" size={14} color={VENDOR_COLOR} />
             </TouchableOpacity>
           </View>
 
@@ -100,6 +101,7 @@ export default function VendorProfileScreen() {
               title={t("Sign Out")}
               onPress={handleSignOut}
               style={{ backgroundColor: "#E76F51" }}
+              color={VENDOR_COLOR}
             />
           </View>
         </View>
@@ -186,7 +188,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#2A9D8F",
+    color: VENDOR_COLOR,
     marginRight: 6,
   },
   sectionTitle: {
@@ -219,30 +221,5 @@ const styles = StyleSheet.create({
   signOutContainer: {
     marginTop: 16,
     marginBottom: 40,
-  },
-  langButton: {
-    position: "absolute",
-    top: 20,
-    right: 15,
-    zIndex: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 30,
-    borderWidth: 1.5,
-    borderColor: "#2A9D8F",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  langText: {
-    color: "#2A9D8F",
-    fontWeight: "bold",
-    marginLeft: 8,
-    fontSize: 15,
   },
 });

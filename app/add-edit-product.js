@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 
-import { API_BASE_URL } from "../secret";
+import { API_BASE_URL, VENDOR_COLOR } from "../secret";
 import Button from "../src/components/common/Button";
 import Input from "../src/components/common/Input";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
@@ -179,7 +179,7 @@ export default function AddEditProductScreen() {
     return (
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2A9D8F" />
+          <ActivityIndicator size="large" color={VENDOR_COLOR} />
         </View>
       </ScreenWrapper>
     );
@@ -268,6 +268,7 @@ export default function AddEditProductScreen() {
           onPress={handleSave}
           loading={isLoading}
           style={{ marginTop: 24 }}
+          color={VENDOR_COLOR}
         />
 
         {id && (
@@ -276,6 +277,7 @@ export default function AddEditProductScreen() {
             onPress={handleDelete}
             style={styles.deleteButton}
             textStyle={styles.deleteButtonText}
+            color="#E76F51"
           />
         )}
       </ScrollView>
@@ -333,7 +335,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryButtonActive: {
-    backgroundColor: "#2A9D8F",
+    backgroundColor: VENDOR_COLOR,
   },
   categoryText: {
     fontSize: 14,
