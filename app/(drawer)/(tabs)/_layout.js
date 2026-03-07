@@ -46,7 +46,7 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="recommendations"
         options={{
           title: "Crops",
@@ -54,7 +54,7 @@ export default function TabsLayout() {
             <MaterialCommunityIcons name="sprout" size={24} color={color} />
           ),
         }}
-      />
+      /> */}
       {/* <Tabs.Screen
         name="price-forecast"
         options={{

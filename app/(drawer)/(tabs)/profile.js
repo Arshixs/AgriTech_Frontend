@@ -253,12 +253,6 @@ export default function FarmerProfileScreen() {
             )}
           </TouchableOpacity>
 
-          <Button
-            title={t("My Farms")}
-            onPress={() => router.push("/farm")}
-            style={{ backgroundColor: FARMER_COLOR, marginBottom:15, marginTop:0}}
-          />
-
           {/* Personal Information */}
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>{t("Personal Details")}</Text>

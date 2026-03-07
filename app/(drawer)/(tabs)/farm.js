@@ -15,7 +15,8 @@ import {
   View,
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { API_BASE_URL } from "../../../secret";
+import { API_BASE_URL, FARMER_COLOR } from "../../../secret";
+import Button from "../../../src/components/common/Button";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../../src/context/AuthContext";
 
@@ -327,10 +328,14 @@ export default function MyFarmScreen() {
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: getStatusColor(field.status) },
+            // { backgroundColor: getStatusColor(field.status) },
           ]}
         >
-          <Text style={styles.statusText}>{getStatusText(field.status)}</Text>
+          <Text
+            style={[styles.statusText, { color: getStatusColor(field.status) }]}
+          >
+            {getStatusText(field.status)}
+          </Text>
         </View>
       </View>
 
@@ -399,7 +404,7 @@ export default function MyFarmScreen() {
           <Text style={styles.header}>{t("My Farm")}</Text>
 
           <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, { marginRight: 4 }]}>
               <MaterialCommunityIcons
                 name="land-fields"
                 size={24}
@@ -410,7 +415,7 @@ export default function MyFarmScreen() {
               </Text>
               <Text style={styles.statLabel}>{t("Total Acres")}</Text>
             </View>
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, { marginLeft: 4 }]}>
               <MaterialCommunityIcons name="sprout" size={24} color="#606C38" />
               <Text style={styles.statValue}>
                 {fields.filter((f) => f.status === "Growing").length}/
@@ -419,6 +424,16 @@ export default function MyFarmScreen() {
               <Text style={styles.statLabel}>{t("Active Fields")}</Text>
             </View>
           </View>
+
+          <Button
+            title={t("Recommendations")}
+            onPress={() => router.push("/recommendations")}
+            style={{
+              backgroundColor: FARMER_COLOR,
+              marginBottom: 15,
+              marginTop: 0,
+            }}
+          />
 
           <View style={styles.fieldsSection}>
             <View style={styles.sectionHeader}>
@@ -789,7 +804,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
-    marginHorizontal: 4,
+    marginHorizontal: 0,
     elevation: 2,
   },
   statValue: {
