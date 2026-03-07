@@ -60,6 +60,14 @@ export default function DrawerLayout() {
         options={{ drawerLabel: t("IoT Devices") }}
       />
       <Drawer.Screen
+        name="alerts"
+        options={{ drawerLabel: t("Alerts") }}
+      />
+      <Drawer.Screen
+        name="price-forecast"
+        options={{ drawerLabel: t("Price Forecast") }}
+      />
+      <Drawer.Screen
         name="expense-prediction"
         options={{ drawerLabel: t("Expense Prediction") }}
       />

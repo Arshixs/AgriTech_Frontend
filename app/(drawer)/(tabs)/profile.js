@@ -16,7 +16,7 @@ import {
   View,
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { API_BASE_URL } from "../../../secret";
+import { API_BASE_URL, FARMER_COLOR } from "../../../secret";
 import Button from "../../../src/components/common/Button";
 import LanguageDropdown from "../../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
@@ -198,7 +198,6 @@ export default function FarmerProfileScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
@@ -253,6 +252,12 @@ export default function FarmerProfileScreen() {
               </View>
             )}
           </TouchableOpacity>
+
+          <Button
+            title={t("My Farms")}
+            onPress={() => router.push("/farm")}
+            style={{ backgroundColor: FARMER_COLOR, marginBottom:15, marginTop:0}}
+          />
 
           {/* Personal Information */}
           <View style={styles.infoSection}>

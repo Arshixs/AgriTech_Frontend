@@ -15,9 +15,9 @@ import {
   View,
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { API_BASE_URL } from "../../../secret";
-import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../../src/context/AuthContext";
+import { API_BASE_URL } from "../secret";
+import ScreenWrapper from "../src/components/common/ScreenWrapper";
+import { useAuth } from "../src/context/AuthContext";
 
 export default function MyFarmScreen() {
   const { user } = useAuth();
@@ -108,7 +108,7 @@ export default function MyFarmScreen() {
       if (status !== "granted") {
         Alert.alert(
           t("Permission Denied"),
-          t("Location permission is required"),
+          t("Location permission is required")
         );
         return;
       }
@@ -148,7 +148,7 @@ export default function MyFarmScreen() {
     if (!newField.name || !newField.area || !newField.coordinates) {
       Alert.alert(
         "Validation",
-        t("Please fill all required fields and select a location"),
+        t("Please fill all required fields and select a location")
       );
       return;
     }
@@ -209,7 +209,7 @@ export default function MyFarmScreen() {
             plantedDate: new Date(),
             expectedHarvest: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000),
           }),
-        },
+        }
       );
 
       if (res.ok) {
@@ -265,7 +265,7 @@ export default function MyFarmScreen() {
       if (res.ok) {
         Alert.alert(
           t("Success"),
-          t("Crop harvested and recorded successfully! Field is now fallow."),
+          t("Crop harvested and recorded successfully! Field is now fallow.")
         );
         setShowHarvestModal(false);
         fetchData();
