@@ -14,8 +14,8 @@ import {
 import { API_BASE_URL, FARMER_COLOR } from "../../../secret";
 import Button from "../../../src/components/common/Button";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../../src/context/AuthContext";
 import QuizBannerCard from "../../../src/components/gamification/QuizBannerCard"; // ← NEW
+import { useAuth } from "../../../src/context/AuthContext";
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -99,51 +99,7 @@ export default function HomeScreen() {
       description: t("Explore more features"),
       icon: "more",
       color: "#E76F51",
-<<<<<<< Updated upstream
       route: "all-actions",
-=======
-      route: "/(tabs)/alerts",
-    },
-    {
-      id: 5,
-      title: t("Crop Guide"),
-      description: t("Get recommendations"),
-      icon: "sprout",
-      color: "#606C38",
-      route: "/(tabs)/recommendations",
-    },
-    {
-      id: 6,
-      title: t("IoT Devices"),
-      description: t("Monitor sensors"),
-      icon: "access-point",
-      color: "#457B9D",
-      route: "/iot-devices",
-    },
-    {
-      id: 7,
-      title: t("My Orders"),
-      description: t("All orders and Rentals"),
-      icon: "package-variant",
-      color: "#809d45ff",
-      route: "/farmer-orders-screen",
-    },
-    {
-      id: 8,
-      title: t("My Certificates"),
-      description: t("All certificates"),
-      icon: "check-decagram",
-      color: "#4dff00ff",
-      route: "/quality",
-    },
-    {
-      id: 9,
-      title: t("My Offers"),
-      description: t("See Requirement offer status"),
-      icon: "offer",
-      color: "#459d9dff",
-      route: "/my-offers",
->>>>>>> Stashed changes
     },
     // {
     //   id: 5,
@@ -348,7 +304,6 @@ export default function HomeScreen() {
           </View>
 
           {/* Today's Tasks */}
-<<<<<<< Updated upstream
           {/* <View style={styles.tasksSection}>
             <Text style={styles.sectionTitle}>
               {t("Today's Tasks")} ({farmStats.todaysTasks})
@@ -359,12 +314,6 @@ export default function HomeScreen() {
               </Text>
             ) : (
               todaysTasks.map((task) => (
-=======
-          {todaysTasks.length > 0 && (
-            <View style={styles.tasksSection}>
-              <Text style={styles.sectionTitle}>{t("Today's Tasks")}</Text>
-              {todaysTasks.map((task) => (
->>>>>>> Stashed changes
                 <View key={task._id} style={styles.taskCard}>
                   <View style={styles.taskLeft}>
                     <MaterialCommunityIcons
@@ -388,7 +337,6 @@ export default function HomeScreen() {
                     />
                   </TouchableOpacity>
                 </View>
-<<<<<<< Updated upstream
               ))
             )}
           </View> */}
@@ -397,11 +345,6 @@ export default function HomeScreen() {
           <View style={styles.signOutContainer}>
             <Button title={t("Sign Out")} onPress={signOut} />
           </View>
-=======
-              ))}
-            </View>
-          )}
->>>>>>> Stashed changes
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -444,21 +387,18 @@ const styles = StyleSheet.create({
     color: "#264653",
     marginTop: 8,
   },
-<<<<<<< Updated upstream
   statLabel: {
     fontSize: 12,
     color: "#666",
     marginTop: 4,
     textAlign: "center",
-=======
-  statLabel: { fontSize: 12, color: "#666", marginTop: 4, textAlign: "center" },
+  },
 
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#264653",
     marginBottom: 12,
->>>>>>> Stashed changes
   },
 
   featuredCard: {
@@ -541,7 +481,6 @@ const styles = StyleSheet.create({
     color: "#264653",
     marginBottom: 2,
   },
-<<<<<<< Updated upstream
   taskTime: {
     fontSize: 13,
     color: "#666",
@@ -557,8 +496,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-=======
   taskTime: { fontSize: 13, color: "#666" },
   taskCheckbox: { padding: 5 },
->>>>>>> Stashed changes
 });
