@@ -1,3 +1,4 @@
+// app/(drawer)/(tabs)/index.js
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import { API_BASE_URL, FARMER_COLOR } from "../../../secret";
 import Button from "../../../src/components/common/Button";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../../src/context/AuthContext";
+import QuizBannerCard from "../../../src/components/gamification/QuizBannerCard"; // ← NEW
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -21,8 +23,6 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const authToken = user?.token;
-  // console.log("user");
-  // console.log(user.token);
 
   const [loading, setLoading] = useState(true);
   const [farmStats, setFarmStats] = useState({
@@ -39,14 +39,10 @@ export default function HomeScreen() {
     try {
       // 1. Fetch Stats
       const statsRes = await fetch(`${API_BASE_URL}/api/farm/stats`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
-
       if (!statsRes.ok) throw new Error("Failed to fetch farm stats");
       const statsData = await statsRes.json();
-
       setFarmStats({
         totalArea: statsData.totalArea || "0.0",
         activeFields: statsData.activeFields || 0,
@@ -56,26 +52,20 @@ export default function HomeScreen() {
 
       // 2. Fetch Today's Tasks
       const tasksRes = await fetch(`${API_BASE_URL}/api/farm/tasks/today`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
-
       if (!tasksRes.ok) throw new Error("Failed to fetch tasks");
       const tasksData = await tasksRes.json();
       setTodaysTasks(tasksData.tasks || []);
     } catch (error) {
       console.error("Home Screen Fetch Error:", error.message);
-      // Optionally display error to user
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (authToken) {
-      fetchData();
-    }
+    if (authToken) fetchData();
   }, [authToken]);
 
   const quickActions = [
@@ -90,7 +80,7 @@ export default function HomeScreen() {
     {
       id: 2,
       title: t("Marketplace"),
-      description: t("Rentals and buy raw maerials"),
+      description: t("Rentals and buy raw materials"),
       icon: "tools",
       color: "#457B9D",
       route: "/vendor-market-screen",
@@ -109,7 +99,51 @@ export default function HomeScreen() {
       description: t("Explore more features"),
       icon: "more",
       color: "#E76F51",
+<<<<<<< Updated upstream
       route: "all-actions",
+=======
+      route: "/(tabs)/alerts",
+    },
+    {
+      id: 5,
+      title: t("Crop Guide"),
+      description: t("Get recommendations"),
+      icon: "sprout",
+      color: "#606C38",
+      route: "/(tabs)/recommendations",
+    },
+    {
+      id: 6,
+      title: t("IoT Devices"),
+      description: t("Monitor sensors"),
+      icon: "access-point",
+      color: "#457B9D",
+      route: "/iot-devices",
+    },
+    {
+      id: 7,
+      title: t("My Orders"),
+      description: t("All orders and Rentals"),
+      icon: "package-variant",
+      color: "#809d45ff",
+      route: "/farmer-orders-screen",
+    },
+    {
+      id: 8,
+      title: t("My Certificates"),
+      description: t("All certificates"),
+      icon: "check-decagram",
+      color: "#4dff00ff",
+      route: "/quality",
+    },
+    {
+      id: 9,
+      title: t("My Offers"),
+      description: t("See Requirement offer status"),
+      icon: "offer",
+      color: "#459d9dff",
+      route: "/my-offers",
+>>>>>>> Stashed changes
     },
     // {
     //   id: 5,
@@ -183,9 +217,7 @@ export default function HomeScreen() {
           },
         },
       );
-
       if (res.ok) {
-        // Refresh tasks or filter completed task out
         setTodaysTasks((prevTasks) =>
           prevTasks.filter((task) => task._id !== taskId),
         );
@@ -252,6 +284,11 @@ export default function HomeScreen() {
             ))}
           </View>
 
+          {/* ── NEW: Quiz Banner ──────────────────────────────────────────────── */}
+          <Text style={styles.sectionTitle}>{t("Knowledge")}</Text>
+          <QuizBannerCard />
+          {/* ─────────────────────────────────────────────────────────────────── */}
+
           {/* Featured: Expense Predictor */}
           {/* <TouchableOpacity
             style={styles.featuredCard}
@@ -293,13 +330,13 @@ export default function HomeScreen() {
                 <View
                   style={[
                     styles.actionIconContainer,
-                    { backgroundColor: action.color },
+                    { backgroundColor: action.color + "20" },
                   ]}
                 >
                   <MaterialCommunityIcons
                     name={action.icon}
                     size={28}
-                    color="#FFFFFF"
+                    color={action.color}
                   />
                 </View>
                 <Text style={styles.actionTitle}>{action.title}</Text>
@@ -311,6 +348,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Today's Tasks */}
+<<<<<<< Updated upstream
           {/* <View style={styles.tasksSection}>
             <Text style={styles.sectionTitle}>
               {t("Today's Tasks")} ({farmStats.todaysTasks})
@@ -321,35 +359,36 @@ export default function HomeScreen() {
               </Text>
             ) : (
               todaysTasks.map((task) => (
+=======
+          {todaysTasks.length > 0 && (
+            <View style={styles.tasksSection}>
+              <Text style={styles.sectionTitle}>{t("Today's Tasks")}</Text>
+              {todaysTasks.map((task) => (
+>>>>>>> Stashed changes
                 <View key={task._id} style={styles.taskCard}>
                   <View style={styles.taskLeft}>
                     <MaterialCommunityIcons
-                      name={
-                        task.type === "Irrigation"
-                          ? "water"
-                          : task.type === "Fertilization"
-                          ? "spray"
-                          : "clipboard-text"
-                      }
+                      name="checkbox-blank-circle-outline"
                       size={24}
                       color="#2A9D8F"
                     />
                     <View style={styles.taskInfo}>
                       <Text style={styles.taskTitle}>{task.title}</Text>
-                      <Text style={styles.taskTime}>
-                        {task.fieldId?.name
-                          ? `${t("Field")}: ${task.fieldId.name}`
-                          : `${t("Type")}: ${task.type}`}
-                      </Text>
+                      <Text style={styles.taskTime}>{task.time}</Text>
                     </View>
                   </View>
                   <TouchableOpacity
                     style={styles.taskCheckbox}
                     onPress={() => handleTaskCompletion(task._id)}
                   >
-                    <FontAwesome name="circle-o" size={24} color="#CCC" />
+                    <MaterialCommunityIcons
+                      name="check-circle-outline"
+                      size={28}
+                      color="#2A9D8F"
+                    />
                   </TouchableOpacity>
                 </View>
+<<<<<<< Updated upstream
               ))
             )}
           </View> */}
@@ -358,6 +397,11 @@ export default function HomeScreen() {
           <View style={styles.signOutContainer}>
             <Button title={t("Sign Out")} onPress={signOut} />
           </View>
+=======
+              ))}
+            </View>
+          )}
+>>>>>>> Stashed changes
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -365,37 +409,26 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  container: {
-    padding: 20,
-    paddingBottom: 40,
-  },
+  scrollView: { flex: 1, backgroundColor: "#F8F9FA" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: { padding: 20, paddingBottom: 40 },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 30,
+    marginBottom: 24,
+    paddingTop: 10,
   },
-  greeting: {
-    fontSize: 16,
-    color: "#666",
-  },
-  userName: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#264653",
-    marginTop: 4,
-  },
-  profileButton: {
-    padding: 5,
-  },
+  greeting: { fontSize: 16, color: "#666" },
+  userName: { fontSize: 26, fontWeight: "800", color: "#264653", marginTop: 2 },
+  profileButton: { padding: 8 },
+
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 24,
+    gap: 8,
   },
   statCard: {
     flex: 1,
@@ -403,11 +436,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
-    marginHorizontal: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
     elevation: 2,
   },
   statValue: {
@@ -416,21 +444,28 @@ const styles = StyleSheet.create({
     color: "#264653",
     marginTop: 8,
   },
+<<<<<<< Updated upstream
   statLabel: {
     fontSize: 12,
     color: "#666",
     marginTop: 4,
     textAlign: "center",
+=======
+  statLabel: { fontSize: 12, color: "#666", marginTop: 4, textAlign: "center" },
+
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#264653",
+    marginBottom: 12,
+>>>>>>> Stashed changes
   },
+
   featuredCard: {
     backgroundColor: "#2A9D8F",
     borderRadius: 16,
     padding: 20,
     marginBottom: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
     elevation: 5,
   },
   featuredContent: {
@@ -438,40 +473,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  featuredLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
+  featuredLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
   featuredIconContainer: {
     width: 60,
     height: 60,
     borderRadius: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(255,255,255,0.2)",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
   },
-  featuredText: {
-    flex: 1,
-  },
+  featuredText: { flex: 1 },
   featuredTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#FFFFFF",
     marginBottom: 4,
   },
-  featuredDescription: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    opacity: 0.9,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#264653",
-    marginBottom: 16,
-  },
+  featuredDescription: { fontSize: 14, color: "#FFFFFF", opacity: 0.9 },
+
   actionsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -484,10 +504,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
     elevation: 2,
   },
   actionIconContainer: {
@@ -504,13 +520,9 @@ const styles = StyleSheet.create({
     color: "#264653",
     marginBottom: 4,
   },
-  actionDescription: {
-    fontSize: 13,
-    color: "#666",
-  },
-  tasksSection: {
-    marginBottom: 30,
-  },
+  actionDescription: { fontSize: 13, color: "#666" },
+
+  tasksSection: { marginBottom: 30 },
   taskCard: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -519,26 +531,17 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
     elevation: 1,
   },
-  taskLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  taskInfo: {
-    marginLeft: 12,
-  },
+  taskLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
+  taskInfo: { marginLeft: 12 },
   taskTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: "#264653",
     marginBottom: 2,
   },
+<<<<<<< Updated upstream
   taskTime: {
     fontSize: 13,
     color: "#666",
@@ -554,4 +557,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+=======
+  taskTime: { fontSize: 13, color: "#666" },
+  taskCheckbox: { padding: 5 },
+>>>>>>> Stashed changes
 });

@@ -47,7 +47,7 @@ const RootLayout = () => {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(vendor-tabs)" />
       <Stack.Screen name="(vendor-auth)" />
-      
+
       {/* ---  BUYER LAYOUTS --- */}
       <Stack.Screen name="(buyer-tabs)" />
       <Stack.Screen name="(buyer-auth)" />
@@ -55,7 +55,7 @@ const RootLayout = () => {
       {/* ---  Govt LAYOUTS --- */}
       <Stack.Screen name="(govt-tabs)" />
       <Stack.Screen name="(govt-auth)" />
-      
+
       {/* Root Index Screen */}
       <Stack.Screen name="welcome" />
 
@@ -68,7 +68,8 @@ const RootLayout = () => {
       <Stack.Screen name="expense-tracker" />
       <Stack.Screen name="expense-calculator" />
       <Stack.Screen name="transaction-history" />
-      
+      <Stack.Screen name="leaderboard" />
+
       {/* --- BUYER TOP-LEVEL SCREENS --- */}
       <Stack.Screen name="post-requirement" />
       <Stack.Screen name="listing-details" />

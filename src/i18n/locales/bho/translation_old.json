@@ -61,8 +61,15 @@
   "Post a requirement to start receiving offers from farmers.": "ऑफर पावे खातिर एगो आवश्यकता पोस्ट करीं।",
   "Rental Period (DD-MM-YYYY)": "किराया अवधि (DD-MM-YYYY)",
   "Enter your designation": "अपना पदनाम दर्ज करीं",
-  "Sell {{quantity}} {{unit}} of {{crop}} to government at MSP?": "का रउआ {{quantity}} {{unit}} {{crop}} सरकार के एमएसपी पर बेचे चाहत बानी?",
+  "Sell {{quantity}} {{unit}} of {{crop}} to government at MSP?": "का रउआ {{crop}} के {{unit}} सरकार के न्यूनतम समर्थन मूल्य (एमएसपी) पर बेचे चाहत बानी?",
   "MSP Rate: ₹{{price}}/{{unit}}": "एमएसपी दर: ₹{{price}}/{{unit}}",
   "Total Amount: ₹{{total}}": "कुल राशि: ₹{{total}}",
-  "Note: This will not be listed on marketplace.": "नोट: ई बाजार में सूचीबद्ध ना होई।"
+  "Note: This will not be listed on marketplace.": "नोट: ई बाजार में सूचीबद्ध ना होई।",
+  "Rentals and buy raw maerials": "किराया आ कच्चा सामान खरीदी",
+  "No tasks scheduled for today. Good work!": "आज खातिर कवनो काम तय नइखे। बढ़िया काम!",
+  "Type": "प्रकार",
+  "हिन्दी": "हिंदी",
+  "Village, Tehsil, District": "गांव, तहसील, जिला",
+  "": "",
+  "\n\n\n\n\nNote: This will not be listed on marketplace.": "नोट: ई मार्केटप्लेस पर सूचीबद्ध ना होई।"
 }
