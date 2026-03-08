@@ -1,3 +1,4 @@
+// app/(drawer)/(tabs)/profile.js
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
@@ -21,6 +22,7 @@ import Button from "../../../src/components/common/Button";
 import LanguageDropdown from "../../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../../src/context/AuthContext";
+import ScoreCard from "../../../src/components/gamification/ScoreCard"; // ← NEW
 
 export default function FarmerProfileScreen() {
   const { user, signOut } = useAuth();
@@ -28,12 +30,35 @@ export default function FarmerProfileScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
 
+<<<<<<< Updated upstream
+=======
+  const LANGUAGES = ["en", "hi", "bho"];
+  const LANGUAGE_LABELS = { en: "English", hi: "हिन्दी", bho: "भोजपुरी" };
+
+  const toggleLanguage = () => {
+    const currentIndex = LANGUAGES.indexOf(i18n.language);
+    const nextIndex = (currentIndex + 1) % LANGUAGES.length;
+    i18n.changeLanguage(LANGUAGES[nextIndex]);
+  };
+
+  const currentLangLabel = LANGUAGE_LABELS[i18n.language] || "English";
+
+>>>>>>> Stashed changes
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fetchingGps, setFetchingGps] = useState(false);
   const [isMapModalVisible, setMapModalVisible] = useState(false);
   const [tempCoords, setTempCoords] = useState({ lat: null, lng: null });
+
+  // ── NEW: gamification state ──────────────────────────────────────────────────
+  const [gamification, setGamification] = useState({
+    totalPoints: 0,
+    level: "Bronze",
+    pointsToNext: null,
+    loading: true,
+  });
+  // ────────────────────────────────────────────────────────────────────────────
 
   const mapRef = useRef(null);
   const previewMapRef = useRef(null);
@@ -43,6 +68,7 @@ export default function FarmerProfileScreen() {
     phone: "",
     adharNumber: "",
     address: "",
+    district: "",
     coordinates: { lat: null, lng: null },
   });
 
@@ -53,6 +79,7 @@ export default function FarmerProfileScreen() {
     longitudeDelta: 12,
   });
 
+  // ── Fetch farmer profile ─────────────────────────────────────────────────────
   const fetchProfile = async () => {
     if (!authToken) return;
     setRefreshing(true);
@@ -80,13 +107,38 @@ export default function FarmerProfileScreen() {
     }
   };
 
+  // ── NEW: Fetch gamification profile ─────────────────────────────────────────
+  const fetchGamification = async () => {
+    if (!authToken) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/gamification/profile`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setGamification({
+          totalPoints: data.totalPoints,
+          level: data.level,
+          pointsToNext: data.pointsToNext,
+          loading: false,
+        });
+      }
+    } catch (error) {
+      console.error("Gamification fetch error:", error);
+      setGamification((prev) => ({ ...prev, loading: false }));
+    }
+  };
+  // ────────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     fetchProfile();
+    fetchGamification(); // ← NEW
   }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchProfile();
+    fetchGamification(); // ← NEW — refresh both together
   }, []);
 
   const handleMapPress = useCallback((e) => {
@@ -105,22 +157,14 @@ export default function FarmerProfileScreen() {
         );
         return;
       }
-
       let loc = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
       const { latitude, longitude } = loc.coords;
-
       setTempCoords({ lat: latitude, lng: longitude });
-
       if (mapRef.current) {
         mapRef.current.animateToRegion(
-          {
-            latitude,
-            longitude,
-            latitudeDelta: 0.005,
-            longitudeDelta: 0.005,
-          },
+          { latitude, longitude, latitudeDelta: 0.005, longitudeDelta: 0.005 },
           500,
         );
       }
@@ -136,16 +180,13 @@ export default function FarmerProfileScreen() {
       RNAlert.alert("Alert", t("Please select a location on the map"));
       return;
     }
-
     setProfile((prev) => ({ ...prev, coordinates: tempCoords }));
-
     setPreviewRegion({
       latitude: tempCoords.lat,
       longitude: tempCoords.lng,
       latitudeDelta: 0.01,
       longitudeDelta: 0.01,
     });
-
     setMapModalVisible(false);
   };
 
@@ -162,13 +203,14 @@ export default function FarmerProfileScreen() {
           name: profile.name,
           address: profile.address,
           adharNumber: profile.adharNumber,
+          district: profile.district,
           coordinates: profile.coordinates,
         }),
       });
-
       if (res.ok) {
         RNAlert.alert(t("Success"), t("Profile updated successfully."));
         fetchProfile();
+        fetchGamification(); // profile completion may award points
       } else {
         throw new Error("Update failed.");
       }
@@ -207,6 +249,22 @@ export default function FarmerProfileScreen() {
             <Text style={styles.userName}>{profile.name || t("Farmer")}</Text>
             <Text style={styles.userPhone}>{profile.phone}</Text>
           </View>
+
+          {/* ── NEW: Score Card ───────────────────────────────────────────────── */}
+          {gamification.loading ? (
+            <ActivityIndicator
+              size="small"
+              color="#2A9D8F"
+              style={{ marginBottom: 16 }}
+            />
+          ) : (
+            <ScoreCard
+              totalPoints={gamification.totalPoints}
+              level={gamification.level}
+              pointsToNext={gamification.pointsToNext}
+            />
+          )}
+          {/* ─────────────────────────────────────────────────────────────────── */}
 
           {/* Location Management Section */}
           <Text style={styles.sectionTitle}>{t("Farm Location")}</Text>
@@ -262,7 +320,7 @@ export default function FarmerProfileScreen() {
               <TextInput
                 style={styles.input}
                 value={profile.name}
-                onChangeText={(t) => setProfile({ ...profile, name: t })}
+                onChangeText={(v) => setProfile({ ...profile, name: v })}
                 placeholder={t("Enter full name")}
               />
             </View>
@@ -270,10 +328,9 @@ export default function FarmerProfileScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t("Adhar Number")}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, styles.disabledInput]}
                 value={profile.adharNumber}
                 editable={false}
-                onChangeText={(t) => setProfile({ ...profile, adharNumber: t })}
                 placeholder={t("12 Digit Adhar")}
                 keyboardType="numeric"
               />
@@ -284,10 +341,23 @@ export default function FarmerProfileScreen() {
               <TextInput
                 style={[styles.input, { height: 80, textAlignVertical: "top" }]}
                 value={profile.address}
-                onChangeText={(t) => setProfile({ ...profile, address: t })}
+                onChangeText={(v) => setProfile({ ...profile, address: v })}
                 placeholder={t("Enter complete address")}
                 multiline
               />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t("District")}</Text>
+              <TextInput
+                style={styles.input}
+                value={profile.district}
+                onChangeText={(v) => setProfile({ ...profile, district: v })}
+                placeholder={t("e.g. Varanasi")}
+              />
+              <Text style={styles.helperText}>
+                {t("Used for the district leaderboard")}
+              </Text>
             </View>
           </View>
 
@@ -300,86 +370,118 @@ export default function FarmerProfileScreen() {
               style={{ backgroundColor: "#2A9D8F" }}
             />
 
+            {profile.district ? (
+              <TouchableOpacity
+                style={styles.leaderboardButton}
+                onPress={() =>
+                  router.push({
+                    pathname: "/leaderboard",
+                    params: { district: profile.district },
+                  })
+                }
+              >
+                <MaterialCommunityIcons
+                  name="podium"
+                  size={20}
+                  color="#2A9D8F"
+                />
+                <Text style={styles.leaderboardButtonText}>
+                  {t("View")} {profile.district} {t("Leaderboard")}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+
             <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
               <MaterialCommunityIcons name="logout" size={20} color="#E76F51" />
               <Text style={styles.signOutText}>{t("Logout Account")}</Text>
             </TouchableOpacity>
           </View>
+        </View>
 
-          {/* Fullscreen Map Modal */}
-          <Modal
-            visible={isMapModalVisible}
-            animationType="slide"
-            statusBarTranslucent
-            onRequestClose={() => setMapModalVisible(false)}
-          >
-            <View style={styles.modalBody}>
-              <MapView
-                ref={mapRef}
-                style={styles.fullMap}
-                initialRegion={previewRegion}
-                onPress={handleMapPress}
-                showsUserLocation={true}
-                showsMyLocationButton={false}
-                provider={PROVIDER_GOOGLE}
-              >
-                {tempCoords?.lat && (
-                  <Marker
-                    coordinate={{
-                      latitude: tempCoords.lat,
-                      longitude: tempCoords.lng,
-                    }}
-                    draggable
-                    onDragEnd={handleMapPress}
-                    pinColor="#2A9D8F"
-                  />
-                )}
-              </MapView>
+        {/* Fullscreen Map Modal */}
+        <Modal
+          visible={isMapModalVisible}
+          animationType="slide"
+          statusBarTranslucent
+          onRequestClose={() => setMapModalVisible(false)}
+        >
+          <View style={styles.modalBody}>
+            <MapView
+              ref={mapRef}
+              style={styles.fullMap}
+              initialRegion={previewRegion}
+              onPress={handleMapPress}
+              showsUserLocation={true}
+              showsMyLocationButton={false}
+              provider={PROVIDER_GOOGLE}
+            >
+              {tempCoords?.lat && (
+                <Marker
+                  coordinate={{
+                    latitude: tempCoords.lat,
+                    longitude: tempCoords.lng,
+                  }}
+                  draggable
+                  onDragEnd={handleMapPress}
+                  pinColor="#2A9D8F"
+                />
+              )}
+            </MapView>
 
-              <View style={styles.modalHeader}>
-                <TouchableOpacity
-                  onPress={() => setMapModalVisible(false)}
-                  style={styles.iconBtn}
-                >
-                  <MaterialCommunityIcons name="close" size={24} color="#333" />
-                </TouchableOpacity>
-                <Text style={styles.modalTitle}>
-                  {tempCoords?.lat
-                    ? t("Location Selected")
-                    : t("Pin your Farm")}
-                </Text>
-                <TouchableOpacity
-                  onPress={handleConfirmLocation}
-                  style={styles.confirmBtn}
-                >
-                  <Text style={styles.confirmBtnText}>{t("Confirm")}</Text>
-                </TouchableOpacity>
-              </View>
-
+            <View style={styles.modalHeader}>
               <TouchableOpacity
-                style={styles.gpsFab}
-                onPress={getCurrentLocation}
-                disabled={fetchingGps}
+                onPress={() => setMapModalVisible(false)}
+                style={styles.iconBtn}
               >
-                {fetchingGps ? (
-                  <ActivityIndicator color="#2A9D8F" size="small" />
-                ) : (
-                  <MaterialCommunityIcons
-                    name="crosshairs-gps"
-                    size={28}
-                    color="#2A9D8F"
-                  />
-                )}
+                <MaterialCommunityIcons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>
+                {tempCoords?.lat ? t("Location Selected") : t("Pin your Farm")}
+              </Text>
+              <TouchableOpacity
+                onPress={handleConfirmLocation}
+                style={styles.confirmBtn}
+              >
+                <Text style={styles.confirmBtnText}>{t("Confirm")}</Text>
               </TouchableOpacity>
             </View>
-          </Modal>
-        </View>
+
+            <TouchableOpacity
+              style={styles.gpsFab}
+              onPress={getCurrentLocation}
+              disabled={fetchingGps}
+            >
+              {fetchingGps ? (
+                <ActivityIndicator color="#2A9D8F" size="small" />
+              ) : (
+                <MaterialCommunityIcons
+                  name="crosshairs-gps"
+                  size={28}
+                  color="#2A9D8F"
+                />
+              )}
+            </TouchableOpacity>
+
+            {tempCoords?.lat && (
+              <View style={styles.coordsInfo}>
+                <Text style={styles.coordsText}>
+                  {t("Lat")}: {tempCoords.lat.toFixed(6)}, {t("Lng")}:{" "}
+                  {tempCoords.lng.toFixed(6)}
+                </Text>
+                <Text style={styles.coordsHint}>
+                  {t("Tap on map or drag marker to adjust")}
+                </Text>
+              </View>
+            )}
+          </View>
+        </Modal>
       </ScrollView>
     </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
+<<<<<<< Updated upstream
   scrollView: { flex: 1 },
   container: { paddingLeft: 20, paddingRight: 20, paddingBottom: 40 },
   loadingContainer: {
@@ -392,31 +494,44 @@ const styles = StyleSheet.create({
   avatarContainer: { marginBottom: 15 },
   userName: { fontSize: 24, fontWeight: "bold", color: "#264653" },
   userPhone: { fontSize: 16, color: "#666", marginTop: 4 },
+=======
+  scrollView: { flex: 1, backgroundColor: "#F8F9FA" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: { padding: 20, paddingBottom: 40 },
+>>>>>>> Stashed changes
 
   langButton: {
     position: "absolute",
-    top: 20,
-    right: 20,
+    top: 16,
+    right: 16,
     zIndex: 10,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 30,
     borderWidth: 1.5,
     borderColor: "#2A9D8F",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    elevation: 6,
   },
   langText: {
     color: "#2A9D8F",
     fontWeight: "bold",
     marginLeft: 8,
     fontSize: 15,
+  },
+
+  header: { alignItems: "center", paddingTop: 50, paddingBottom: 24 },
+  avatarContainer: { marginBottom: 12 },
+  userName: { fontSize: 24, fontWeight: "800", color: "#264653" },
+  userPhone: { fontSize: 14, color: "#888", marginTop: 4 },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#264653",
+    marginBottom: 15,
   },
 
   mapPreview: {
@@ -436,7 +551,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(248, 249, 250, 0.9)",
+    backgroundColor: "rgba(248,249,250,0.9)",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1,
@@ -449,12 +564,6 @@ const styles = StyleSheet.create({
   },
 
   infoSection: { marginBottom: 20 },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#264653",
-    marginBottom: 15,
-  },
   inputGroup: { marginBottom: 15 },
   inputLabel: {
     fontSize: 14,
@@ -476,12 +585,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F0F0",
     color: "#888",
     borderColor: "#E0E0E0",
-  },
-  helperText: {
-    fontSize: 11,
-    color: "#999",
-    marginTop: 4,
-    fontStyle: "italic",
   },
 
   modalBody: { flex: 1, backgroundColor: "#000" },
@@ -526,8 +629,45 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 12,
   },
+  coordsInfo: {
+    position: "absolute",
+    bottom: 120,
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderRadius: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  coordsText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#264653",
+    textAlign: "center",
+  },
+  coordsHint: {
+    fontSize: 11,
+    color: "#888",
+    textAlign: "center",
+    marginTop: 2,
+  },
 
   actions: { marginTop: 10 },
+  leaderboardButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#2A9D8F",
+    gap: 8,
+  },
+  leaderboardButtonText: {
+    color: "#2A9D8F",
+    fontWeight: "700",
+    fontSize: 15,
+  },
   signOutButton: {
     flexDirection: "row",
     alignItems: "center",

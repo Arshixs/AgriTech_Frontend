@@ -64,5 +64,12 @@
   "Sell {{quantity}} {{unit}} of {{crop}} to government at MSP?": "Sell {{quantity}} {{unit}} of {{crop}} to government at MSP?",
   "MSP Rate: ₹{{price}}/{{unit}}": "MSP Rate: ₹{{price}}/{{unit}}",
   "Total Amount: ₹{{total}}": "Total Amount: ₹{{total}}",
-  "Note: This will not be listed on marketplace.": "Note: This will not be listed on marketplace."
+  "Note: This will not be listed on marketplace.": "Note: This will not be listed on marketplace.",
+  "Rentals and buy raw maerials": "Rentals and buy raw maerials",
+  "No tasks scheduled for today. Good work!": "No tasks scheduled for today. Good work!",
+  "Type": "Type",
+  "हिन्दी": "हिन्दी",
+  "Village, Tehsil, District": "Village, Tehsil, District",
+  "": "",
+  "\n\n\n\n\nNote: This will not be listed on marketplace.": "Note: This will not be listed on marketplace."
 }

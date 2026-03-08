@@ -61,8 +61,15 @@
   "Post a requirement to start receiving offers from farmers.": "किसानों से प्रस्ताव प्राप्त करना शुरू करने के लिए एक आवश्यकता पोस्ट करें।",
   "Rental Period (DD-MM-YYYY)": "किराये की अवधि (दिन-माह-वर्ष)",
   "Enter your designation": "अपना पदनाम दर्ज करें",
-  "Sell {{quantity}} {{unit}} of {{crop}} to government at MSP?": "क्या आप सरकार को न्यूनतम समर्थन मूल्य (एमएसपी) पर {{crop}} की {{quantity}}{{unit}} सरकार को बेचना चाहते हैं?",
-  "MSP Rate: ₹{{price}}/{{unit}}": "एमएसपी दर: ₹{{price}}/{{unit}}",
-  "Total Amount: ₹{{total}}": "कुल राशि: ₹{{total}}",
-  "Note: This will not be listed on marketplace.": "नोट: यह मार्केटप्लेस पर सूचीबद्ध नहीं होगा।"
+  "Sell {{quantity}} {{unit}} of {{crop}} to government at MSP?": "क्या आप सरकार को न्यूनतम समर्थन मूल्य (एमएसपी) पर {{फसल}} की {{इकाई}} सरकार को बेचना चाहते हैं?",
+  "MSP Rate: ₹{{price}}/{{unit}}": "एमएसपी दर: ₹{{कीमत}}/{{इकाई}}",
+  "Total Amount: ₹{{total}}": "कुल राशि: ₹{{कुल}}",
+  "Note: This will not be listed on marketplace.": "नोट: यह मार्केटप्लेस पर सूचीबद्ध नहीं होगा।",
+  "Rentals and buy raw maerials": "किराये पर लेना और कच्चा माल खरीदना",
+  "No tasks scheduled for today. Good work!": "आज के लिए कोई कार्य निर्धारित नहीं है। बहुत बढ़िया!",
+  "Type": "प्रकार",
+  "हिन्दी": "English",
+  "Village, Tehsil, District": "गाँव, तहसील, जिला",
+  "": "",
+  "\n\n\n\n\nNote: This will not be listed on marketplace.": "नोट: यह मार्केटप्लेस पर सूचीबद्ध नहीं होगा।"
 }

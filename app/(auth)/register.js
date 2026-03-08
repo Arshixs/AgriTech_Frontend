@@ -30,6 +30,7 @@ export default function RegistrationScreen() {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [adharNumber, setAdharNumber] = useState("");
+  const [district, setDistrict]=useState("");
   const [loading, setLoading] = useState(false);
   const [fetchingGps, setFetchingGps] = useState(false);
 
@@ -140,7 +141,7 @@ export default function RegistrationScreen() {
   };
 
   const handleCompleteProfile = async () => {
-    if (!name || !address || !adharNumber || !location) {
+    if (!name || !address || !adharNumber || !location || !district) {
       alert(t("Please fill all fields and select location"));
       return;
     }
@@ -157,6 +158,7 @@ export default function RegistrationScreen() {
           name,
           address,
           adharNumber,
+          district,
           coordinates: location,
         }),
       });
@@ -197,7 +199,13 @@ export default function RegistrationScreen() {
           label={t("Farm Address")}
           value={address}
           onChangeText={setAddress}
-          placeholder={t("Village, Tehsil, District")}
+          placeholder={t("Village, Tehsil")}
+        />
+        <Input
+          label={t("District")}
+          value={district}
+          onChangeText={setDistrict}
+          placeholder={t("District")}
         />
 
         <Text style={styles.label}>{t("Farm Location on Map")}</Text>
