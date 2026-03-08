@@ -154,7 +154,6 @@ export default function AlertsScreen() {
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2A9D8F" />
-          <Text style={styles.loadingText}>Loading...</Text>
         </View>
       </ScreenWrapper>
     );
