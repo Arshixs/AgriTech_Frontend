@@ -155,8 +155,8 @@ export default function HomeScreen() {
 
   const stats = [
     {
-      label: t("Total Land"),
-      value: `${farmStats.totalArea} ${t("Acres")}`,
+      label: t("Total Land (Acres)"),
+      value: `${farmStats.totalArea}`,
       icon: "terrain",
     },
     {
@@ -206,9 +206,6 @@ export default function HomeScreen() {
       <ScreenWrapper>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2A9D8F" />
-          <Text style={{ marginTop: 10, color: "#666" }}>
-            {t("Loading Dashboard...")}
-          </Text>
         </View>
       </ScreenWrapper>
     );
@@ -423,6 +420,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#666",
     marginTop: 4,
+    textAlign: "center",
   },
   featuredCard: {
     backgroundColor: "#2A9D8F",
@@ -550,5 +548,10 @@ const styles = StyleSheet.create({
   },
   signOutContainer: {
     marginTop: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -2,7 +2,7 @@
 
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { API_BASE_URL, BUYER_COLOR } from "../../secret";
@@ -19,6 +19,51 @@ export default function BuyerOTPScreen() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
+  const [resending, setResending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown === 0) return;
+
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  const handleResendOtp = async () => {
+    if (cooldown > 0) return;
+
+    setResending(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/buyer/auth/resend-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: `${mobileNumber}`,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to resend OTP");
+      }
+
+      alert(t("OTP sent again successfully"));
+
+      // Start cooldown
+      setCooldown(60);
+    } catch (err) {
+      alert(err.message || "Error resending OTP");
+    } finally {
+      setResending(false);
+    }
+  };
 
   const handleVerifyOTP = async () => {
     if (!otp || otp.length !== 6) {
@@ -124,16 +169,24 @@ export default function BuyerOTPScreen() {
           color={BUYER_COLOR}
         />
         <View style={styles.resendContainer}>
-          <TouchableOpacity>
+          {cooldown > 0 ? (
             <Text
-              style={[
-                styles.resendText,
-                { color: BUYER_COLOR, marginBottom: 16 },
-              ]}
+              style={[styles.resendText, { color: "#888", marginBottom: 16 }]}
             >
-              {t("Didn't receive code? Resend")}
+              {t("Resend OTP in")} {cooldown}s
             </Text>
-          </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleResendOtp} disabled={resending}>
+              <Text
+                style={[
+                  styles.resendText,
+                  { color: BUYER_COLOR, marginBottom: 16 },
+                ]}
+              >
+                {resending ? t("Sending...") : t("Didn't receive code? Resend")}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity onPress={() => router.back()}>
             <Text style={[styles.resendText, { color: BUYER_COLOR }]}>
