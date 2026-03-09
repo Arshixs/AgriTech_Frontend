@@ -20,7 +20,7 @@ i18n
   .init({
     resources,
     lng: deviceLanguage, // Use device language initially
-    fallbackLng: 'hi',    // Fallback if key is missing in Hindi
+    fallbackLng: 'en',    // Fallback if key is missing in Hindi
     compatibilityJSON: 'v3',
     interpolation: {
       escapeValue: false // React already escapes values
