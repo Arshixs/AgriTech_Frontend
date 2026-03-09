@@ -41,7 +41,7 @@ export default function VendorOrdersScreen() {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       const data = await res.json();
-      console.log(data.orders[0]);
+      //console.log(data.orders[0]);
       if (res.ok) {
         setOrders(data.orders || []);
       }
