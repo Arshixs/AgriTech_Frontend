@@ -30,8 +30,6 @@ export default function FarmerProfileScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
 
-<<<<<<< Updated upstream
-=======
   const LANGUAGES = ["en", "hi", "bho"];
   const LANGUAGE_LABELS = { en: "English", hi: "हिन्दी", bho: "भोजपुरी" };
 
@@ -43,7 +41,6 @@ export default function FarmerProfileScreen() {
 
   const currentLangLabel = LANGUAGE_LABELS[i18n.language] || "English";
 
->>>>>>> Stashed changes
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -481,7 +478,6 @@ export default function FarmerProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-<<<<<<< Updated upstream
   scrollView: { flex: 1 },
   container: { paddingLeft: 20, paddingRight: 20, paddingBottom: 40 },
   loadingContainer: {
@@ -490,15 +486,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 400,
   },
-  header: { alignItems: "center", marginBottom: 30, marginTop: 10 },
-  avatarContainer: { marginBottom: 15 },
-  userName: { fontSize: 24, fontWeight: "bold", color: "#264653" },
-  userPhone: { fontSize: 16, color: "#666", marginTop: 4 },
-=======
-  scrollView: { flex: 1, backgroundColor: "#F8F9FA" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  container: { padding: 20, paddingBottom: 40 },
->>>>>>> Stashed changes
+  // header: { alignItems: "center", marginBottom: 30, marginTop: 10 },
+  // avatarContainer: { marginBottom: 15 },
+  // userName: { fontSize: 24, fontWeight: "bold", color: "#264653" },
+  // userPhone: { fontSize: 16, color: "#666", marginTop: 4 },
 
   langButton: {
     position: "absolute",
