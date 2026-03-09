@@ -10,7 +10,7 @@
   "Enter a valid 6-digit OTP.": "सही 6 अंकों के ओटीपी दर्ज करीं",
   "Invalid or Expired OTP.": "ओटीपी गलत बा या समय सीमा खत्म हो गइल बा",
   "Failed to verify OTP": "ओटीपी सत्यापित करे में असफल",
-  "Verify OTP": "ओटीपी सत्यापित करीं",
+  "Verify OTP": "ओटीपी दर्ज करीं",
   "Enter the 6-digit OTP sent to +91 {{mobile}}": "{{mobile}} पर भेजल 6 अंकों के ओटीपी दर्ज करीं\n",
   "Enter OTP": "ओटीपी दर्ज करीं",
   "Verify & Proceed": "सत्यापित करीं आ आगे बढ़ीं",

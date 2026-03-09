@@ -738,7 +738,7 @@ function GradingModal({
                   />
                 </View>
 
-                <View style={styles.inputGroup}>
+                {/* <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>{t("Other Defects")}</Text>
                   <TextInput
                     style={[styles.input, styles.textArea]}
@@ -750,7 +750,7 @@ function GradingModal({
                     multiline
                     numberOfLines={3}
                   />
-                </View>
+                </View> */}
 
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>{t("Grading Notes")}</Text>
