@@ -99,7 +99,47 @@ export default function HomeScreen() {
       description: t("Explore more features"),
       icon: "more",
       color: "#E76F51",
-      route: "all-actions",
+      route: "/(tabs)/alerts",
+    },
+    {
+      id: 5,
+      title: t("Crop Guide"),
+      description: t("Get recommendations"),
+      icon: "sprout",
+      color: "#606C38",
+      route: "/(tabs)/recommendations",
+    },
+    {
+      id: 6,
+      title: t("IoT Devices"),
+      description: t("Monitor sensors"),
+      icon: "access-point",
+      color: "#457B9D",
+      route: "/iot-devices",
+    },
+    {
+      id: 7,
+      title: t("My Orders"),
+      description: t("All orders and Rentals"),
+      icon: "package-variant",
+      color: "#809d45ff",
+      route: "/farmer-orders-screen",
+    },
+    {
+      id: 8,
+      title: t("My Certificates"),
+      description: t("All certificates"),
+      icon: "check-decagram",
+      color: "#4dff00ff",
+      route: "/quality",
+    },
+    {
+      id: 9,
+      title: t("My Offers"),
+      description: t("See Requirement offer status"),
+      icon: "offer",
+      color: "#459d9dff",
+      route: "/my-offers",
     },
     // {
     //   id: 5,
@@ -304,16 +344,10 @@ export default function HomeScreen() {
           </View>
 
           {/* Today's Tasks */}
-          {/* <View style={styles.tasksSection}>
-            <Text style={styles.sectionTitle}>
-              {t("Today's Tasks")} ({farmStats.todaysTasks})
-            </Text>
-            {todaysTasks.length === 0 ? (
-              <Text style={styles.noTasksText}>
-                {t("No tasks scheduled for today. Good work!")}
-              </Text>
-            ) : (
-              todaysTasks.map((task) => (
+          {todaysTasks.length > 0 && (
+            <View style={styles.tasksSection}>
+              <Text style={styles.sectionTitle}>{t("Today's Tasks")}</Text>
+              {todaysTasks.map((task) => (
                 <View key={task._id} style={styles.taskCard}>
                   <View style={styles.taskLeft}>
                     <MaterialCommunityIcons
@@ -337,14 +371,9 @@ export default function HomeScreen() {
                     />
                   </TouchableOpacity>
                 </View>
-              ))
-            )}
-          </View> */}
-
-          {/* Sign Out Button */}
-          <View style={styles.signOutContainer}>
-            <Button title={t("Sign Out")} onPress={signOut} />
-          </View>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -387,12 +416,7 @@ const styles = StyleSheet.create({
     color: "#264653",
     marginTop: 8,
   },
-  statLabel: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 4,
-    textAlign: "center",
-  },
+  statLabel: { fontSize: 12, color: "#666", marginTop: 4, textAlign: "center" },
 
   sectionTitle: {
     fontSize: 20,
