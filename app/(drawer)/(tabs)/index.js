@@ -353,7 +353,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: "#F8F9FA" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  // loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   container: { padding: 20, paddingBottom: 40 },
 
   header: {
