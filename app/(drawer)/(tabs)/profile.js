@@ -449,7 +449,7 @@ export default function FarmerProfileScreen() {
   const { user, signOut } = useAuth();
   const authToken = user?.token;
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t,i18n } = useTranslation();
 
   const LANGUAGES = ["en", "hi", "bho"];
   const LANGUAGE_LABELS = { en: "English", hi: "हिन्दी", bho: "भोजपुरी" };
