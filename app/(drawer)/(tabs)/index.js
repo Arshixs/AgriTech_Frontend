@@ -14,8 +14,8 @@ import {
 import { API_BASE_URL, FARMER_COLOR } from "../../../secret";
 import Button from "../../../src/components/common/Button";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
-import { useAuth } from "../../../src/context/AuthContext";
 import QuizBannerCard from "../../../src/components/gamification/QuizBannerCard"; // ← NEW
+import { useAuth } from "../../../src/context/AuthContext";
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -394,6 +394,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#264653",
+    marginBottom: 12,
+  },
+
   featuredCard: {
     backgroundColor: "#2A9D8F",
     borderRadius: 16,
@@ -489,4 +496,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  taskTime: { fontSize: 13, color: "#666" },
+  taskCheckbox: { padding: 5 },
 });

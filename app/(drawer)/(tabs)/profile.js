@@ -26,8 +26,8 @@ import { API_BASE_URL } from "../../../secret";
 import Button from "../../../src/components/common/Button";
 import LanguageDropdown from "../../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../../src/components/common/ScreenWrapper";
+import ScoreCard from "../../../src/components/gamification/ScoreCard"; // ← NEW
 import { useAuth } from "../../../src/context/AuthContext";
-import ScoreCard from "../../../src/components/gamification/ScoreCard";
 
 const { height } = Dimensions.get("window");
 
@@ -1141,6 +1141,32 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     height: 400,
+  },
+  header: { alignItems: "center", marginBottom: 30, marginTop: 10 },
+  avatarContainer: { marginBottom: 15 },
+  userName: { fontSize: 24, fontWeight: "bold", color: "#264653" },
+  userPhone: { fontSize: 16, color: "#666", marginTop: 4 },
+
+  langButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: "#2A9D8F",
+    elevation: 6,
+  },
+  langText: {
+    color: "#2A9D8F",
+    fontWeight: "bold",
+    marginLeft: 8,
+    fontSize: 15,
   },
 
   header: { alignItems: "center", paddingTop: 50, paddingBottom: 24 },
