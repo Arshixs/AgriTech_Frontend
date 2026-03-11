@@ -345,13 +345,13 @@ export default function BiddingRoom() {
 
               <View style={styles.cropRow}>
                 <Text style={styles.cropLabel}>{t("Farmer")}</Text>
-                {/* <Text style={styles.cropValue}>{saleInfo.farmerId.name}</Text> */}
+                <Text style={styles.cropValue}>{saleInfo.farmerId.name}</Text>
               </View>
 
               <View style={styles.cropRow}>
                 <Text style={styles.cropLabel}>{t("Location")}</Text>
                 <Text style={styles.cropValue}>
-                  {/* {saleInfo.farmerId.address} */}
+                  {saleInfo.farmerId.address}
                 </Text>
               </View>
 

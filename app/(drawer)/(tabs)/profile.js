@@ -1043,10 +1043,10 @@ export default function FarmerProfileScreen() {
                   />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.coordsText}>
+                  {/* <Text style={styles.coordsText}>
                     {t("Lat")}: {tempCoords.lat.toFixed(5)}, {t("Lng")}:{" "}
                     {tempCoords.lng.toFixed(5)}
-                  </Text>
+                  </Text> */}
                   <Text style={styles.coordsHint}>
                     {t("Tap on map or drag marker to adjust")}
                   </Text>
@@ -1153,10 +1153,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 400,
   },
-  header: { alignItems: "center", marginBottom: 30, marginTop: 10 },
-  avatarContainer: { marginBottom: 15 },
-  userName: { fontSize: 24, fontWeight: "bold", color: "#264653" },
-  userPhone: { fontSize: 16, color: "#666", marginTop: 4 },
+  // header: { alignItems: "center", marginBottom: 30, marginTop: 10 },
+  // avatarContainer: { marginBottom: 15 },
+  // userName: { fontSize: 24, fontWeight: "bold", color: "#264653" },
+  // userPhone: { fontSize: 16, color: "#666", marginTop: 4 },
 
   langButton: {
     position: "absolute",
