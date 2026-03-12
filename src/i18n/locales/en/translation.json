@@ -993,5 +993,22 @@
   "Check the buyer's requirements": "Check the buyer's requirements",
   "MSP of common crops": "MSP of common crops",
   "All Features": "All Features",
-  "Please enter a valid 6-digit OTP.": "Please enter a valid 6-digit OTP."
+  "Please enter a valid 6-digit OTP.": "Please enter a valid 6-digit OTP.",
+  "Contact: ": "Contact: ",
+  "Quality": "Quality",
+  "Organization name is required": "Organization name is required",
+  "Contact person name is required": "Contact person name is required",
+  "Email is required": "Email is required",
+  "Please enter a valid email": "Please enter a valid email",
+  "Organization Name": "Organization Name",
+  "Enter organization name": "Enter organization name",
+  "Contact Person": "Contact Person",
+  "Enter contact person name": "Enter contact person name",
+  "GST number is required": "GST number is required",
+  "Address is required": "Address is required",
+  "Address:": "Address:",
+  "Enter vendor name": "Enter vendor name",
+  "Enter GST number": "Enter GST number",
+  "Address": "Address",
+  "Enter address": "Enter address"
 }
