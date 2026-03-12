@@ -12,7 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL, GOVERNMENT_COLOR } from "../../secret";
+// import { API_BASE_URL } from "../../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+import { GOVERNMENT_COLOR } from "../../constants";
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";

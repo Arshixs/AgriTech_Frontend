@@ -11,7 +11,8 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
-import { API_BASE_URL } from "../../../secret";
+// import { API_BASE_URL } from "../../../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export default function QuizBannerCard() {
   const { user } = useAuth();

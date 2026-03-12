@@ -2,7 +2,8 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Text, View } from "react-native";
-import { API_BASE_URL } from "../../secret";
+// import { API_BASE_URL } from "../../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 import Button from "../../src/components/common/Button";
 import Input from "../../src/components/common/Input";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
@@ -21,6 +22,12 @@ export default function LoginScreen() {
         t("Enter a valid 10-digit number."),
       );
     }
+
+    if (!API_BASE_URL) {
+      Alert.alert("Configuration Error", "API URL is missing");
+      return;
+    }
+
 
     setLoading(true);
     const fullPhoneNumber = `+91${mobileNumber}`;

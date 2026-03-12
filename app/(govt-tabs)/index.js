@@ -12,7 +12,8 @@ import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { API_BASE_URL } from "../../secret";
+// import { API_BASE_URL } from "../../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 import { useTranslation } from "react-i18next";
 
 export default function GovtDashboard() {

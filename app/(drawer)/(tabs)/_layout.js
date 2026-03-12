@@ -1,4 +1,4 @@
-import { FARMER_COLOR } from "@/secret";
+import { FARMER_COLOR } from "../../../constants"
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";

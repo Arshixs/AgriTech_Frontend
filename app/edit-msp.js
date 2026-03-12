@@ -19,7 +19,8 @@ import axios from "axios";
 
 
 
-import { API_BASE_URL } from '../secret';
+// import { API_BASE_URL } from '../secret';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const API_URL = API_BASE_URL;
 export default function EditMSPScreen() {
   const router = useRouter();

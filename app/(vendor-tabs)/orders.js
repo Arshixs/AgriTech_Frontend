@@ -15,7 +15,9 @@ import {
 } from "react-native";
 
 import { useTranslation } from "react-i18next";
-import { API_BASE_URL, VENDOR_COLOR } from "../../secret";
+// import { API_BASE_URL } from "../../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+import { VENDOR_COLOR } from "../../constants";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
 

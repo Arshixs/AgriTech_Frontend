@@ -14,7 +14,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL } from "../../secret";
+// import { API_BASE_URL } from "../../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 import Button from "../../src/components/common/Button";
 import LanguageDropdown from "../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
