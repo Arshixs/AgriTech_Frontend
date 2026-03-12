@@ -103,5 +103,10 @@
   "Enter the 6-digit OTP sent to": "पर भेजल 6-अंकी ओटीपी दर्ज करीं",
   "Village, Tehsil": "गांव, तहसील",
   "e.g. Varanasi": "जइसे: वाराणसी",
-  "Used for the district leaderboard": "ई जिला लीडरबोर्ड खातिर इस्तेमाल होला।"
+  "Used for the district leaderboard": "ई जिला लीडरबोर्ड खातिर इस्तेमाल होला।",
+  "Lat": "अक्षांश",
+  "Lng": "देशांतर",
+  "Contact: ": "संपर्क करना: ",
+  "Quality": "गुणवत्ता",
+  "Address:": "पता:"
 }

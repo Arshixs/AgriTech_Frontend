@@ -103,5 +103,10 @@
   "Enter the 6-digit OTP sent to": "Enter the 6-digit OTP sent to",
   "Village, Tehsil": "Village, Tehsil",
   "e.g. Varanasi": "e.g. Varanasi",
-  "Used for the district leaderboard": "Used for the district leaderboard"
+  "Used for the district leaderboard": "Used for the district leaderboard",
+  "Lat": "Lat",
+  "Lng": "Lng",
+  "Contact: ": "Contact: ",
+  "Quality": "Quality",
+  "Address:": "Address:"
 }
