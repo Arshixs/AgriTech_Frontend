@@ -16,6 +16,13 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
+3. This would return a qr code (scroll up the terminal).
+4. Download Expo GO app from play store.
+5. ENsure that mobile phone and the device on which this repo is running are connected on same internet.
+6. Scan the QR code from the app. This would build the app in your phone and then you can run the app.
+
+7. For now otp would be 000000 across all profiles
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
