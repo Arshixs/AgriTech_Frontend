@@ -16,7 +16,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import ScreenWrapper from "../src/components/common/ScreenWrapper";
 import useFarmerOnly from "../hooks/useFarmerOnly";
 import { useAuth } from "../src/context/AuthContext";
-import { API_BASE_URL } from "../secret";
+// import { API_BASE_URL } from "../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export default function QuizzesScreen() {
   const isFarmer = useFarmerOnly();

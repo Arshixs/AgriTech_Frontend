@@ -13,11 +13,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_BASE_URL, VENDOR_COLOR } from "../../secret"; // Ensure API_BASE_URL is exported
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 import Button from "../../src/components/common/Button";
 import LanguageDropdown from "../../src/components/common/LanguageDropdown";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 import { useAuth } from "../../src/context/AuthContext";
+import { VENDOR_COLOR } from "../../constants";
 
 export default function VendorProfileScreen() {
   const { user, signOut, setUser } = useAuth(); // Extracted setUser for optimistic updates

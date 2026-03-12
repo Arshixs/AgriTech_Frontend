@@ -14,7 +14,8 @@ import {
   View,
 } from "react-native";
 
-import { API_BASE_URL } from "../secret";
+// import { API_BASE_URL } from "../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 import Button from "../src/components/common/Button";
 import Input from "../src/components/common/Input";
 // Assuming ScreenWrapper handles SafeArea, but if not, I added SafeAreaView below just in case

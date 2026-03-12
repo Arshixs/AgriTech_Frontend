@@ -15,7 +15,8 @@ import ScreenWrapper from "../src/components/common/ScreenWrapper";
 
 // 1. Add Import
 import { useTranslation } from "react-i18next";
-import { API_BASE_URL } from "../secret";
+// import { API_BASE_URL } from "../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 import { useAuth } from "../src/context/AuthContext";
 
 // Keep these keys in English for logic filtering

@@ -14,7 +14,8 @@ import {
 } from "react-native";
 import ScreenWrapper from "../../src/components/common/ScreenWrapper";
 
-import { API_BASE_URL } from "../../secret";
+// import { API_BASE_URL } from "../../secret";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 import { useAuth } from "../../src/context/AuthContext";
 
 export default function MarketplaceScreen() {
