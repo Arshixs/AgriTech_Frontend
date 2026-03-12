@@ -152,8 +152,8 @@ export default function VendorOrdersScreen() {
           <MaterialCommunityIcons name="account" size={16} color="#666" />
           <Text style={styles.detailText}>
             {t("Buyer:")}{" "}
-            {item.buyer?.contactPerson ||
-              item.buyer?.companyName ||
+            {item.farmer?.name ||
+              item.farmer?.companyName ||
               t("Unknown")}
           </Text>
         </View>
@@ -169,7 +169,7 @@ export default function VendorOrdersScreen() {
             {/* FIX 3: Added t() to "Phone:" */}
             {t("Phone:")}{" "}
             <Text style={[styles.phoneText, { fontWeight: "600" }]}>
-              {item.buyer?.phone || t("Unknown")}
+              {item.farmer?.phone || t("Unknown")}
             </Text>
           </Text>
         </View>

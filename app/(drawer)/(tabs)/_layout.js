@@ -2,13 +2,16 @@ import { FARMER_COLOR } from "../../../constants"
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function TabsLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: FARMER_COLOR, // Buyer Theme Color
+        tabBarActiveTintColor: FARMER_COLOR,
         tabBarInactiveTintColor: "#888",
         tabBarLabelStyle: {
           fontSize: 12,
@@ -22,52 +25,25 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t("Home"),
           tabBarIcon: ({ color }) => (
             <FontAwesome name="home" size={24} color={color} />
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="alerts"
-        options={{
-          title: "Alerts",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="bell" size={24} color={color} />
-          ),
-        }}
-      /> */}
       <Tabs.Screen
         name="farm"
         options={{
-          title: "My Farm",
+          title: t("My Farm"),
           tabBarIcon: ({ color }) => (
             <FontAwesome name="leaf" size={24} color={color} />
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="recommendations"
-        options={{
-          title: "Crops",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="sprout" size={24} color={color} />
-          ),
-        }}
-      /> */}
-      {/* <Tabs.Screen
-        name="price-forecast"
-        options={{
-          title: "Price Forecast",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="chart-line" size={24} color={color} />
-          ),
-        }}
-      /> */}
       <Tabs.Screen
         name="my-harvest"
         options={{
-          title: "Harvest",
+          title: t("Harvest"),
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="check-decagram"
@@ -80,7 +56,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "profile",
+          title: t("Profile"),
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="account" size={24} color={color} />
           ),

@@ -3,14 +3,15 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../src/context/AuthContext";
 
 export default function GovtTabLayout() {
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
-    // Protect tabs - only allow access if verified
     if (!user) {
       router.replace("/(govt-auth)/login");
     } else if (!user.profileComplete) {
@@ -20,7 +21,6 @@ export default function GovtTabLayout() {
     }
   }, [user]);
 
-  // Don't render tabs if not verified
   if (
     !user ||
     !user.profileComplete ||
@@ -47,7 +47,7 @@ export default function GovtTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
+          title: t("Dashboard"),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="view-dashboard"
@@ -60,7 +60,7 @@ export default function GovtTabLayout() {
       <Tabs.Screen
         name="quality-grading"
         options={{
-          title: "Quality",
+          title: t("Quality"),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="check-decagram"
@@ -73,7 +73,7 @@ export default function GovtTabLayout() {
       <Tabs.Screen
         name="msp-compliance"
         options={{
-          title: "MSP",
+          title: t("MSP"),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="shield-check"
@@ -86,7 +86,7 @@ export default function GovtTabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: t("Profile"),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="account-cog"

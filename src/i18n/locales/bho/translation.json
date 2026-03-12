@@ -995,20 +995,5 @@
   "All Features": "सभी सुविधाएं",
   "Please enter a valid 6-digit OTP.": "कृपया एक वैध 6-अंकों का ओटीपी दर्ज करें।",
   "Contact: ": "संपर्क करना: ",
-  "Quality": "गुणवत्ता",
-  "Organization name is required": "संगठन का नाम आवश्यक है",
-  "Contact person name is required": "संपर्क व्यक्ति का नाम आवश्यक है",
-  "Email is required": "ईमेल की जरूरत है",
-  "Please enter a valid email": "कृपया एक मान्य ईमेल दर्ज करें",
-  "Organization Name": "संगठन का नाम",
-  "Enter organization name": "संगठन का नाम दर्ज करें",
-  "Contact Person": "संपर्क व्यक्ति",
-  "Enter contact person name": "संपर्क व्यक्ति का नाम दर्ज करें",
-  "GST number is required": "जीएसटी नंबर आवश्यक है",
-  "Address is required": "पता आवश्यक है",
-  "Address:": "पता:",
-  "Enter vendor name": "विक्रेता का नाम दर्ज करें",
-  "Enter GST number": "जीएसटी नंबर दर्ज करें",
-  "Address": "पता",
-  "Enter address": "पता दर्ज करें"
+  "Quality": "गुणवत्ता"
 }

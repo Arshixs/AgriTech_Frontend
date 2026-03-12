@@ -109,6 +109,8 @@ export default function FarmerOrdersScreen() {
       order.vendor?.name ||
       t("Unknown Vendor");
 
+    const vendorPhone= order.vendor?.phone;
+
     const isRental = order.orderType === "rental";
     const totalDays = isRental ? order.rentalDuration?.totalDays : null;
 
@@ -127,6 +129,9 @@ export default function FarmerOrdersScreen() {
             </Text>
             <Text style={styles.orderVendorName}>
               {typeDetails.label} {t("from")} {vendorName}
+            </Text>
+            <Text style={styles.orderVendorName}>
+              {t("Contact: ")} {vendorPhone}
             </Text>
           </View>
           <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
@@ -165,12 +170,10 @@ export default function FarmerOrdersScreen() {
                 <Text style={styles.detailLabel}>{t("Period")}</Text>
                 <Text style={styles.detailValuePeriod}>
                   {new Date(
-                    order.rentalDuration.startDate
+                    order.rentalDuration.startDate,
                   ).toLocaleDateString()}{" "}
                   -{" "}
-                  {new Date(
-                    order.rentalDuration.endDate
-                  ).toLocaleDateString()}
+                  {new Date(order.rentalDuration.endDate).toLocaleDateString()}
                 </Text>
               </View>
             </>
@@ -179,8 +182,7 @@ export default function FarmerOrdersScreen() {
           {/* Footer */}
           <View style={styles.orderFooter}>
             <Text style={styles.orderDate}>
-              {t("Ordered")}:{" "}
-              {new Date(order.createdAt).toLocaleDateString()}
+              {t("Ordered")}: {new Date(order.createdAt).toLocaleDateString()}
             </Text>
           </View>
         </View>

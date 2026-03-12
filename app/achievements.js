@@ -24,7 +24,8 @@ export default function AchievementsScreen() {
   const { user } = useAuth();
   const authToken = user?.token;
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language; // 'en' | 'hi' | 'bho'
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("badges");
@@ -77,7 +78,10 @@ export default function AchievementsScreen() {
         try {
           setLoading(true);
           const res = await fetch(`${API_BASE_URL}/api/gamification/profile`, {
-            headers: { Authorization: `Bearer ${authToken}` },
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Accept-Language": lang, // ← tells backend which language to use for badge names
+            },
           });
           const json = await res.json();
           if (!cancelled) {
@@ -94,7 +98,7 @@ export default function AchievementsScreen() {
       return () => {
         cancelled = true;
       };
-    }, [authToken]),
+    }, [authToken, lang]), // ← re-fetch when language changes
   );
 
   if (!isFarmer) return null;

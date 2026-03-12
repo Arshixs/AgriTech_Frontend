@@ -105,8 +105,12 @@
   "e.g. Varanasi": "उदाहरण के लिए वाराणसी",
   "Used for the district leaderboard": "इसका उपयोग जिला लीडरबोर्ड के लिए किया जाता है।",
   "Lat": "अक्षांश",
+<<<<<<< Updated upstream
   "Lng": "देशान्तर",
   "Contact: ": "संपर्क करना: ",
   "Quality": "गुणवत्ता",
   "Address:": "पता:"
+=======
+  "Lng": "देशान्तर"
+>>>>>>> Stashed changes
 }
